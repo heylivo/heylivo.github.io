@@ -121,8 +121,9 @@
   .float small { color: var(--muted); font-size: 12px; }
   .float img { flex: none; width: 36px; height: 36px; padding: 6px; border-radius: 11px; background: var(--lav); }
   .float .tick { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--ok); color: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 800; box-shadow: 0 6px 14px -6px rgba(16,185,129,.8); }
-  .f-push { top: 100px; right: -22px; width: 236px; }
-  .f-done { top: 300px; right: -22px; }
+  /* Beide Kärtchen am Handy ausgerichtet (Mitte der Fläche), nicht am Rand: Push unter "Hallo", Erledigt unten mittig */
+  .f-push { top: 174px; left: calc(50% - 110px); width: 210px; }
+  .f-done { top: 505px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
   .note-hero { position: absolute; right: -6px; bottom: 34px; font-size: 26px; transform: rotate(-6deg); }
 
   /* Vier Kacheln */
@@ -209,10 +210,11 @@
     .hsteps span { font-size: 12.5px; }
     .device { width: 272px; }
     .scr { height: 570px; padding: 10px 13px 0; }
-    .f-push { right: -6px; top: 46px; width: 200px; }
-    .f-done { right: -6px; top: auto; bottom: 100px; }
+    .f-push { top: 170px; }
+    .f-done { top: 472px; }
     .blob { left: calc(50% - 190px); width: 210px; height: 200px; }
-    .note-hero { display: none; }
+    .art { padding-bottom: 54px; }
+    .note-hero { right: calc(50% - 150px); bottom: 8px; font-size: 23px; }
     .art::before { width: 320px; height: 320px; }
     .price { padding: 26px 22px; }
     footer nav a { margin: 0 14px 0 0; }
