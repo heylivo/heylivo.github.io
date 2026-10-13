@@ -3,6 +3,8 @@
 //   Erinnert jeden Nutzer in der Testphase oder mit Livo Plus an alle Fristen, deren
 //   Erinnerungszeit erreicht ist (Fälligkeit minus lead_days) - einmal pro Fälligkeit
 //   (notified_for). Mehrere Fristen am selben Tag kommen als eine Nachricht.
+//   Danach die Hinweise zum Ende der Testphase (7 Tage vorher, am letzten Tag, am Tag danach)
+//   per Push und an gesicherte Konten per E-Mail (Resend) - einmal pro Stufe (usage.trial_notice).
 // - POST {"action":"soon"} mit Header x-cron-secret: jede Minute per pg_cron (0005_soon_reminders.sql).
 //   Erinnert kurz vor Terminen mit Uhrzeit (remind_min Minuten vorher), einmal pro Termin
 //   (time_notified_for). Die Uhrzeit gilt in der Zeitzone, in der die Frist gespeichert wurde.
@@ -19,10 +21,10 @@ const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('
 const VAPID = {
   publicKey: Deno.env.get('VAPID_PUBLIC_KEY') ?? '',
   privateKey: Deno.env.get('VAPID_PRIVATE_KEY') ?? '',
-  subject: Deno.env.get('VAPID_SUBJECT') ?? 'https://heylivo.github.io'
+  subject: Deno.env.get('VAPID_SUBJECT') ?? 'https://heylivo.com'
 };
 const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? '';
-const APP_URL = 'https://heylivo.github.io/app/';
+const APP_URL = 'https://heylivo.com/app/';
 const TRIAL_DAYS = 30;
 // Nur echte Push-Dienste der Browser - ein Abo ist nur eine URL, an die diese Funktion sendet.
 const PUSH_HOSTS = ['fcm.googleapis.com', 'android.googleapis.com', 'push.services.mozilla.com', 'push.apple.com', 'notify.windows.com'];
@@ -410,6 +412,326 @@ async function runReminders() {
   return { today, users, devices, deadlines };
 }
 
+// --- Hinweise zum Ende der Testphase ------------------------------------------------
+// Stufe 1 "endet in n Tagen" (ab 7 Tage vorher), 2 "endet heute", 3 "ist vorbei" (bis 3 Tage
+// danach) - als Push an alle Geräte und als E-Mail an gesicherte Konten. usage.trial_notice
+// (0008_trial_notice.sql) merkt sich die zuletzt verschickte Stufe: jede kommt höchstens einmal,
+// nach einem ausgefallenen Lauf nur die aktuelle. Wer Livo Plus hat, bekommt nichts. Erreicht
+// weder Push noch E-Mail jemanden, wird nichts abgehakt - der Hinweis kommt, sobald Push an ist.
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
+const MAIL_FROM = 'Livo <hallo@heylivo.com>';
+const MAIL_REPLY_TO = 'hallo@heylivo.com';
+const PLUS_URL = `${APP_URL}?show=plus`;
+const NOTICE_DAYS_BEFORE = 7;
+const NOTICE_DAYS_AFTER = 3;
+const NBSP = String.fromCharCode(160);
+
+// Texte je App-Sprache (die lokale Vorschau der Mails liest diesen Block mit)
+// <trial-text>
+const TRIAL_TEXT: Record<string, Record<string, string>> = {
+  de: {
+    endsIn: 'Deine Testphase endet in {n} Tagen', endsTomorrow: 'Deine Testphase endet morgen',
+    endsToday: 'Deine Testphase endet heute', over: 'Deine Testphase ist vorbei',
+    overSubject: 'Deine Testphase ist vorbei – Erinnerungen pausieren',
+    push1: 'Mit Livo Plus geht alles weiter – 11,99 € für ein Jahr, kein Abo.',
+    push2: 'Ab morgen erinnert dich Livo nur noch mit Livo Plus – 11,99 € für ein Jahr.',
+    push3: 'Deine Fristen sind noch da, aber Erinnerungen pausieren. Mit Livo Plus geht es weiter.',
+    hi: 'Hallo!',
+    mail1: 'Deine kostenlose Testphase bei heylivo endet am {date}. Danach bleiben deine Fristen gespeichert und du kannst sie weiter ansehen. Neue Fristen, Änderungen und Erinnerungen gibt es dann nur noch mit Livo Plus.',
+    mail2: 'Heute ist der letzte Tag deiner kostenlosen Testphase bei heylivo. Ab morgen erinnert dich Livo nur noch mit Livo Plus an deine Fristen. Deine Fristen bleiben gespeichert.',
+    mail3: 'Deine kostenlose Testphase bei heylivo ist vorbei. Deine Fristen sind weiter gespeichert und du kannst sie ansehen. Erinnerungen bekommst du aber erst wieder mit Livo Plus – verlass dich bis dahin bitte nicht darauf, dass Livo sich meldet.',
+    plus: 'Livo Plus: 11,99 € inkl. MwSt. für ein ganzes Jahr – einmal zahlen, kein Abo, keine Kündigung.',
+    button: 'Livo Plus ansehen',
+    footer: 'Du bekommst diese E-Mail, weil du dein heylivo-Konto mit dieser Adresse gesichert hast. Keine Hinweise zur Testphase mehr? Antworte einfach auf diese E-Mail.'
+  },
+  en: {
+    endsIn: 'Your trial ends in {n} days', endsTomorrow: 'Your trial ends tomorrow',
+    endsToday: 'Your trial ends today', over: 'Your trial is over',
+    overSubject: 'Your trial is over – reminders are paused',
+    push1: 'Livo Plus keeps everything going – €11.99 for a year, no subscription.',
+    push2: 'From tomorrow, Livo only reminds you with Livo Plus – €11.99 for a year.',
+    push3: 'Your deadlines are still there, but reminders are paused. Livo Plus keeps you going.',
+    hi: 'Hi!',
+    mail1: 'Your free heylivo trial ends on {date}. After that, your deadlines stay saved and you can still view them. Adding, changing and reminders are then only available with Livo Plus.',
+    mail2: 'Today is the last day of your free heylivo trial. From tomorrow, Livo only reminds you of your deadlines with Livo Plus. Your deadlines stay saved.',
+    mail3: "Your free heylivo trial is over. Your deadlines are still saved and you can view them. But reminders only come back with Livo Plus – so until then, please don't count on Livo getting in touch.",
+    plus: 'Livo Plus: €11.99 incl. VAT for a whole year – pay once, no subscription, nothing to cancel.',
+    button: 'See Livo Plus',
+    footer: "You're getting this email because you secured your heylivo account with this address. No more trial notices? Just reply to this email."
+  },
+  it: {
+    endsIn: 'La tua prova finisce tra {n} giorni', endsTomorrow: 'La tua prova finisce domani',
+    endsToday: 'La tua prova finisce oggi', over: 'La tua prova è finita',
+    overSubject: 'La tua prova è finita – promemoria in pausa',
+    push1: 'Con Livo Plus tutto continua – 11,99 € per un anno, nessun abbonamento.',
+    push2: 'Da domani Livo ti ricorda le scadenze solo con Livo Plus – 11,99 € per un anno.',
+    push3: 'Le tue scadenze ci sono ancora, ma i promemoria sono in pausa. Con Livo Plus si continua.',
+    hi: 'Ciao!',
+    mail1: 'La tua prova gratuita di heylivo finisce il {date}. Dopo, le tue scadenze restano salvate e puoi continuare a vederle. Aggiungere, modificare e ricevere promemoria sarà possibile solo con Livo Plus.',
+    mail2: "Oggi è l'ultimo giorno della tua prova gratuita di heylivo. Da domani Livo ti ricorda le tue scadenze solo con Livo Plus. Le tue scadenze restano salvate.",
+    mail3: 'La tua prova gratuita di heylivo è finita. Le tue scadenze sono ancora salvate e puoi vederle. I promemoria però tornano solo con Livo Plus: fino ad allora non contare sugli avvisi di Livo.',
+    plus: 'Livo Plus: 11,99 € IVA inclusa per un anno intero – paghi una volta, nessun abbonamento, nessuna disdetta.',
+    button: 'Scopri Livo Plus',
+    footer: 'Ricevi questa email perché hai protetto il tuo account heylivo con questo indirizzo. Non vuoi più avvisi sulla prova? Rispondi semplicemente a questa email.'
+  },
+  el: {
+    endsIn: 'Η δοκιμή σου τελειώνει σε {n} μέρες', endsTomorrow: 'Η δοκιμή σου τελειώνει αύριο',
+    endsToday: 'Η δοκιμή σου τελειώνει σήμερα', over: 'Η δοκιμή σου τελείωσε',
+    overSubject: 'Η δοκιμή σου τελείωσε – οι υπενθυμίσεις σταματούν',
+    push1: 'Με το Livo Plus όλα συνεχίζουν – 11,99 € για έναν χρόνο, χωρίς συνδρομή.',
+    push2: 'Από αύριο το Livo σού θυμίζει τις προθεσμίες μόνο με το Livo Plus – 11,99 € για έναν χρόνο.',
+    push3: 'Οι προθεσμίες σου είναι ακόμα εδώ, αλλά οι υπενθυμίσεις σταματούν. Με το Livo Plus συνεχίζεις.',
+    hi: 'Γεια σου!',
+    mail1: 'Η δωρεάν δοκιμή σου στο heylivo τελειώνει στις {date}. Μετά οι προθεσμίες σου μένουν αποθηκευμένες και μπορείς να τις βλέπεις. Νέες καταχωρίσεις, αλλαγές και υπενθυμίσεις θα υπάρχουν μόνο με το Livo Plus.',
+    mail2: 'Σήμερα είναι η τελευταία μέρα της δωρεάν δοκιμής σου στο heylivo. Από αύριο το Livo σού θυμίζει τις προθεσμίες σου μόνο με το Livo Plus. Οι προθεσμίες σου μένουν αποθηκευμένες.',
+    mail3: 'Η δωρεάν δοκιμή σου στο heylivo τελείωσε. Οι προθεσμίες σου είναι ακόμα αποθηκευμένες και μπορείς να τις βλέπεις. Υπενθυμίσεις όμως θα παίρνεις ξανά μόνο με το Livo Plus – μέχρι τότε μη βασίζεσαι στις ειδοποιήσεις του Livo.',
+    plus: 'Livo Plus: 11,99 € με ΦΠΑ για έναν ολόκληρο χρόνο – πληρώνεις μία φορά, χωρίς συνδρομή, χωρίς ακύρωση.',
+    button: 'Δες το Livo Plus',
+    footer: 'Λαμβάνεις αυτό το email επειδή ασφάλισες τον λογαριασμό σου στο heylivo με αυτή τη διεύθυνση. Δεν θέλεις άλλες ειδοποιήσεις για τη δοκιμή; Απλώς απάντησε σε αυτό το email.'
+  },
+  es: {
+    endsIn: 'Tu prueba termina en {n} días', endsTomorrow: 'Tu prueba termina mañana',
+    endsToday: 'Tu prueba termina hoy', over: 'Tu prueba ha terminado',
+    overSubject: 'Tu prueba ha terminado – avisos en pausa',
+    push1: 'Con Livo Plus todo sigue – 11,99 € por un año, sin suscripción.',
+    push2: 'Desde mañana, Livo solo te avisa con Livo Plus – 11,99 € por un año.',
+    push3: 'Tus plazos siguen ahí, pero los avisos están en pausa. Con Livo Plus sigues adelante.',
+    hi: '¡Hola!',
+    mail1: 'Tu prueba gratuita de heylivo termina el {date}. Después, tus plazos siguen guardados y puedes seguir viéndolos. Añadir, cambiar y recibir avisos solo será posible con Livo Plus.',
+    mail2: 'Hoy es el último día de tu prueba gratuita de heylivo. Desde mañana, Livo solo te avisa de tus plazos con Livo Plus. Tus plazos siguen guardados.',
+    mail3: 'Tu prueba gratuita de heylivo ha terminado. Tus plazos siguen guardados y puedes verlos. Pero solo volverás a recibir avisos con Livo Plus: hasta entonces, no cuentes con que Livo te avise.',
+    plus: 'Livo Plus: 11,99 € IVA incluido por un año entero – pagas una vez, sin suscripción, sin cancelaciones.',
+    button: 'Ver Livo Plus',
+    footer: 'Recibes este correo porque aseguraste tu cuenta de heylivo con esta dirección. ¿No quieres más avisos sobre la prueba? Simplemente responde a este correo.'
+  },
+  fr: {
+    endsIn: 'Votre essai se termine dans {n} jours', endsTomorrow: 'Votre essai se termine demain',
+    endsToday: "Votre essai se termine aujourd'hui", over: 'Votre essai est terminé',
+    overSubject: 'Votre essai est terminé – rappels en pause',
+    push1: 'Avec Livo Plus, tout continue – 11,99 € pour un an, sans abonnement.',
+    push2: "Dès demain, Livo ne vous rappelle vos échéances qu'avec Livo Plus – 11,99 € pour un an.",
+    push3: 'Vos échéances sont toujours là, mais les rappels sont en pause. Avec Livo Plus, tout continue.',
+    hi: 'Bonjour,',
+    mail1: 'Votre essai gratuit de heylivo se termine le {date}. Ensuite, vos échéances restent enregistrées et consultables. Pour en ajouter, les modifier et recevoir des rappels, il vous faudra Livo Plus.',
+    mail2: "Aujourd'hui est le dernier jour de votre essai gratuit de heylivo. Dès demain, Livo ne vous rappelle vos échéances qu'avec Livo Plus. Vos échéances restent enregistrées.",
+    mail3: "Votre essai gratuit de heylivo est terminé. Vos échéances restent enregistrées et consultables. Mais vous ne recevrez de nouveau des rappels qu'avec Livo Plus : d'ici là, ne comptez pas sur Livo pour vous prévenir.",
+    plus: 'Livo Plus : 11,99 € TTC pour une année entière – un seul paiement, sans abonnement, sans résiliation.',
+    button: 'Découvrir Livo Plus',
+    footer: "Vous recevez cet e-mail parce que vous avez sécurisé votre compte heylivo avec cette adresse. Vous ne souhaitez plus d'informations sur l'essai ? Répondez simplement à cet e-mail."
+  },
+  nl: {
+    endsIn: 'Je proefperiode eindigt over {n} dagen', endsTomorrow: 'Je proefperiode eindigt morgen',
+    endsToday: 'Je proefperiode eindigt vandaag', over: 'Je proefperiode is voorbij',
+    overSubject: 'Je proefperiode is voorbij – herinneringen op pauze',
+    push1: 'Met Livo Plus gaat alles gewoon door – € 11,99 per jaar, geen abonnement.',
+    push2: 'Vanaf morgen herinnert Livo je alleen nog met Livo Plus – € 11,99 per jaar.',
+    push3: 'Je deadlines zijn er nog, maar herinneringen staan op pauze. Met Livo Plus ga je verder.',
+    hi: 'Hoi!',
+    mail1: 'Je gratis proefperiode bij heylivo eindigt op {date}. Daarna blijven je deadlines bewaard en kun je ze blijven bekijken. Toevoegen, wijzigen en herinneringen krijgen kan dan alleen nog met Livo Plus.',
+    mail2: 'Vandaag is de laatste dag van je gratis proefperiode bij heylivo. Vanaf morgen herinnert Livo je alleen nog met Livo Plus aan je deadlines. Je deadlines blijven bewaard.',
+    mail3: 'Je gratis proefperiode bij heylivo is voorbij. Je deadlines zijn nog bewaard en je kunt ze bekijken. Herinneringen krijg je pas weer met Livo Plus – reken er tot dan dus niet op dat Livo zich meldt.',
+    plus: 'Livo Plus: € 11,99 incl. btw voor een heel jaar – één keer betalen, geen abonnement, niets opzeggen.',
+    button: 'Bekijk Livo Plus',
+    footer: 'Je krijgt deze e-mail omdat je je heylivo-account met dit adres hebt beveiligd. Geen berichten meer over de proefperiode? Beantwoord deze e-mail gewoon.'
+  },
+  pt: {
+    endsIn: 'O seu teste termina daqui a {n} dias', endsTomorrow: 'O seu teste termina amanhã',
+    endsToday: 'O seu teste termina hoje', over: 'O seu teste terminou',
+    overSubject: 'O seu teste terminou – lembretes em pausa',
+    push1: 'Com o Livo Plus tudo continua – 11,99 € por um ano, sem subscrição.',
+    push2: 'A partir de amanhã, o Livo só lhe lembra os prazos com o Livo Plus – 11,99 € por um ano.',
+    push3: 'Os seus prazos continuam aqui, mas os lembretes estão em pausa. Com o Livo Plus, tudo continua.',
+    hi: 'Olá!',
+    mail1: 'O seu teste gratuito do heylivo termina a {date}. Depois disso, os seus prazos continuam guardados e pode continuar a vê-los. Adicionar, alterar e receber lembretes só será possível com o Livo Plus.',
+    mail2: 'Hoje é o último dia do seu teste gratuito do heylivo. A partir de amanhã, o Livo só lhe lembra os seus prazos com o Livo Plus. Os seus prazos continuam guardados.',
+    mail3: 'O seu teste gratuito do heylivo terminou. Os seus prazos continuam guardados e pode vê-los. Mas só voltará a receber lembretes com o Livo Plus – até lá, não conte com os avisos do Livo.',
+    plus: 'Livo Plus: 11,99 € com IVA por um ano inteiro – paga uma vez, sem subscrição, sem cancelamentos.',
+    button: 'Ver o Livo Plus',
+    footer: 'Recebe este e-mail porque protegeu a sua conta heylivo com este endereço. Não quer mais avisos sobre o teste? Basta responder a este e-mail.'
+  },
+  tr: {
+    endsIn: 'Deneme süren {n} gün sonra bitiyor', endsTomorrow: 'Deneme süren yarın bitiyor',
+    endsToday: 'Deneme süren bugün bitiyor', over: 'Deneme süren bitti',
+    overSubject: 'Deneme süren bitti – hatırlatmalar duraklatıldı',
+    push1: 'Livo Plus ile her şey devam eder – yılda 11,99 €, abonelik yok.',
+    push2: 'Yarından itibaren Livo sana yalnızca Livo Plus ile hatırlatır – yılda 11,99 €.',
+    push3: 'Tarihlerin hâlâ duruyor ama hatırlatmalar duraklatıldı. Livo Plus ile devam edebilirsin.',
+    hi: 'Merhaba!',
+    mail1: "heylivo'daki ücretsiz deneme süren {date} tarihinde bitiyor. Sonrasında tarihlerin kayıtlı kalır ve onları görmeye devam edebilirsin. Ekleme, değiştirme ve hatırlatmalar ise yalnızca Livo Plus ile mümkün olur.",
+    mail2: "Bugün heylivo'daki ücretsiz deneme sürenin son günü. Yarından itibaren Livo tarihlerini sana yalnızca Livo Plus ile hatırlatır. Tarihlerin kayıtlı kalır.",
+    mail3: "heylivo'daki ücretsiz deneme süren bitti. Tarihlerin hâlâ kayıtlı ve onları görebilirsin. Ama hatırlatmaları ancak Livo Plus ile yeniden alırsın – o zamana kadar Livo'nun sana haber vermesine güvenme.",
+    plus: 'Livo Plus: Tam bir yıl için KDV dahil 11,99 € – bir kez öde, abonelik yok, iptal yok.',
+    button: "Livo Plus'a göz at",
+    footer: 'Bu e-postayı, heylivo hesabını bu adresle güvenceye aldığın için alıyorsun. Deneme süresiyle ilgili başka bildirim istemiyor musun? Bu e-postayı yanıtlaman yeterli.'
+  },
+  pl: {
+    endsIn: 'Twój okres próbny kończy się za {n} dni', endsTomorrow: 'Twój okres próbny kończy się jutro',
+    endsToday: 'Twój okres próbny kończy się dziś', over: 'Twój okres próbny się skończył',
+    overSubject: 'Twój okres próbny się skończył – przypomnienia wstrzymane',
+    push1: 'Z Livo Plus wszystko działa dalej – 11,99 € za rok, bez subskrypcji.',
+    push2: 'Od jutra Livo przypomina o terminach tylko z Livo Plus – 11,99 € za rok.',
+    push3: 'Twoje terminy nadal są zapisane, ale przypomnienia są wstrzymane. Z Livo Plus działasz dalej.',
+    hi: 'Cześć!',
+    mail1: 'Twój bezpłatny okres próbny w heylivo kończy się {date}. Potem twoje terminy zostają zapisane i nadal możesz je przeglądać. Dodawanie, zmiany i przypomnienia będą dostępne tylko z Livo Plus.',
+    mail2: 'Dziś jest ostatni dzień twojego bezpłatnego okresu próbnego w heylivo. Od jutra Livo przypomina o twoich terminach tylko z Livo Plus. Twoje terminy zostają zapisane.',
+    mail3: 'Twój bezpłatny okres próbny w heylivo się skończył. Twoje terminy są nadal zapisane i możesz je przeglądać. Przypomnienia dostaniesz jednak dopiero z Livo Plus – do tego czasu nie licz na to, że Livo się odezwie.',
+    plus: 'Livo Plus: 11,99 € z VAT za cały rok – płacisz raz, bez subskrypcji, bez wypowiadania.',
+    button: 'Zobacz Livo Plus',
+    footer: 'Dostajesz tę wiadomość, bo twoje konto heylivo jest zabezpieczone tym adresem. Nie chcesz więcej informacji o okresie próbnym? Po prostu odpowiedz na tę wiadomość.'
+  }
+};
+// </trial-text>
+
+// Gleiches Aussehen wie die Code-Mails (supabase/email-templates); {name} wird ersetzt
+// <trial-mail>
+const TRIAL_MAIL_HTML = `<!doctype html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f7fb;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f7fb;">
+<tr><td align="center" style="padding:28px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:460px;background:#ffffff;border:1px solid #e3e8f2;border-radius:18px;">
+<tr><td style="padding:26px 28px 4px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<img src="https://heylivo.com/icon.png" width="36" height="36" alt="" style="vertical-align:middle;border:0;">
+<span style="vertical-align:middle;font-size:23px;font-weight:800;letter-spacing:-0.5px;color:#0b1420;">hey<span style="color:#3062f9;">livo</span></span>
+</td></tr>
+<tr><td style="padding:18px 28px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:20px;font-weight:800;line-height:1.3;color:#0b1420;">{title}</td></tr>
+<tr><td style="padding:12px 28px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;color:#0b1420;">
+<p style="margin:0 0 10px;">{hi}</p>
+<p style="margin:0;">{text}</p>
+</td></tr>
+<tr><td style="padding:16px 28px 0;">
+<div style="padding:12px 14px;border-radius:12px;background:#eaf0ff;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#0b1420;">{plus}</div>
+</td></tr>
+<tr><td align="center" style="padding:22px 28px 6px;">
+<a href="{url}" style="display:inline-block;padding:13px 26px;border-radius:12px;background:#3062f9;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:800;color:#ffffff;text-decoration:none;">{button}</a>
+</td></tr>
+<tr><td style="padding:16px 28px 26px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#5b6475;">{footer}</td></tr>
+</table>
+<p style="margin:16px 0 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#8a93a6;"><a href="https://heylivo.com" style="color:#8a93a6;text-decoration:none;">heylivo.com</a></p>
+</td></tr>
+</table>
+</body>
+</html>`;
+// </trial-mail>
+
+function trialTx(lang: string | undefined, key: string, vars: Record<string, string | number> = {}): string {
+  const table = TRIAL_TEXT[lang ?? ''] ?? TRIAL_TEXT.en;
+  const text = (table[key] ?? TRIAL_TEXT.en[key] ?? key).replace(/\{(\w+)\}/g, (m, name) => (vars[name] != null ? String(vars[name]) : m));
+  // Französisch: geschütztes Leerzeichen vor : ? ! ;
+  return lang === 'fr' ? text.replace(/ ([:?!;])/g, `${NBSP}$1`) : text;
+}
+
+function trialStage(left: number): number {
+  if (left >= 1 && left <= NOTICE_DAYS_BEFORE) return 1;
+  if (left === 0) return 2;
+  if (left < 0 && left >= -NOTICE_DAYS_AFTER) return 3;
+  return 0;
+}
+
+function trialTitle(stage: number, left: number, lang?: string): string {
+  if (stage === 1) return left === 1 ? trialTx(lang, 'endsTomorrow') : trialTx(lang, 'endsIn', { n: left });
+  return trialTx(lang, stage === 2 ? 'endsToday' : 'over');
+}
+
+function trialPush(stage: number, left: number, lang?: string): Payload {
+  return { title: trialTitle(stage, left, lang), body: trialTx(lang, `push${stage}`), tag: 'livo-trial', url: PLUS_URL };
+}
+
+const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"]/g, (c) => HTML_ESCAPES[c]);
+}
+
+type Mail = { subject: string; html: string; text: string };
+function trialMail(stage: number, left: number, lastDay: string, lang?: string): Mail {
+  const known = lang && TRIAL_TEXT[lang] ? lang : 'en';
+  const url = `${PLUS_URL}&lang=${known}`;
+  const title = trialTitle(stage, left, known);
+  const parts: Record<string, string> = {
+    title,
+    hi: trialTx(known, 'hi'),
+    text: trialTx(known, `mail${stage}`, { date: fmt(lastDay, known) }),
+    plus: trialTx(known, 'plus'),
+    button: trialTx(known, 'button'),
+    footer: trialTx(known, 'footer')
+  };
+  const html = TRIAL_MAIL_HTML.replace(/\{(\w+)\}/g, (m, name) =>
+    name === 'lang' ? known : name === 'url' ? url : parts[name] != null ? escapeHtml(parts[name]) : m);
+  const text = `${parts.hi}\n\n${parts.text}\n\n${parts.plus}\n${parts.button}: ${url}\n\n-- \n${parts.footer}\nheylivo.com`;
+  return { subject: stage === 3 ? trialTx(known, 'overSubject') : title, html, text };
+}
+
+async function sendMail(to: string, mail: Mail): Promise<boolean> {
+  if (!RESEND_API_KEY) {
+    console.error('RESEND_API_KEY missing - no trial mail');
+    return false;
+  }
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: MAIL_FROM, to: [to], reply_to: MAIL_REPLY_TO, subject: mail.subject, html: mail.html, text: mail.text,
+        // Abbestellen per Antwort-Mail, wie in der Fußzeile beschrieben
+        headers: { 'List-Unsubscribe': `<mailto:${MAIL_REPLY_TO}?subject=Stop>` }
+      })
+    });
+    if (!response.ok) console.error('Trial mail failed', response.status, await response.text());
+    return response.ok;
+  } catch (error) {
+    console.error('Trial mail failed', error);
+    return false;
+  }
+}
+
+type TrialRow = { user_id: string; trial_started: string; trial_notice: number | null };
+
+async function runTrialNotices(today: string) {
+  const rows = await fetchAll<TrialRow>((a, b) => supabase.from('usage')
+    .select('user_id, trial_started, trial_notice')
+    .gte('trial_started', addDays(today, -TRIAL_DAYS - NOTICE_DAYS_AFTER))
+    .lte('trial_started', addDays(today, NOTICE_DAYS_BEFORE - TRIAL_DAYS))
+    .order('user_id').range(a, b));
+  const due = rows.map((row) => {
+    const lastDay = addDays(row.trial_started, TRIAL_DAYS);
+    const left = daysBetween(today, lastDay);
+    return { ...row, lastDay, left, stage: trialStage(left) };
+  }).filter((row) => row.stage > (row.trial_notice ?? 0));
+  if (!due.length) return { notices: 0, pushes: 0, mails: 0 };
+
+  // Wer Livo Plus hat, braucht keinen Hinweis
+  const plus = new Set((await fetchAll<{ user_id: string }>((a, b) => supabase.from('plans')
+    .select('user_id').gte('plus_until', today).order('user_id').range(a, b))).map((row) => row.user_id));
+  const open = due.filter((row) => !plus.has(row.user_id));
+  const subs = await subscriptionsOf(open.map((row) => row.user_id));
+
+  let notices = 0, pushes = 0, mails = 0;
+  for (const row of open) {
+    const targets = subs.filter((sub) => sub.user_id === row.user_id);
+    const { data } = await supabase.auth.admin.getUserById(row.user_id);
+    const user = data?.user;
+    const email = user && !user.is_anonymous && user.email ? user.email : '';
+    const pushed = targets.length ? await deliver(targets, trialPush(row.stage, row.left, targets[0].lang)) : 0;
+    const lang = (user?.user_metadata?.lang as string | undefined) ?? targets[0]?.lang;
+    const mailed = email ? await sendMail(email, trialMail(row.stage, row.left, row.lastDay, lang)) : false;
+    if (!pushed && !mailed) continue;
+    notices++;
+    pushes += pushed;
+    if (mailed) mails++;
+    await supabase.from('usage').update({ trial_notice: row.stage }).eq('user_id', row.user_id);
+  }
+  return { notices, pushes, mails };
+}
+
+function errorText(error: unknown): string {
+  return String((error as { message?: string })?.message ?? error);
+}
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
@@ -424,11 +746,28 @@ Deno.serve(async (request) => {
 
   if (body.action === 'run' || body.action === 'soon') {
     if (!CRON_SECRET || request.headers.get('x-cron-secret') !== CRON_SECRET) return json({ error: 'Not allowed.' }, 401);
-    try {
-      return json(body.action === 'run' ? await runReminders() : await runSoon());
-    } catch (error) {
-      return json({ error: String((error as { message?: string })?.message ?? error) }, 500);
+    if (body.action === 'soon') {
+      try {
+        return json(await runSoon());
+      } catch (error) {
+        return json({ error: errorText(error) }, 500);
+      }
     }
+    // Erinnerungen und Hinweise zur Testphase getrennt - ein Fehler im einen Teil hält den anderen nicht auf
+    let reminders: unknown, trial: unknown, failed = false;
+    try {
+      reminders = await runReminders();
+    } catch (error) {
+      failed = true;
+      reminders = { error: errorText(error) };
+    }
+    try {
+      trial = await runTrialNotices(berlinToday());
+    } catch (error) {
+      failed = true;
+      trial = { error: errorText(error) };
+    }
+    return json({ reminders, trial }, failed ? 500 : 200);
   }
 
   if (body.action === 'test') {
