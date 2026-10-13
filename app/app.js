@@ -736,7 +736,9 @@ function setupLanguage() {
   btn.setAttribute("aria-label", t("lang"));
   document.getElementById("langCode").textContent = LANG.toUpperCase();
   list.innerHTML = Object.keys(LANGS).map(function (code) {
-    return '<li role="option"' + (code === LANG ? ' aria-selected="true"' : "") + '><button type="button" data-lang="' + code + '" lang="' + code + '">' + esc(LANGS[code]) + '</button></li>';
+    // Nur das Kürzel (DE, EL, EN …); der Name steht im Tooltip und für Bildschirmleser
+    return '<li role="option"' + (code === LANG ? ' aria-selected="true"' : "") + '><button type="button" data-lang="' + code + '" lang="' + code + '"' +
+      ' title="' + esc(LANGS[code]) + '" aria-label="' + esc(LANGS[code]) + '">' + code.toUpperCase() + '</button></li>';
   }).join("");
   function open(yes) {
     list.hidden = !yes;

@@ -40,7 +40,7 @@ body.lock { overflow: hidden; }
 .langbtn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .langbtn .chev { width: 13px; height: 13px; color: var(--muted); transition: transform .15s; }
 .langbtn[aria-expanded="true"] .chev { transform: rotate(180deg); }
-.langlist { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; width: 210px; max-height: min(290px, 60vh); overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 6px; list-style: none; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(15,23,42,.35); scrollbar-width: thin; scrollbar-color: #cdd6ee transparent; }
+.langlist { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; width: 112px; max-height: min(290px, 60vh); overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 6px; list-style: none; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(15,23,42,.35); scrollbar-width: thin; scrollbar-color: #cdd6ee transparent; }
 .langlist[hidden] { display: none; }
 .langlist::-webkit-scrollbar { width: 6px; }
 .langlist::-webkit-scrollbar-thumb { border-radius: 3px; background: #cdd6ee; }
