@@ -3,9 +3,10 @@
 // sonst Englisch. Neue Sprache = Eintrag in LANGS + Texte in TXT + Vorlagen-Texte
 // (templates.js) + Wörterbuch fürs Verstehen (voice.js).
 
+// Reihenfolge = Auswahl oben rechts: alphabetisch, Ελληνικά als "Elliniká" (wie die Kürzel)
 var LANGS = {
-  de: "Deutsch", en: "English", es: "Español", fr: "Français", it: "Italiano", nl: "Nederlands",
-  pl: "Polski", pt: "Português", tr: "Türkçe", el: "Ελληνικά"
+  de: "Deutsch", el: "Ελληνικά", en: "English", es: "Español", fr: "Français", it: "Italiano",
+  nl: "Nederlands", pl: "Polski", pt: "Português", tr: "Türkçe"
 };
 var LOCALES = {
   de: "de-DE", en: "en-GB", es: "es-ES", fr: "fr-FR", it: "it-IT", nl: "nl-NL",
