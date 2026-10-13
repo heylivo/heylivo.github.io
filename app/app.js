@@ -19,7 +19,7 @@ var trialStarted = null; // "JJJJ-MM-TT" oder null = Testphase noch nicht begonn
 var userId = "";         // Konto dieses Browsers - geht beim Kauf als client_reference_id an Stripe (userEmail: account.js)
 // Stripe-Zahlungslink für Livo Plus (11,99 € inkl. MwSt., 1 Jahr, ohne Verlängerung).
 // Leer = Kauf noch nicht freigeschaltet ("kommt bald"). Der Webhook stripe-webhook schaltet frei.
-var PLUS_LINK = "";
+var PLUS_LINK = "https://buy.stripe.com/aFaaEY2IJfXO6Vv3Fz7g400";
 
 /* ---------- Speicher ---------- */
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
