@@ -110,6 +110,7 @@ var TXT = {
     "acc.otherDevice": "Neues Handy oder anderer Browser? Öffne heylivo, tippe oben auf „Anmelden“ und gib diese E-Mail-Adresse ein.",
     "acc.signout": "Auf diesem Gerät abmelden", "acc.signoutConfirm": "Auf diesem Gerät abmelden? Deine Fristen bleiben in deinem Konto gespeichert.",
     "plus.secureFirst": "Bitte sichere vorher dein Konto. Dann gehört Livo Plus fest zu deiner E-Mail-Adresse und geht nicht verloren.",
+    "legal.imprint": "Impressum", "legal.privacy": "Datenschutz", "legal.terms": "AGB",
     "lang": "Sprache"
   },
   en: {
@@ -160,7 +161,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – €11.99 incl. VAT for 1 year</b> (less than €1 a month)<br>✓ Unlimited deadlines<br>✓ Reminders on your phone<br>✓ Add by voice: “Hey Livo …”<br>✓ Complete, edit, renew",
     "plus.kept": "Your deadlines are kept and you can still view them.",
     "plus.buy": "Buy Livo Plus – €11.99", "plus.extend": "Extend by 1 year – €11.99", "plus.soon": "Livo Plus is coming soon",
-    "plus.legal": "One-off payment, does not renew automatically. Livo Plus applies to your secured account. Our <a href=\"../agb.html\" target=\"_blank\">terms</a> (incl. right of withdrawal) and <a href=\"../datenschutz.html\" target=\"_blank\">privacy policy</a> apply. Payment is handled securely by Stripe.",
+    "plus.legal": "One-off payment, does not renew automatically. Livo Plus applies to your secured account. Our <a href=\"../en/terms.html\" target=\"_blank\">terms</a> (incl. right of withdrawal) and <a href=\"../en/privacy.html\" target=\"_blank\">privacy policy</a> apply. Payment is handled securely by Stripe.",
     "toast.thanks": "Thank you! Livo Plus is being activated …", "toast.plusActive": "Livo Plus is active until {date} ✓", "toast.plusPending": "Your payment has arrived – Plus will show up shortly. Reload the page in a minute.",
     "push.card": "Turn on reminders", "push.cardSub": "Livo gets in touch by itself when a deadline is coming up.",
     "push.ios": "<b>🔔 Reminders on iPhone:</b> tap <b>Share</b> at the bottom (square with an arrow), then <b>“Add to Home Screen”</b>. Then open heylivo from the new icon – you can turn reminders on there.",
@@ -186,6 +187,7 @@ var TXT = {
     "acc.otherDevice": "New phone or another browser? Open heylivo, tap “Sign in” at the top and enter this email address.",
     "acc.signout": "Sign out on this device", "acc.signoutConfirm": "Sign out on this device? Your deadlines stay saved in your account.",
     "plus.secureFirst": "Please secure your account first. Then Livo Plus belongs to your email address and can't get lost.",
+    "legal.imprint": "Legal notice", "legal.privacy": "Privacy", "legal.terms": "Terms",
     "lang": "Language"
   },
   it: {
@@ -236,7 +238,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – 11,99 € IVA inclusa per 1 anno</b> (meno di 1 € al mese)<br>✓ Scadenze illimitate<br>✓ Promemoria sul telefono<br>✓ Aggiungi a voce: “Hey Livo …”<br>✓ Completa, modifica, rinnova",
     "plus.kept": "Le tue scadenze restano e puoi continuare a vederle.",
     "plus.buy": "Acquista Livo Plus – 11,99 €", "plus.extend": "Prolunga di 1 anno – 11,99 €", "plus.soon": "Livo Plus arriva presto",
-    "plus.legal": "Pagamento unico, non si rinnova automaticamente. Livo Plus vale per il tuo account protetto. Si applicano le nostre <a href=\"../agb.html\" target=\"_blank\">condizioni</a> (con diritto di recesso) e l'<a href=\"../datenschutz.html\" target=\"_blank\">informativa sulla privacy</a>. Il pagamento avviene in modo sicuro tramite Stripe.",
+    "plus.legal": "Pagamento unico, non si rinnova automaticamente. Livo Plus vale per il tuo account protetto. Si applicano le nostre <a href=\"../en/terms.html\" target=\"_blank\">condizioni</a> (con diritto di recesso) e l'<a href=\"../en/privacy.html\" target=\"_blank\">informativa sulla privacy</a>. Il pagamento avviene in modo sicuro tramite Stripe.",
     "toast.thanks": "Grazie! Livo Plus si sta attivando …", "toast.plusActive": "Livo Plus è attivo fino al {date} ✓", "toast.plusPending": "Il pagamento è arrivato – Plus apparirà a breve. Ricarica la pagina tra un minuto.",
     "push.card": "Attiva i promemoria", "push.cardSub": "Livo ti avvisa da solo quando una scadenza si avvicina.",
     "push.ios": "<b>🔔 Promemoria su iPhone:</b> tocca <b>Condividi</b> in basso (quadrato con freccia), poi <b>“Aggiungi alla schermata Home”</b>. Apri poi heylivo dalla nuova icona – lì puoi attivare i promemoria.",
@@ -262,6 +264,7 @@ var TXT = {
     "acc.otherDevice": "Nuovo telefono o un altro browser? Apri heylivo, tocca “Accedi” in alto e inserisci questo indirizzo email.",
     "acc.signout": "Esci su questo dispositivo", "acc.signoutConfirm": "Uscire su questo dispositivo? Le tue scadenze restano salvate nel tuo account.",
     "plus.secureFirst": "Prima proteggi il tuo account. Così Livo Plus resta legato al tuo indirizzo email e non va perso.",
+    "legal.imprint": "Note legali", "legal.privacy": "Privacy", "legal.terms": "Termini",
     "lang": "Lingua"
   },
   el: {
@@ -312,7 +315,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – 11,99 € με ΦΠΑ για 1 χρόνο</b> (λιγότερο από 1 € τον μήνα)<br>✓ Απεριόριστες προθεσμίες<br>✓ Υπενθυμίσεις στο κινητό<br>✓ Καταχώριση με φωνή: «Hey Livo …»<br>✓ Ολοκλήρωση, αλλαγή, ανανέωση",
     "plus.kept": "Οι προθεσμίες σου μένουν και μπορείς να τις βλέπεις.",
     "plus.buy": "Αγορά Livo Plus – 11,99 €", "plus.extend": "Παράταση 1 χρόνου – 11,99 €", "plus.soon": "Το Livo Plus έρχεται σύντομα",
-    "plus.legal": "Εφάπαξ πληρωμή, δεν ανανεώνεται αυτόματα. Το Livo Plus ισχύει για τον ασφαλισμένο λογαριασμό σου. Ισχύουν οι <a href=\"../agb.html\" target=\"_blank\">όροι</a> μας (με δικαίωμα υπαναχώρησης) και η <a href=\"../datenschutz.html\" target=\"_blank\">πολιτική απορρήτου</a>. Η πληρωμή γίνεται με ασφάλεια μέσω Stripe.",
+    "plus.legal": "Εφάπαξ πληρωμή, δεν ανανεώνεται αυτόματα. Το Livo Plus ισχύει για τον ασφαλισμένο λογαριασμό σου. Ισχύουν οι <a href=\"../en/terms.html\" target=\"_blank\">όροι</a> μας (με δικαίωμα υπαναχώρησης) και η <a href=\"../en/privacy.html\" target=\"_blank\">πολιτική απορρήτου</a>. Η πληρωμή γίνεται με ασφάλεια μέσω Stripe.",
     "toast.thanks": "Ευχαριστούμε! Το Livo Plus ενεργοποιείται …", "toast.plusActive": "Το Livo Plus είναι ενεργό έως {date} ✓", "toast.plusPending": "Η πληρωμή έφτασε – το Plus θα εμφανιστεί σε λίγο. Φόρτωσε ξανά τη σελίδα σε ένα λεπτό.",
     "push.card": "Ενεργοποίηση υπενθυμίσεων", "push.cardSub": "Το Livo σε ειδοποιεί μόνο του όταν πλησιάζει μια προθεσμία.",
     "push.ios": "<b>🔔 Υπενθυμίσεις στο iPhone:</b> πάτα κάτω <b>Κοινοποίηση</b> (τετράγωνο με βέλος) και μετά <b>«Προσθήκη στην οθόνη Αφετηρίας»</b>. Άνοιξε μετά το heylivo από το νέο εικονίδιο – εκεί μπορείς να ενεργοποιήσεις τις υπενθυμίσεις.",
@@ -338,6 +341,7 @@ var TXT = {
     "acc.otherDevice": "Νέο κινητό ή άλλος browser; Άνοιξε το heylivo, πάτα «Σύνδεση» επάνω και γράψε αυτό το email.",
     "acc.signout": "Αποσύνδεση σε αυτή τη συσκευή", "acc.signoutConfirm": "Αποσύνδεση σε αυτή τη συσκευή; Οι προθεσμίες σου μένουν αποθηκευμένες στον λογαριασμό σου.",
     "plus.secureFirst": "Ασφάλισε πρώτα τον λογαριασμό σου. Έτσι το Livo Plus ανήκει στο email σου και δεν χάνεται.",
+    "legal.imprint": "Νομικές πληροφορίες", "legal.privacy": "Απόρρητο", "legal.terms": "Όροι",
     "lang": "Γλώσσα"
   },
   es: {
@@ -388,7 +392,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – 11,99 € IVA incluido por 1 año</b> (menos de 1 € al mes)<br>✓ Plazos ilimitados<br>✓ Avisos en el móvil<br>✓ Añadir por voz: “Hey Livo …”<br>✓ Completar, cambiar, renovar",
     "plus.kept": "Tus plazos se conservan y puedes seguir viéndolos.",
     "plus.buy": "Comprar Livo Plus – 11,99 €", "plus.extend": "Ampliar 1 año – 11,99 €", "plus.soon": "Livo Plus llegará pronto",
-    "plus.legal": "Pago único, no se renueva automáticamente. Livo Plus vale para tu cuenta asegurada. Se aplican nuestras <a href=\"../agb.html\" target=\"_blank\">condiciones</a> (con derecho de desistimiento) y la <a href=\"../datenschutz.html\" target=\"_blank\">política de privacidad</a>. El pago se hace de forma segura con Stripe.",
+    "plus.legal": "Pago único, no se renueva automáticamente. Livo Plus vale para tu cuenta asegurada. Se aplican nuestras <a href=\"../en/terms.html\" target=\"_blank\">condiciones</a> (con derecho de desistimiento) y la <a href=\"../en/privacy.html\" target=\"_blank\">política de privacidad</a>. El pago se hace de forma segura con Stripe.",
     "toast.thanks": "¡Gracias! Livo Plus se está activando …", "toast.plusActive": "Livo Plus está activo hasta el {date} ✓", "toast.plusPending": "El pago ha llegado – Plus aparecerá enseguida. Recarga la página en un minuto.",
     "push.card": "Activar avisos", "push.cardSub": "Livo te avisa solo cuando se acerca un plazo.",
     "push.ios": "<b>🔔 Avisos en iPhone:</b> toca abajo <b>Compartir</b> (cuadrado con flecha) y luego <b>“Añadir a pantalla de inicio”</b>. Después abre heylivo desde el nuevo icono – allí puedes activar los avisos.",
@@ -414,6 +418,7 @@ var TXT = {
     "acc.otherDevice": "¿Móvil nuevo u otro navegador? Abre heylivo, toca “Iniciar sesión” arriba y escribe este correo electrónico.",
     "acc.signout": "Cerrar sesión en este dispositivo", "acc.signoutConfirm": "¿Cerrar sesión en este dispositivo? Tus plazos siguen guardados en tu cuenta.",
     "plus.secureFirst": "Primero asegura tu cuenta. Así Livo Plus queda ligado a tu correo electrónico y no se pierde.",
+    "legal.imprint": "Aviso legal", "legal.privacy": "Privacidad", "legal.terms": "Condiciones",
     "lang": "Idioma"
   },
   fr: {
@@ -464,7 +469,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – 11,99 € TTC pour 1 an</b> (moins de 1 € par mois)<br>✓ Échéances illimitées<br>✓ Rappels sur votre téléphone<br>✓ Ajout à la voix : « Hey Livo … »<br>✓ Terminer, modifier, renouveler",
     "plus.kept": "Vos échéances sont conservées et restent consultables.",
     "plus.buy": "Acheter Livo Plus – 11,99 €", "plus.extend": "Prolonger d'un an – 11,99 €", "plus.soon": "Livo Plus arrive bientôt",
-    "plus.legal": "Paiement unique, sans renouvellement automatique. Livo Plus s'applique à votre compte sécurisé. Nos <a href=\"../agb.html\" target=\"_blank\">conditions</a> (avec droit de rétractation) et notre <a href=\"../datenschutz.html\" target=\"_blank\">politique de confidentialité</a> s'appliquent. Le paiement est sécurisé par Stripe.",
+    "plus.legal": "Paiement unique, sans renouvellement automatique. Livo Plus s'applique à votre compte sécurisé. Nos <a href=\"../en/terms.html\" target=\"_blank\">conditions</a> (avec droit de rétractation) et notre <a href=\"../en/privacy.html\" target=\"_blank\">politique de confidentialité</a> s'appliquent. Le paiement est sécurisé par Stripe.",
     "toast.thanks": "Merci ! Livo Plus est en cours d'activation …", "toast.plusActive": "Livo Plus est actif jusqu'au {date} ✓", "toast.plusPending": "Le paiement est arrivé – Plus va apparaître. Rechargez la page dans une minute.",
     "push.card": "Activer les rappels", "push.cardSub": "Livo vous prévient tout seul quand une échéance approche.",
     "push.ios": "<b>🔔 Rappels sur iPhone :</b> touchez <b>Partager</b> en bas (carré avec une flèche), puis <b>« Sur l'écran d'accueil »</b>. Ouvrez ensuite heylivo depuis la nouvelle icône – vous pourrez y activer les rappels.",
@@ -490,6 +495,7 @@ var TXT = {
     "acc.otherDevice": "Nouveau téléphone ou autre navigateur ? Ouvrez heylivo, touchez « Se connecter » en haut et saisissez cette adresse e-mail.",
     "acc.signout": "Se déconnecter sur cet appareil", "acc.signoutConfirm": "Se déconnecter sur cet appareil ? Vos échéances restent enregistrées dans votre compte.",
     "plus.secureFirst": "Veuillez d'abord sécuriser votre compte. Ainsi, Livo Plus est lié à votre adresse e-mail et ne peut pas se perdre.",
+    "legal.imprint": "Mentions légales", "legal.privacy": "Confidentialité", "legal.terms": "Conditions",
     "lang": "Langue"
   },
   nl: {
@@ -540,7 +546,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – € 11,99 incl. btw voor 1 jaar</b> (minder dan € 1 per maand)<br>✓ Onbeperkt deadlines<br>✓ Herinneringen op je telefoon<br>✓ Toevoegen met je stem: “Hey Livo …”<br>✓ Afvinken, wijzigen, verlengen",
     "plus.kept": "Je deadlines blijven bewaard en je kunt ze blijven bekijken.",
     "plus.buy": "Livo Plus kopen – € 11,99", "plus.extend": "Met 1 jaar verlengen – € 11,99", "plus.soon": "Livo Plus komt binnenkort",
-    "plus.legal": "Eenmalige betaling, wordt niet automatisch verlengd. Livo Plus geldt voor je beveiligde account. Onze <a href=\"../agb.html\" target=\"_blank\">voorwaarden</a> (met herroepingsrecht) en <a href=\"../datenschutz.html\" target=\"_blank\">privacyverklaring</a> zijn van toepassing. Je betaalt veilig via Stripe.",
+    "plus.legal": "Eenmalige betaling, wordt niet automatisch verlengd. Livo Plus geldt voor je beveiligde account. Onze <a href=\"../en/terms.html\" target=\"_blank\">voorwaarden</a> (met herroepingsrecht) en <a href=\"../en/privacy.html\" target=\"_blank\">privacyverklaring</a> zijn van toepassing. Je betaalt veilig via Stripe.",
     "toast.thanks": "Bedankt! Livo Plus wordt geactiveerd …", "toast.plusActive": "Livo Plus is actief tot {date} ✓", "toast.plusPending": "De betaling is binnen – Plus verschijnt zo. Laad de pagina over een minuut opnieuw.",
     "push.card": "Herinneringen aanzetten", "push.cardSub": "Livo laat vanzelf van zich horen als een deadline dichterbij komt.",
     "push.ios": "<b>🔔 Herinneringen op iPhone:</b> tik onderaan op <b>Deel</b> (vierkant met pijl) en dan op <b>“Zet op beginscherm”</b>. Open heylivo daarna via het nieuwe icoon – daar kun je de herinneringen aanzetten.",
@@ -566,6 +572,7 @@ var TXT = {
     "acc.otherDevice": "Nieuwe telefoon of een andere browser? Open heylivo, tik bovenaan op “Inloggen” en vul dit e-mailadres in.",
     "acc.signout": "Uitloggen op dit apparaat", "acc.signoutConfirm": "Uitloggen op dit apparaat? Je deadlines blijven in je account opgeslagen.",
     "plus.secureFirst": "Beveilig eerst je account. Dan hoort Livo Plus bij je e-mailadres en raakt het niet kwijt.",
+    "legal.imprint": "Colofon", "legal.privacy": "Privacy", "legal.terms": "Voorwaarden",
     "lang": "Taal"
   },
   pt: {
@@ -616,7 +623,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – 11,99 € com IVA por 1 ano</b> (menos de 1 € por mês)<br>✓ Prazos ilimitados<br>✓ Lembretes no telemóvel<br>✓ Adicionar por voz: “Hey Livo …”<br>✓ Concluir, alterar, renovar",
     "plus.kept": "Os seus prazos mantêm-se e pode continuar a vê-los.",
     "plus.buy": "Comprar Livo Plus – 11,99 €", "plus.extend": "Prolongar 1 ano – 11,99 €", "plus.soon": "O Livo Plus chega em breve",
-    "plus.legal": "Pagamento único, não se renova automaticamente. O Livo Plus vale para a sua conta protegida. Aplicam-se os nossos <a href=\"../agb.html\" target=\"_blank\">termos</a> (com direito de livre resolução) e a <a href=\"../datenschutz.html\" target=\"_blank\">política de privacidade</a>. O pagamento é feito com segurança através da Stripe.",
+    "plus.legal": "Pagamento único, não se renova automaticamente. O Livo Plus vale para a sua conta protegida. Aplicam-se os nossos <a href=\"../en/terms.html\" target=\"_blank\">termos</a> (com direito de livre resolução) e a <a href=\"../en/privacy.html\" target=\"_blank\">política de privacidade</a>. O pagamento é feito com segurança através da Stripe.",
     "toast.thanks": "Obrigado! O Livo Plus está a ser ativado …", "toast.plusActive": "O Livo Plus está ativo até {date} ✓", "toast.plusPending": "O pagamento chegou – o Plus aparece já a seguir. Recarregue a página dentro de um minuto.",
     "push.card": "Ativar lembretes", "push.cardSub": "O Livo avisa sozinho quando um prazo se aproxima.",
     "push.ios": "<b>🔔 Lembretes no iPhone:</b> toque em <b>Partilhar</b> em baixo (quadrado com seta) e depois em <b>“Adicionar ao ecrã principal”</b>. Abra depois o heylivo pelo novo ícone – aí pode ativar os lembretes.",
@@ -642,6 +649,7 @@ var TXT = {
     "acc.otherDevice": "Telemóvel novo ou outro navegador? Abra o heylivo, toque em “Iniciar sessão” no topo e introduza este e-mail.",
     "acc.signout": "Terminar sessão neste dispositivo", "acc.signoutConfirm": "Terminar sessão neste dispositivo? Os seus prazos continuam guardados na sua conta.",
     "plus.secureFirst": "Proteja primeiro a sua conta. Assim, o Livo Plus fica ligado ao seu e-mail e não se perde.",
+    "legal.imprint": "Aviso legal", "legal.privacy": "Privacidade", "legal.terms": "Termos",
     "lang": "Idioma"
   },
   tr: {
@@ -692,7 +700,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – 1 yıl için KDV dahil 11,99 €</b> (ayda 1 €'dan az)<br>✓ Sınırsız tarih<br>✓ Telefona hatırlatmalar<br>✓ Sesle ekle: “Hey Livo …”<br>✓ Tamamla, değiştir, yenile",
     "plus.kept": "Tarihlerin silinmez ve görmeye devam edebilirsin.",
     "plus.buy": "Livo Plus satın al – 11,99 €", "plus.extend": "1 yıl uzat – 11,99 €", "plus.soon": "Livo Plus yakında geliyor",
-    "plus.legal": "Tek seferlik ödeme, otomatik yenilenmez. Livo Plus güvenceye alınmış hesabın için geçerlidir. <a href=\"../agb.html\" target=\"_blank\">Koşullarımız</a> (cayma hakkı dahil) ve <a href=\"../datenschutz.html\" target=\"_blank\">gizlilik politikamız</a> geçerlidir. Ödeme Stripe üzerinden güvenle yapılır.",
+    "plus.legal": "Tek seferlik ödeme, otomatik yenilenmez. Livo Plus güvenceye alınmış hesabın için geçerlidir. <a href=\"../en/terms.html\" target=\"_blank\">Koşullarımız</a> (cayma hakkı dahil) ve <a href=\"../en/privacy.html\" target=\"_blank\">gizlilik politikamız</a> geçerlidir. Ödeme Stripe üzerinden güvenle yapılır.",
     "toast.thanks": "Teşekkürler! Livo Plus etkinleştiriliyor …", "toast.plusActive": "Livo Plus {date} tarihine kadar aktif ✓", "toast.plusPending": "Ödeme ulaştı – Plus birazdan görünecek. Sayfayı bir dakika sonra yenile.",
     "push.card": "Hatırlatmaları aç", "push.cardSub": "Bir tarih yaklaştığında Livo kendiliğinden haber verir.",
     "push.ios": "<b>🔔 iPhone'da hatırlatmalar:</b> aşağıdaki <b>Paylaş</b> düğmesine (oklu kare), sonra <b>“Ana Ekrana Ekle”</b> seçeneğine dokun. Ardından heylivo'yu yeni simgeden aç – hatırlatmaları orada açabilirsin.",
@@ -718,6 +726,7 @@ var TXT = {
     "acc.otherDevice": "Yeni telefon ya da başka bir tarayıcı mı? heylivo'yu aç, yukarıda “Giriş yap”a dokun ve bu e-posta adresini yaz.",
     "acc.signout": "Bu cihazda çıkış yap", "acc.signoutConfirm": "Bu cihazda çıkış yapılsın mı? Tarihlerin hesabında kayıtlı kalır.",
     "plus.secureFirst": "Lütfen önce hesabını güvenceye al. Böylece Livo Plus e-posta adresine bağlı olur ve kaybolmaz.",
+    "legal.imprint": "Künye", "legal.privacy": "Gizlilik", "legal.terms": "Koşullar",
     "lang": "Dil"
   },
   pl: {
@@ -770,7 +779,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – 11,99 € z VAT za 1 rok</b> (mniej niż 1 € miesięcznie)<br>✓ Bez limitu terminów<br>✓ Przypomnienia na telefon<br>✓ Dodawanie głosem: „Hey Livo …”<br>✓ Odhaczanie, zmiany, odnawianie",
     "plus.kept": "Twoje terminy zostają i nadal możesz je przeglądać.",
     "plus.buy": "Kup Livo Plus – 11,99 €", "plus.extend": "Przedłuż o 1 rok – 11,99 €", "plus.soon": "Livo Plus już wkrótce",
-    "plus.legal": "Płatność jednorazowa, nie odnawia się automatycznie. Livo Plus obejmuje twoje zabezpieczone konto. Obowiązują nasze <a href=\"../agb.html\" target=\"_blank\">warunki</a> (z prawem odstąpienia) i <a href=\"../datenschutz.html\" target=\"_blank\">polityka prywatności</a>. Płatność jest bezpiecznie obsługiwana przez Stripe.",
+    "plus.legal": "Płatność jednorazowa, nie odnawia się automatycznie. Livo Plus obejmuje twoje zabezpieczone konto. Obowiązują nasze <a href=\"../en/terms.html\" target=\"_blank\">warunki</a> (z prawem odstąpienia) i <a href=\"../en/privacy.html\" target=\"_blank\">polityka prywatności</a>. Płatność jest bezpiecznie obsługiwana przez Stripe.",
     "toast.thanks": "Dziękujemy! Livo Plus jest włączane …", "toast.plusActive": "Livo Plus aktywne do {date} ✓", "toast.plusPending": "Płatność dotarła – Plus zaraz się pojawi. Odśwież stronę za minutę.",
     "push.card": "Włącz przypomnienia", "push.cardSub": "Livo samo da znać, gdy zbliża się termin.",
     "push.ios": "<b>🔔 Przypomnienia na iPhonie:</b> dotknij na dole <b>Udostępnij</b> (kwadrat ze strzałką), a potem <b>„Do ekranu początkowego”</b>. Następnie otwórz heylivo z nowej ikony – tam włączysz przypomnienia.",
@@ -796,6 +805,7 @@ var TXT = {
     "acc.otherDevice": "Nowy telefon albo inna przeglądarka? Otwórz heylivo, dotknij u góry „Zaloguj się” i wpisz ten adres e-mail.",
     "acc.signout": "Wyloguj się na tym urządzeniu", "acc.signoutConfirm": "Wylogować się na tym urządzeniu? Twoje terminy zostają zapisane na twoim koncie.",
     "plus.secureFirst": "Najpierw zabezpiecz konto. Wtedy Livo Plus jest powiązane z twoim adresem e-mail i nie przepadnie.",
+    "legal.imprint": "Nota prawna", "legal.privacy": "Prywatność", "legal.terms": "Regulamin",
     "lang": "Język"
   }
 };

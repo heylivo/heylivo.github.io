@@ -58,7 +58,10 @@ body.lock { overflow: hidden; }
 .proto b { word-break: break-all; }
 
 /* Liste */
-main { padding-bottom: 110px; }
+main { padding-bottom: 24px; }
+/* Impressum · Datenschutz · AGB ganz unten; der Abstand darunter hält den Plus-Knopf frei */
+.applinks { padding: 4px 4px 110px; color: var(--muted); font-size: 12px; }
+.applinks a { margin-right: 14px; color: var(--muted); }
 .sec { display: flex; align-items: center; gap: 8px; margin: 22px 4px 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .sec-now { color: var(--now); }
 .sec span { background: var(--now); color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; letter-spacing: 0; }

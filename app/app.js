@@ -758,6 +758,13 @@ function setupLanguage() {
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") open(false); });
   document.querySelector(".fab").setAttribute("aria-label", t("add"));
   document.getElementById("brand").href = LANG === "de" ? "../" : "../en/";
+  // Rechtliches unten: Deutsch auf die deutschen Seiten, alle anderen Sprachen auf die englischen
+  var links = document.getElementById("appLinks"), de = LANG === "de";
+  if (links) links.innerHTML = [
+    [de ? "../impressum.html" : "../en/imprint.html", "legal.imprint"],
+    [de ? "../datenschutz.html" : "../en/privacy.html", "legal.privacy"],
+    [de ? "../agb.html" : "../en/terms.html", "legal.terms"]
+  ].map(function (l) { return '<a href="' + l[0] + '">' + esc(t(l[1])) + '</a>'; }).join("");
 }
 
 /* ---------- Start ---------- */
