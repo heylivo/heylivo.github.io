@@ -116,7 +116,7 @@ async function sendCode(btn, again) {
     return;
   }
   if (accFlow.mode === "secure" && (err.code === "email_exists" || /already (been )?registered/i.test(msg))) {
-    accFlow = { mode: "signin", email: accFlow.email, sent: false };
+    accFlow = { mode: "signin", email: accFlow.email, sent: false, then: accFlow.then };
     return showEmail(t("acc.errExists"));
   }
   var text = accFlow.mode === "signin" && (err.code === "otp_disabled" || /signups not allowed/i.test(msg)) ? t("acc.errNoAccount")
@@ -146,14 +146,17 @@ async function verifyCode(code, btn) {
 }
 
 function secured(user) {
+  var then = accFlow && accFlow.then;
   setUser(user);
   accFlow = null;
   closeSheet();
   render();
   toast(t("acc.secured"));
+  if (then === "plus") showPlus(); // vom Kauf-Fenster aus gesichert: gleich weiter zum Kauf
 }
 
 async function signedIn(user, carry) {
+  var then = accFlow && accFlow.then;
   setUser(user);
   accFlow = null;
   try { await sb.auth.updateUser({ data: { lang: LANG } }); } catch (e) { /* nur die Sprache der Mails */ }
@@ -170,6 +173,7 @@ async function signedIn(user, carry) {
   closeSheet();
   render();
   toast(moved ? t("acc.welcomeCarry", { n: moved }) : t("acc.welcome"));
+  if (then === "plus") showPlus();
   // Das Push-Abo dieses Geräts gehört noch dem anonymen Konto - initPush holt dann ein neues
   initPush().then(render, render);
 }

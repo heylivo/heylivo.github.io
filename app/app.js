@@ -161,11 +161,13 @@ function voicebarHTML() {
 function statusHTML() {
   if (DEMO) return "";
   if (isPlus()) return '<p class="quota">' + t("status.plus", { date: fmt(fromISO(plusUntil)) }) + '</p>';
+  // Kaufen geht jederzeit - auch schon, bevor die erste Frist die Testphase startet
+  var buy = ' · <button type="button" class="linkbtn" data-act="plus">Livo Plus</button>';
   var left = trialDaysLeft();
-  if (left === null) return '<p class="quota">' + t("status.trialStart", { n: TRIAL_DAYS }) + '</p>';
+  if (left === null) return '<p class="quota">' + t("status.trialStart", { n: TRIAL_DAYS }) + buy + '</p>';
   if (left >= 0) {
     return '<p class="quota">' + t("status.trial") + " " + (left === 0 ? t("status.today") : left === 1 ? t("status.left1") : t("status.left", { n: left })) +
-      ' · <button type="button" class="linkbtn" data-act="plus">Livo Plus</button></p>';
+      buy + '</p>';
   }
   return '<button type="button" class="expired" data-act="plus">' + t("status.expired") + '</button>';
 }
@@ -641,7 +643,7 @@ function showPlus() {
     (over ? '<p class="muted">' + t("plus.kept") + '</p>' : "") +
     (buyUrl && !userEmail
       ? '<p class="hint">' + t("plus.secureFirst") + '</p>' +
-        '<button type="button" class="btn" data-act="account">' + t("acc.secure") + '</button>'
+        '<button type="button" class="btn" data-act="account" data-then="plus">' + t("acc.secure") + '</button>'
       : buyUrl
       ? '<a class="btn" href="' + esc(buyUrl) + '">' + (isPlus() ? t("plus.extend") : t("plus.buy")) + '</a>' +
         '<p class="legal">' + t("plus.legal") + '</p>'
@@ -698,8 +700,12 @@ document.addEventListener("click", function (e) {
   else if (act === "done") markDone(id);
   else if (act === "edit") showEdit(id, false);
   else if (act === "del") removeItem(id);
-  else if (act === "account") showAccount();
-  else if (act === "signin") showAccount("signin");
+  else if (act === "account" || act === "signin") {
+    // data-then="plus": nach dem Sichern bzw. Anmelden geht das Kauf-Fenster wieder auf
+    var then = el.getAttribute("data-then") || (accFlow && el.closest("#sheet") ? accFlow.then : "");
+    showAccount(act === "signin" ? "signin" : "");
+    if (accFlow) accFlow.then = then;
+  }
   else if (act === "resend") sendCode(el, true);
   else if (act === "otherEmail") otherEmail();
   else if (act === "signout") signOutHere();
@@ -796,5 +802,6 @@ async function start() {
   else if (show === "item" && items.length) showItem(sortedItems()[0].id);
   else if (show === "account") showAccount();
   else if (show === "signin") showAccount("signin");
+  else if (show === "plus") showPlus(); // "Jetzt starten" bei Livo Plus auf der Website
 }
 start();
