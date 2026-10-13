@@ -1,20 +1,25 @@
 // heylivo: Stripe-Webhook für Livo Plus (11,99 € inkl. MwSt. für 1 Jahr, ohne
 // automatische Verlängerung).
-// Gekauft wird über einen Stripe-Zahlungslink im Stripe-Konto von Smart Menu Solutions;
-// die App hängt die Nutzer-ID als client_reference_id an. Bei checkout.session.completed
-// verlängert diese Funktion plans.plus_until um ein Jahr - ab heute oder ab dem alten
-// Ende, falls Plus noch läuft. Alle anderen Zahlungen des Kontos (Smart Menu) werden
-// ignoriert; der Smart-Menu-Webhook ignoriert umgekehrt diese Einmalzahlungen.
+// Gekauft wird über einen Stripe-Zahlungslink im eigenen Stripe-Konto von heylivo;
+// die App hängt die Nutzer-ID als client_reference_id an. Bei einer bezahlten Sitzung
+// (checkout.session.completed bzw. checkout.session.async_payment_succeeded) verlängert
+// diese Funktion plans.plus_until um ein Jahr - ab heute oder ab dem alten Ende, falls
+// Plus noch läuft - und schickt dem Inhaber eine kurze Mail über den Kauf (Resend,
+// Absender hallo@heylivo.com). Klappt die Mail nicht, ist Plus trotzdem freigeschaltet.
 //
 // Signaturprüfung wie in der Stripe-Doku (HMAC-SHA256 über "t.payload") mit Web Crypto,
-// ohne npm-Paket. Secrets: STRIPE_WEBHOOK_SECRET (whsec_...), optional
-// LIVO_PAYMENT_LINK_ID (plink_...) - dann zählt nur genau dieser Zahlungslink.
+// ohne npm-Paket. Secrets: STRIPE_WEBHOOK_SECRET (whsec_...), RESEND_API_KEY (re_...),
+// OWNER_EMAIL (Empfänger der Kaufmail) und optional LIVO_PAYMENT_LINK_ID (plink_...) -
+// dann zählt nur genau dieser Zahlungslink.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 const WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
 const PAYMENT_LINK = Deno.env.get('LIVO_PAYMENT_LINK_ID') ?? '';
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
+const OWNER_EMAIL = Deno.env.get('OWNER_EMAIL') ?? '';
+const FROM_EMAIL = 'heylivo <hallo@heylivo.com>';
 const PRICE_CENTS = 1199;
 const TOLERANCE_SECONDS = 300;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -63,6 +68,42 @@ type Session = {
   amount_total?: number; client_reference_id?: string | null; customer_details?: { email?: string | null } | null;
 };
 
+const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (c) => HTML_ESCAPES[c]);
+}
+
+// Kurze Mail an den Inhaber über einen neuen Kauf. Fehler nur protokollieren -
+// Plus ist zu diesem Zeitpunkt schon freigeschaltet.
+async function notifyOwner(session: Session, userId: string, plusUntil: string): Promise<void> {
+  if (!RESEND_API_KEY || !OWNER_EMAIL) {
+    console.error('RESEND_API_KEY or OWNER_EMAIL missing - no owner mail', session.id);
+    return;
+  }
+  const [y, m, d] = plusUntil.split('-');
+  const amount = `${((session.amount_total ?? 0) / 100).toFixed(2).replace('.', ',')} €`;
+  const rows: [string, string][] = [
+    ['Käufer', session.customer_details?.email ?? '-'],
+    ['Betrag', amount],
+    ['Livo Plus gilt bis', `${d}.${m}.${y}`],
+    ['Konto-ID', userId],
+    ['Stripe-Sitzung', session.id]
+  ];
+  const html = '<p>Neuer Kauf von Livo Plus – Plus ist automatisch freigeschaltet.</p><table cellpadding="4">' +
+    rows.map(([label, value]) => `<tr><td><b>${escapeHtml(label)}</b></td><td>${escapeHtml(value)}</td></tr>`).join('') + '</table>';
+  const text = 'Neuer Kauf von Livo Plus – Plus ist automatisch freigeschaltet.\n\n' + rows.map(([label, value]) => `${label}: ${value}`).join('\n');
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM_EMAIL, to: [OWNER_EMAIL], subject: `Neuer Livo-Plus-Kauf – ${amount}`, html, text })
+    });
+    if (!response.ok) console.error('Owner mail failed', session.id, response.status, await response.text());
+  } catch (error) {
+    console.error('Owner mail failed', session.id, error);
+  }
+}
+
 Deno.serve(async (request) => {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   const payload = await request.text();
@@ -74,7 +115,9 @@ Deno.serve(async (request) => {
   } catch {
     return json({ error: 'Invalid payload' }, 400);
   }
-  if (event.type !== 'checkout.session.completed' || !event.data?.object) return json({ received: true });
+  // async_payment_succeeded: Zahlarten, die erst nach dem Bezahlvorgang bestätigt werden
+  const paidEvent = event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded';
+  if (!paidEvent || !event.data?.object) return json({ received: true });
 
   const session = event.data.object;
   const userId = String(session.client_reference_id ?? '');
@@ -104,5 +147,6 @@ Deno.serve(async (request) => {
     return json({ error: 'Could not save' }, 500);
   }
   console.log('Livo Plus activated', userId, plusUntil, session.id);
+  await notifyOwner(session, userId, plusUntil);
   return json({ received: true, plusUntil });
 });
