@@ -1,8 +1,9 @@
 // heylivo – Fristen in Supabase. Ohne Anmeldung bekommt jeder Browser ein
 // anonymes Konto; die Datenbank (RLS) zeigt jedem nur seine eigenen Fristen.
+// "Konto sichern" und "Anmelden" (E-Mail-Adresse + Code) stehen in account.js.
 // Alle Texte kommen aus i18n.js (t()), die Vorlagen-Texte aus templates.js.
 // URL-Parameter zum Testen: ?demo=1 zeigt Beispiel-Fristen (wird nicht gespeichert),
-// &show=add | voice | form:<vorlage> | item öffnet direkt das passende Blatt,
+// &show=add | voice | form:<vorlage> | item | account | signin öffnet direkt das passende Blatt,
 // &say=<Satz> verarbeitet einen Satz so, als wäre er gesprochen worden, &lang=en usw.
 
 var SUPABASE_URL = "https://fkhngrvqxlpqxpllrnoj.supabase.co";
@@ -15,7 +16,7 @@ var sb = DEMO ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 var items = [];
 var plusUntil = null;
 var trialStarted = null; // "JJJJ-MM-TT" oder null = Testphase noch nicht begonnen
-var userId = "";         // Konto dieses Browsers - geht beim Kauf als client_reference_id an Stripe
+var userId = "";         // Konto dieses Browsers - geht beim Kauf als client_reference_id an Stripe (userEmail: account.js)
 // Stripe-Zahlungslink für Livo Plus (11,99 € inkl. MwSt., 1 Jahr, ohne Verlängerung).
 // Leer = Kauf noch nicht freigeschaltet ("kommt bald"). Der Webhook stripe-webhook schaltet frei.
 var PLUS_LINK = "";
@@ -41,10 +42,10 @@ function fromRow(r) {
 }
 async function signIn() {
   var s = await sb.auth.getSession();
-  if (s.data.session) { userId = s.data.session.user.id; return; }
+  if (s.data.session) { setUser(s.data.session.user); return; }
   var r = await sb.auth.signInAnonymously();
   if (r.error) throw r.error;
-  userId = r.data.user.id;
+  setUser(r.data.user);
 }
 async function loadAll() {
   var r = await sb.from("deadlines").select("*").order("due");
@@ -171,6 +172,7 @@ function statusHTML() {
 
 function render() {
   var list = document.getElementById("list");
+  renderNote();
   if (!items.length) { list.innerHTML = emptyHTML(); return; }
   var all = sortedItems();
   var now = all.filter(function (it) { return status(it).key !== "later"; });
@@ -627,16 +629,20 @@ async function removeItem(id) {
   }
 }
 
-// Livo Plus: Angebot, und nach der Testphase der Hinweis statt Formular
+// Livo Plus: Angebot, und nach der Testphase der Hinweis statt Formular.
+// Kaufen nur mit gesichertem Konto - sonst wäre Plus mit den Browserdaten weg.
 function showPlus() {
   var over = !canEdit();
   var buyUrl = PLUS_LINK && userId && !DEMO
-    ? PLUS_LINK + "?client_reference_id=" + encodeURIComponent(userId) + "&locale=" + LANG : "";
+    ? PLUS_LINK + "?client_reference_id=" + encodeURIComponent(userId) + "&prefilled_email=" + encodeURIComponent(userEmail) + "&locale=" + LANG : "";
   openSheet('<h3>' + (over ? t("plus.over", { n: TRIAL_DAYS }) : isPlus() ? t("plus.active") : "Livo Plus") + '</h3>' +
     (isPlus() ? '<p class="muted">' + t("plus.until", { date: fmt(fromISO(plusUntil)) }) + '</p>' : "") +
     '<p class="hint">' + t("plus.offer") + '</p>' +
     (over ? '<p class="muted">' + t("plus.kept") + '</p>' : "") +
-    (buyUrl
+    (buyUrl && !userEmail
+      ? '<p class="hint">' + t("plus.secureFirst") + '</p>' +
+        '<button type="button" class="btn" data-act="account">' + t("acc.secure") + '</button>'
+      : buyUrl
       ? '<a class="btn" href="' + esc(buyUrl) + '">' + (isPlus() ? t("plus.extend") : t("plus.buy")) + '</a>' +
         '<p class="legal">' + t("plus.legal") + '</p>'
       : '<button type="button" class="btn" disabled>' + t("plus.soon") + '</button>') +
@@ -692,6 +698,11 @@ document.addEventListener("click", function (e) {
   else if (act === "done") markDone(id);
   else if (act === "edit") showEdit(id, false);
   else if (act === "del") removeItem(id);
+  else if (act === "account") showAccount();
+  else if (act === "signin") showAccount("signin");
+  else if (act === "resend") sendCode(el, true);
+  else if (act === "otherEmail") otherEmail();
+  else if (act === "signout") signOutHere();
 });
 sheetBg.addEventListener("click", closeSheet);
 document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });
@@ -751,7 +762,6 @@ function setupLanguage() {
 async function start() {
   var list = document.getElementById("list");
   setupLanguage();
-  document.getElementById("note").textContent = DEMO ? t("note.demo") : t("note.beta");
   if (DEMO) {
     seedDemo();
   } else {
@@ -775,5 +785,7 @@ async function start() {
   else if (show === "voice") showVoice();
   else if (show.indexOf("form:") === 0) showNew(show.slice(5));
   else if (show === "item" && items.length) showItem(sortedItems()[0].id);
+  else if (show === "account") showAccount();
+  else if (show === "signin") showAccount("signin");
 }
 start();

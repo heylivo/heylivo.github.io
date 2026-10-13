@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#f5f7fb;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f7fb;">
+<tr><td align="center" style="padding:28px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:460px;background:#ffffff;border:1px solid #e3e8f2;border-radius:18px;">
+<tr><td style="padding:26px 28px 4px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<img src="https://heylivo.com/icon.png" width="36" height="36" alt="" style="vertical-align:middle;border:0;">
+<span style="vertical-align:middle;font-size:23px;font-weight:800;letter-spacing:-0.5px;color:#0b1420;">hey<span style="color:#3062f9;">livo</span></span>
+</td></tr>
+<tr><td style="padding:14px 28px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;color:#0b1420;">
+{{ if eq .Data.lang "de" }}Hallo! Mit diesem Code sicherst du dein heylivo-Konto. Gib ihn in der App ein:{{ else if eq .Data.lang "it" }}Ciao! Con questo codice proteggi il tuo account heylivo. Inseriscilo nell'app:{{ else if eq .Data.lang "el" }}Γεια σου! Με αυτόν τον κωδικό ασφαλίζεις τον λογαριασμό σου στο heylivo. Γράψ' τον στην εφαρμογή:{{ else if eq .Data.lang "es" }}¡Hola! Con este código aseguras tu cuenta de heylivo. Introdúcelo en la app:{{ else if eq .Data.lang "fr" }}Bonjour, avec ce code, vous sécurisez votre compte heylivo. Saisissez-le dans l'application :{{ else if eq .Data.lang "nl" }}Hoi! Met deze code beveilig je je heylivo-account. Vul hem in de app in:{{ else if eq .Data.lang "pt" }}Olá! Com este código protege a sua conta heylivo. Introduza-o na app:{{ else if eq .Data.lang "tr" }}Merhaba! Bu kodla heylivo hesabını güvenceye alırsın. Kodu uygulamaya gir:{{ else if eq .Data.lang "pl" }}Cześć! Tym kodem zabezpieczasz swoje konto heylivo. Wpisz go w aplikacji:{{ else }}Hi! Use this code to secure your heylivo account. Enter it in the app:{{ end }}
+</td></tr>
+<tr><td align="center" style="padding:22px 28px;">
+<div style="display:inline-block;padding:14px 24px;border-radius:14px;background:#eaf0ff;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:8px;color:#3062f9;">{{ .Token }}</div>
+</td></tr>
+<tr><td style="padding:0 28px 26px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#5b6475;">
+{{ if eq .Data.lang "de" }}Du hast das nicht angefordert? Dann ignoriere diese E-Mail einfach – ohne den Code passiert nichts.{{ else if eq .Data.lang "it" }}Non l'hai richiesto tu? Ignora pure questa email: senza il codice non succede nulla.{{ else if eq .Data.lang "el" }}Δεν το ζήτησες εσύ; Απλώς αγνόησε αυτό το email – χωρίς τον κωδικό δεν γίνεται τίποτα.{{ else if eq .Data.lang "es" }}¿No lo has pedido tú? Simplemente ignora este correo: sin el código no pasa nada.{{ else if eq .Data.lang "fr" }}Vous n'êtes pas à l'origine de cette demande ? Ignorez simplement cet e-mail : sans le code, rien ne se passe.{{ else if eq .Data.lang "nl" }}Heb je dit niet aangevraagd? Negeer deze e-mail dan gewoon – zonder de code gebeurt er niets.{{ else if eq .Data.lang "pt" }}Não fez este pedido? Ignore simplesmente este e-mail – sem o código, nada acontece.{{ else if eq .Data.lang "tr" }}Bunu sen istemedin mi? Bu e-postayı görmezden gelebilirsin – kod olmadan hiçbir şey olmaz.{{ else if eq .Data.lang "pl" }}To nie ty? Po prostu zignoruj tę wiadomość – bez kodu nic się nie stanie.{{ else }}Didn't ask for this? Just ignore this email – nothing happens without the code.{{ end }}
+</td></tr>
+</table>
+<p style="margin:16px 0 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#8a93a6;"><a href="https://heylivo.com" style="color:#8a93a6;text-decoration:none;">heylivo.com</a></p>
+</td></tr>
+</table>
+</body>
+</html>
