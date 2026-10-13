@@ -113,8 +113,15 @@ LEX.de = {
   },
   pm: / (nachmittags?|abends?|am nachmittag|am abend)(?= )/, am: / (morgens|früh|vormittags?|am vormittag|am morgen|nachts)(?= )/,
   dueWords: /auffrisch|fällig|nächste/,
-  // Reihenfolge zählt: Spezielles vor Allgemeinem (Zahnarzt vor Arzt, Kfz-Versicherung vor Versicherung)
+  // Reihenfolge zählt: Spezielles vor Allgemeinem (Zahnarzt vor Arzt, Kfz-Versicherung vor Versicherung).
+  // Familie ganz vorn: "Kinderreisepass" enthält "reisepass", "Kinderarzt" enthält "arzt".
   keywords: [
+    ["kinderpass", ["kinderreisepass", "kinderpass", "kinderausweis", "kinderpersonalausweis"]],
+    ["elterngeld", ["elterngeld"]],
+    ["hochzeitstag", ["hochzeitstag", "jahrestag"]],
+    ["geburtstag", ["geburtstag"]],
+    ["kinderarzt", ["kinderarzt", "kinderärzt", "u-untersuchung", "u untersuchung", " u1 ", " u2 ", " u3 ", " u4 ", " u5 ", " u6 ", " u7 ", " u7a ", " u8 ", " u9 ", " j1 ", "kinderimpfung"]],
+    ["schule", ["kita", "kindergarten", "schule", "elternabend", "elterngespräch", "einschulung", "ferienbetreuung", "klassenfahrt", " hort "]],
     ["reisepass", ["reisepass", " pass "]],
     ["fuehrerschein", ["führerschein", "fuehrerschein"]],
     ["aufenthaltstitel", ["aufenthalt"]],
@@ -193,6 +200,11 @@ LEX.en = {
   pm: / (pm|in the afternoon|in the evening|tonight|this afternoon|this evening)(?= )/, am: / (am|in the morning|this morning)(?= )/,
   dueWords: /booster|due|next/,
   keywords: [
+    ["kinderpass", ["child's passport", "childs passport", "child passport", "kid's passport", "kids passport", "son's passport", "daughter's passport", "child's id"]],
+    ["hochzeitstag", ["wedding anniversary", "anniversary"]],
+    ["geburtstag", ["birthday", "bday", "b-day"]],
+    ["kinderarzt", ["paediatrician", "pediatrician", "health visitor", "baby check", "child's vaccination", "kid's doctor", "kids doctor"]],
+    ["schule", ["school", "nursery", "kindergarten", "daycare", "day care", "childcare", "parents evening", "parents' evening", "parent-teacher"]],
     ["reisepass", ["passport"]],
     ["fuehrerschein", ["driving licence", "driving license", "driver's license", "driver's licence", "drivers license", "driver license"]],
     ["aufenthaltstitel", ["residence permit", "work permit", " visa "]],
@@ -264,6 +276,11 @@ LEX.it = {
   am: / (del mattino|di mattina|la mattina|mattina|stamattina|stamani|domattina|di notte|notte)(?= )/,
   dueWords: /richiamo|scade|scadenza|prossim/,
   keywords: [
+    ["kinderpass", ["passaporto del bambino", "passaporto della bambina", "passaporto di mio figlio", "passaporto di mia figlia", "carta d' identità del bambino", "carta d' identità di mio figlio", "carta d' identità di mia figlia"]],
+    ["hochzeitstag", ["anniversario"]],
+    ["geburtstag", ["compleanno", "onomastico"]],
+    ["kinderarzt", ["pediatra", "vaccino del bambino", "vaccino della bambina", "vaccinazione del bambino", "bilancio di salute"]],
+    ["schule", ["scuola", "asilo", " nido ", "colloquio con le maestre", "colloquio con gli insegnanti", "riunione dei genitori", "gita scolastica"]],
     ["reisepass", ["passaporto"]],
     ["fuehrerschein", ["patente"]],
     ["aufenthaltstitel", ["permesso di soggiorno", "soggiorno", " visto "]],
@@ -359,6 +376,12 @@ LEX.el = {
   am: / (το πρωί|πρωί|τα ξημερώματα|ξημερώματα|τη νύχτα|νύχτα|π\.μ\.|πμ)(?= )/,
   dueWords: /αναμνηστικ|λήγει|λήξη|επόμεν/,
   keywords: [
+    ["kinderpass", ["διαβατήριο του παιδιού", "παιδικό διαβατήριο", "διαβατήριο της κόρης", "διαβατήριο του γιου", "ταυτότητα του παιδιού", "ταυτότητα της κόρης", "ταυτότητα του γιου"]],
+    ["hochzeitstag", ["επέτειο"]],
+    // "γιορτή " mit Leerzeichen: Namenstag, aber nicht "γιορτές" (Feiertage)
+    ["geburtstag", ["γενέθλια", "γιορτή "]],
+    ["kinderarzt", ["παιδίατρ", "εμβόλιο του παιδιού", "εμβόλιο του μωρού", "εμβόλιο παιδιού"]],
+    ["schule", ["σχολεί", "σχολικ", "παιδικό σταθμό", "παιδικός σταθμός", "νηπιαγωγεί", "βρεφονηπιακ", "συνάντηση γονέων", "ενημέρωση γονέων"]],
     ["reisepass", ["διαβατήριο"]],
     ["fuehrerschein", ["δίπλωμα", "άδεια οδήγησης"]],
     ["aufenthaltstitel", ["άδεια διαμονής", "διαμονής", "βίζα", "θεώρηση"]],
@@ -434,6 +457,11 @@ LEX.es = {
   am: / (de la mañana|por la mañana|en la mañana|esta mañana|de la madrugada|madrugada|am)(?= )/,
   dueWords: /refuerzo|vence|vencimiento|caduca|próxim|toca/,
   keywords: [
+    ["kinderpass", ["pasaporte del niño", "pasaporte de la niña", "pasaporte de mi hijo", "pasaporte de mi hija", "dni del niño", "dni de la niña", "dni de mi hijo", "dni de mi hija"]],
+    ["hochzeitstag", ["aniversario"]],
+    ["geburtstag", ["cumpleaños", "onomástica"]],
+    ["kinderarzt", ["pediatra", "vacuna del niño", "vacuna de la niña", "vacuna de mi hijo", "vacuna de mi hija", "revisión del niño", "revisión de la niña", "revisión del bebé"]],
+    ["schule", ["colegio", "escuela", "guardería", "reunión de padres", "tutoría", "jardín de infancia", " cole "]],
     ["reisepass", ["pasaporte"]],
     ["personalausweis", [" dni ", "documento de identidad", "documento nacional", "carnet de identidad", "carné de identidad", "cédula"]],
     ["fuehrerschein", ["carnet de conducir", "carné de conducir", "permiso de conducir", "licencia de conducir", "carnet", "carné"]],
@@ -508,6 +536,12 @@ LEX.fr = {
   am: / (du matin|ce matin|le matin|matin|de la nuit|cette nuit)(?= )/,
   dueWords: /rappel|expire|échéance|prochain/,
   keywords: [
+    ["kinderpass", ["passeport de l' enfant", "passeport enfant", "passeport de mon fils", "passeport de ma fille", "carte d' identité de l' enfant", "carte d' identité de mon fils", "carte d' identité de ma fille"]],
+    // Hochzeitstag vor Geburtstag: "anniversaire de mariage" enthält "anniversaire"
+    ["hochzeitstag", ["anniversaire de mariage"]],
+    ["geburtstag", ["anniversaire"]],
+    ["kinderarzt", ["pédiatre", "vaccin de l' enfant", "vaccin du bébé", "vaccin de mon fils", "vaccin de ma fille", " pmi "]],
+    ["schule", ["école", "crèche", "maternelle", "nounou", "réunion parents", "réunion des parents", "rentrée scolaire", "inscription scolaire", "sortie scolaire", "collège", "lycée"]],
     ["reisepass", ["passeport"]],
     ["personalausweis", ["carte d' identité", "carte identité", "pièce d' identité", " cni "]],
     ["fuehrerschein", ["permis de conduire", "permis"]],
@@ -577,6 +611,12 @@ LEX.nl = {
   am: / ('s ochtends|'s morgens|vanochtend|vanmorgen|morgenochtend|morgenvroeg|in de ochtend|'s nachts|ochtend|vannacht)(?= )/,
   dueWords: /herhaling|verloopt|vervalt|volgende/,
   keywords: [
+    ["kinderpass", ["kinderpaspoort", "paspoort van mijn kind", "paspoort van mijn zoon", "paspoort van mijn dochter", "id-kaart van mijn kind", "identiteitskaart van mijn kind"]],
+    // Trouwdag vor Verjaardag: "huwelijksverjaardag" enthält "verjaardag"
+    ["hochzeitstag", ["trouwdag", "huwelijksverjaardag", "trouwjubileum"]],
+    ["geburtstag", ["verjaardag", "jarig"]],
+    ["kinderarzt", ["kinderarts", "consultatiebureau", "vaccinatie van mijn kind", "kinderprik"]],
+    ["schule", ["school", "kinderopvang", "crèche", "kinderdagverblijf", " bso ", "ouderavond", "oudergesprek", "schoolreis"]],
     ["reisepass", ["paspoort"]],
     ["fuehrerschein", ["rijbewijs"]],
     ["aufenthaltstitel", ["verblijfsvergunning", "verblijfsdocument", "visum"]],
@@ -656,6 +696,12 @@ LEX.pt = {
   am: / (da manhã|de manhã|pela manhã|esta manhã|da madrugada|de madrugada)(?= )/,
   dueWords: /reforço|vence|expira|próxim|validade/,
   keywords: [
+    ["kinderpass", ["passaporte do meu filho", "passaporte da minha filha", "passaporte da criança", "cartão de cidadão do meu filho", "cartão de cidadão da minha filha", "cartão de cidadão da criança"]],
+    // Casamento vor Geburtstag: "aniversário de casamento" enthält "aniversário"
+    ["hochzeitstag", ["aniversário de casamento"]],
+    ["geburtstag", ["aniversário", "faz anos"]],
+    ["kinderarzt", ["pediatra", "vacina do bebé", "vacina do bebê", "vacina da criança", "vacina do meu filho", "vacina da minha filha", "consulta do bebé", "consulta do bebê"]],
+    ["schule", ["escola", "creche", "infantário", "jardim de infância", "reunião de pais", "visita de estudo"]],
     ["reisepass", ["passaporte"]],
     ["personalausweis", ["cartão de cidadão", " cc ", "bilhete de identidade", "carteira de identidade", " rg ", "documento de identidade"]],
     ["fuehrerschein", ["carta de condução", "carteira de motorista", "carteira de habilitação", " cnh ", "habilitação"]],
@@ -731,6 +777,11 @@ LEX.tr = {
   am: / (sabah|sabahleyin|bu sabah|gece)(?= )/,
   dueWords: /hatırlatma|bitiyor|doluyor|sonraki|gelecek/,
   keywords: [
+    ["kinderpass", ["çocuğun pasaportu", "çocuk pasaportu", "oğlumun pasaportu", "kızımın pasaportu", "çocuğun kimliği", "oğlumun kimliği", "kızımın kimliği"]],
+    ["hochzeitstag", ["evlilik yıldönümü", "yıldönümü"]],
+    ["geburtstag", ["doğum günü", "doğumgünü"]],
+    ["kinderarzt", ["çocuk doktoru", "pediatri", "çocuk hekim", "çocuğun aşısı", "bebeğin aşısı", "çocuk aşısı", "bebek aşısı"]],
+    ["schule", ["okul", "kreş", "anaokulu", "veli toplantısı", "karne"]],
     ["reisepass", ["pasaport"]],
     ["fuehrerschein", ["ehliyet", "sürücü belgesi"]],
     ["aufenthaltstitel", ["oturma izni", "ikamet", " vize"]],
@@ -752,6 +803,7 @@ LEX.tr = {
     "hey livo", "merhaba livo", "livo", "bana hatırlat", "hatırlat bana", "hatırlat", "lütfen", "benim", "bitiyor", "sona eriyor",
     "doluyor", "geçerli", "kadar", "tarihinde", "günü", "saat", "ve", "için", "gerekiyor", "lazım", "en geç"
   ],
+  keep: ["doğum günü"],
   whatWord: { versicherung: /([a-zçğıöşü]+ sigortas[ıi]|kasko)/i, abo: /(netflix|spotify|spor salonu|[a-zçğıöşü]+ üyeliği)/i },
   whatSkip: []
 };
@@ -815,6 +867,12 @@ LEX.pl = {
   am: / (rano|z rana|rankiem|przed południem|w nocy|nad ranem)(?= )/,
   dueWords: /dawk|przypominaj|wygasa|kończy|następn|kolejn/,
   keywords: [
+    ["kinderpass", ["paszport dziecka", "paszportu dziecka", "paszport syna", "paszport córki", "dowód dziecka", "dowodu dziecka", "dowód osobisty dziecka", "dowód syna", "dowód córki"]],
+    ["hochzeitstag", ["rocznica ślubu", "rocznicę ślubu", "rocznicy ślubu"]],
+    ["geburtstag", ["urodzin", "imienin"]],
+    // nur "szczepienie dziecka" - ein einfaches "szczepienie" bleibt bei Tetanus
+    ["kinderarzt", ["pediatr", "bilans zdrowia", "bilansu zdrowia", "bilans dziecka", "szczepienie dziecka", "szczepienia dziecka", "szczepienie syna", "szczepienie córki"]],
+    ["schule", ["szkoł", "szkole", "przedszkol", "żłob", "zebranie z rodzicami", "wywiadówk", "wycieczka szkolna", "wycieczkę szkolną"]],
     ["reisepass", ["paszport"]],
     ["fuehrerschein", ["prawo jazdy", "prawa jazdy", "prawem jazdy"]],
     // " wiza " mit Leerzeichen: "wizyta" (Arztbesuch) enthält "wiz…"
@@ -1003,9 +1061,15 @@ function extract(text, L) {
 function cleanTitle(s, L) {
   // Lücken vom herausgeschnittenen Datum schließen, damit "remind me … about" wieder zusammenpasst
   s = " " + s.replace(/\s+/g, " ").trim() + " ";
+  // Feste Wendungen (L.keep) vor den Füllwörtern schützen: türkisch "doğum günü", "günü" allein ist ein Füllwort
+  var kept = [], mark = String.fromCharCode(1);
+  (L.keep || []).forEach(function (k) {
+    s = s.replace(new RegExp(" " + escRe(k) + "(?= )", "gi"), function (m) { kept.push(m.slice(1)); return " " + mark + (kept.length - 1) + mark; });
+  });
   L.fillers.forEach(function (f) {
     s = s.replace(new RegExp(" " + escRe(f) + "(?= )", "gi"), " ");
   });
+  kept.forEach(function (k, i) { s = s.split(mark + i + mark).join(k); });
   s = s.replace(/\s+/g, " ").replace(/^[\s.:-]+|[\s.:-]+$/g, "");
   if (L.elide) s = s.replace(/' /g, "'");
   return capitalize(s);
@@ -1025,7 +1089,8 @@ function detectTemplate(text, L) {
 // Aus einem Satz wird ein Entwurf, den der Nutzer vor dem Speichern bestätigt
 function draftFrom(text) {
   var L = lexFor(), tid = detectTemplate(text, L), tp = find(TEMPLATES, tid), x = extract(text, L);
-  var free = tid === "rechnung" || tid === "arzttermin" || tid === "eigene";
+  // Hier wird der gesprochene Rest zum Titel ("Geburtstag von Anna", "Elternabend Grundschule")
+  var free = ["rechnung", "arzttermin", "eigene", "geburtstag", "hochzeitstag", "kinderarzt", "schule", "kinderpass"].indexOf(tid) >= 0;
   var title = free && x.rest.length >= 3 ? x.rest.slice(0, 60) : tplName(tp, {});
   var whatWord = L.whatWord && L.whatWord[tid];
   if (whatWord) {
