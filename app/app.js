@@ -449,11 +449,21 @@ function repeatHTML(r, label) {
       return '<option value="' + u + '"' + (u === unit ? " selected" : "") + '>' + esc(t("unit." + u)) + '</option>';
     }).join("") + '</select></div></div>';
 }
+// "14 Tage vorher" passt nicht zu "jede Woche" - die Erinnerung käme sofort nach dem Anlegen.
+// Bei Wiederholung in Tagen höchstens 1 Tag Vorlauf je Woche Abstand (jeden Tag: am Tag selbst).
+function leadCap(r) { return r && r.everyDays > 0 ? Math.floor(r.everyDays / 7) : Infinity; }
 function wireRepeat(form) {
   if (!form.elements.everyN) return; // Vorlage ohne Wiederholungs-Auswahl
+  function fitLead() {
+    var cap = leadCap(readRepeat(form, true)), lead = form.elements.lead;
+    if (lead && parseInt(lead.value, 10) > cap) lead.value = cap;
+  }
   form.elements.every.addEventListener("change", function () {
     document.getElementById("repeatCustom").hidden = form.elements.every.value !== "custom";
+    fitLead();
   });
+  form.elements.everyN.addEventListener("input", fitLead);
+  form.elements.everyUnit.addEventListener("change", fitLead);
 }
 // { every, everyDays } aus dem Formular; null, wenn die eigene Angabe keine Zahl ab 1 ist
 // (mit Fehlermeldung, außer quiet - beim Tippen in der Vorschau)

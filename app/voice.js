@@ -226,7 +226,8 @@ LEX.en = {
     "hey livo", "hi livo", "ok livo", "livo", "remind me to", "remind me about", "remind me that", "remind me",
     "in the morning", "in the afternoon", "in the evening", "this morning", "this afternoon", "this evening",
     "runs out", "run out", "please", "that", "my", "the", "a", "an", "to", "on", "at", "by", "is", "are",
-    "expires", "expire", "due", "until", "in", "and", "of", "o'clock", "pm", "am", "next", "this"
+    "expires", "expire", "due", "until", "in", "and", "of", "o'clock", "pm", "am", "next", "this",
+    "starting from", "starting"
   ],
   whatWord: { versicherung: /\b([a-z]+ insurance)\b/i, abo: /\b(gym|netflix|spotify|[a-z]+ subscription|[a-z]+ membership)\b/i },
   whatSkip: []
@@ -903,6 +904,62 @@ LEX.pl = {
 
 Object.keys(LEX).forEach(function (k) { if (LEX[k].fold) foldLex(LEX[k]); });
 
+// Wiederholung im gesprochenen Satz: "alle 3 Monate", "jede Woche", "jeden Montag", "montags".
+// num = Wort vor Zahl + Einheit (Türkisch steht die Zahl vorn: "3 ayda bir", numAfter), fixed = feste Wendungen,
+// wd = Wort vor einem Wochentag ("jeden Montag" = jede Woche, der Montag bleibt fürs Datum stehen),
+// wdPl = Mehrzahl-Endung am Wochentag, wdAlone = die Mehrzahl allein heißt schon "jede Woche" ("montags"),
+// fortnight = "15 Tage" ist die übliche Art, "alle 2 Wochen" zu sagen ("tous les quinze jours").
+// Wird beim Suchen in die Suchfassung gebracht (lowerOf), deshalb hier mit Akzenten.
+var REPEAT_LEX = {
+  de: { num: ["alle"], wd: ["jeden"], wdPl: "s", wdAlone: true,
+    units: { d: ["tage", "tag"], w: ["wochen", "woche"], m: ["monate", "monat"], y: ["jahre", "jahr"] },
+    fixed: [["täglich", "d1"], ["jeden tag", "d1"], ["jeden zweiten tag", "d2"], ["wöchentlich", "d7"], ["jede woche", "d7"],
+      ["zweiwöchentlich", "d14"], ["jede zweite woche", "d14"], ["alle vierzehn tage", "d14"], ["monatlich", "m1"], ["jeden monat", "m1"],
+      ["jeden zweiten monat", "m2"], ["vierteljährlich", "m3"], ["halbjährlich", "m6"], ["jährlich", "m12"], ["jedes jahr", "m12"], ["jedes zweite jahr", "m24"],
+      ["einmal pro woche", "d7"], ["einmal die woche", "d7"], ["einmal im monat", "m1"], ["jedes halbe jahr", "m6"], ["zweimal im jahr", "m6"], ["einmal im jahr", "m12"]] },
+  en: { num: ["every"], wd: ["every", "each"], wdPl: "s", wdAlone: true,
+    units: { d: ["days", "day"], w: ["weeks", "week"], m: ["months", "month"], y: ["years", "year"] },
+    fixed: [["every day", "d1"], ["each day", "d1"], ["daily", "d1"], ["every other day", "d2"], ["every week", "d7"], ["each week", "d7"], ["weekly", "d7"],
+      ["every other week", "d14"], ["fortnightly", "d14"], ["biweekly", "d14"], ["every month", "m1"], ["each month", "m1"], ["monthly", "m1"],
+      ["every other month", "m2"], ["every quarter", "m3"], ["quarterly", "m3"], ["every year", "m12"], ["each year", "m12"], ["yearly", "m12"],
+      ["annually", "m12"], ["every other year", "m24"],
+      ["once a week", "d7"], ["once a month", "m1"], ["every half year", "m6"], ["twice a year", "m6"], ["once a year", "m12"]] },
+  it: { num: ["ogni"], wd: ["ogni", "tutti i"], fortnight: true,
+    units: { d: ["giorni", "giorno"], w: ["settimane", "settimana"], m: ["mesi", "mese"], y: ["anni", "anno"] },
+    fixed: [["ogni giorno", "d1"], ["tutti i giorni", "d1"], ["ogni settimana", "d7"], ["tutte le settimane", "d7"], ["ogni mese", "m1"],
+      ["tutti i mesi", "m1"], ["mensilmente", "m1"], ["ogni anno", "m12"], ["tutti gli anni", "m12"], ["annualmente", "m12"]] },
+  el: { num: ["κάθε", "ανά"], wd: ["κάθε"],
+    units: { d: ["μέρες", "ημέρες", "μέρα", "ημέρα"], w: ["εβδομάδες", "εβδομάδα", "βδομάδες", "βδομάδα"], m: ["μήνες", "μήνα", "μήνας"], y: ["χρόνια", "χρόνο", "χρόνος", "έτη"] },
+    fixed: [["κάθε μέρα", "d1"], ["καθημερινά", "d1"], ["κάθε εβδομάδα", "d7"], ["κάθε βδομάδα", "d7"], ["εβδομαδιαία", "d7"], ["κάθε μήνα", "m1"],
+      ["μηνιαία", "m1"], ["κάθε χρόνο", "m12"], ["κάθε χρονιά", "m12"], ["ετησίως", "m12"]] },
+  es: { num: ["cada"], wd: ["cada", "todos los"], wdPl: "s", fortnight: true,
+    units: { d: ["días", "día"], w: ["semanas", "semana"], m: ["meses", "mes"], y: ["años", "año"] },
+    fixed: [["todos los días", "d1"], ["cada día", "d1"], ["a diario", "d1"], ["diariamente", "d1"], ["cada semana", "d7"], ["todas las semanas", "d7"],
+      ["semanalmente", "d7"], ["quincenalmente", "d14"], ["cada mes", "m1"], ["todos los meses", "m1"], ["mensualmente", "m1"], ["cada año", "m12"],
+      ["todos los años", "m12"], ["anualmente", "m12"]] },
+  fr: { num: ["tous les", "toutes les"], wd: ["chaque", "tous les"], wdPl: "s", fortnight: true,
+    units: { d: ["jours", "jour"], w: ["semaines", "semaine"], m: ["mois"], y: ["années", "année", "ans", "an"] },
+    fixed: [["tous les jours", "d1"], ["chaque jour", "d1"], ["quotidiennement", "d1"], ["chaque semaine", "d7"], ["toutes les semaines", "d7"],
+      ["chaque mois", "m1"], ["tous les mois", "m1"], ["mensuellement", "m1"], ["chaque année", "m12"], ["tous les ans", "m12"], ["chaque an", "m12"], ["annuellement", "m12"]] },
+  nl: { num: ["elke", "iedere", "om de"], wd: ["elke", "iedere"],
+    units: { d: ["dagen", "dag"], w: ["weken", "week"], m: ["maanden", "maand"], y: ["jaren", "jaar"] },
+    fixed: [["elke dag", "d1"], ["iedere dag", "d1"], ["dagelijks", "d1"], ["om de dag", "d2"], ["elke week", "d7"], ["iedere week", "d7"], ["wekelijks", "d7"],
+      ["om de week", "d14"], ["elke maand", "m1"], ["iedere maand", "m1"], ["maandelijks", "m1"], ["om de maand", "m2"], ["elk jaar", "m12"], ["ieder jaar", "m12"],
+      ["jaarlijks", "m12"]] },
+  pt: { num: ["a cada", "cada"], wd: ["todas as", "todos os", "toda", "todo", "cada"], wdPl: "(?:s-feiras|s)",
+    units: { d: ["dias", "dia"], w: ["semanas", "semana"], m: ["meses", "mês"], y: ["anos", "ano"] },
+    fixed: [["todos os dias", "d1"], ["todo dia", "d1"], ["cada dia", "d1"], ["diariamente", "d1"], ["todas as semanas", "d7"], ["toda semana", "d7"],
+      ["cada semana", "d7"], ["semanalmente", "d7"], ["de duas em duas semanas", "d14"], ["quinzenalmente", "d14"], ["todos os meses", "m1"], ["todo mês", "m1"],
+      ["cada mês", "m1"], ["mensalmente", "m1"], ["todos os anos", "m12"], ["todo ano", "m12"], ["cada ano", "m12"], ["anualmente", "m12"]] },
+  tr: { numAfter: true, wd: ["her"], wdPl: "l[ae]r[ıi]", wdAlone: true,
+    units: { d: ["günde"], w: ["haftada"], m: ["ayda"], y: ["yılda", "senede"] },
+    fixed: [["her gün", "d1"], ["her hafta", "d7"], ["haftada bir", "d7"], ["her ay", "m1"], ["ayda bir", "m1"], ["her yıl", "m12"], ["her sene", "m12"], ["yılda bir", "m12"]] },
+  pl: { num: ["co"], wd: ["w każdy", "w każdą", "co"],
+    units: { d: ["dni", "dzień"], w: ["tygodnie", "tygodni", "tydzień"], m: ["miesiące", "miesięcy", "miesiąc"], y: ["lata", "lat", "rok", "roku"] },
+    fixed: [["codziennie", "d1"], ["co dzień", "d1"], ["co tydzień", "d7"], ["co miesiąc", "m1"], ["co rok", "m12"], ["co roku", "m12"], ["corocznie", "m12"], ["co pół roku", "m6"]] }
+};
+Object.keys(REPEAT_LEX).forEach(function (k) { if (LEX[k]) LEX[k].rep = REPEAT_LEX[k]; });
+
 function lexFor() { return LEX[LANG] || LEX.en; }
 
 function norm(s) { return String(s).replace(/[’‘]/g, "'").replace(/[,;!?„“”"«»()]/g, " ").replace(/\s+/g, " ").trim(); }
@@ -943,12 +1000,12 @@ function extract(text, L) {
   var low = lowerOf(orig, L);
   var t0 = today(), date = null, time = null, m;
 
-  // Treffer aus beiden Fassungen herausschneiden (beide haben dieselbe Länge)
-  function cut(match) {
+  // Treffer aus beiden Fassungen herausschneiden (beide haben dieselbe Länge) - oder durch repl ersetzen
+  function cut(match, repl) {
     var i = low.indexOf(match);
     if (i < 0) return;
-    low = low.slice(0, i) + " " + low.slice(i + match.length);
-    orig = orig.slice(0, i) + " " + orig.slice(i + match.length);
+    low = low.slice(0, i) + (repl || " ") + low.slice(i + match.length);
+    orig = orig.slice(0, i) + (repl || " ") + orig.slice(i + match.length);
   }
 
   var MONTH = altKeys(L.months), ORD = L.ordinals ? altKeys(L.ordinals) : "", WD = altKeys(L.weekdays);
@@ -982,6 +1039,36 @@ function extract(text, L) {
     var re = new RegExp(" " + escRe(w) + "(?= )"), mm;
     while ((mm = low.match(re))) cut(mm[0]);
   });
+  // Wiederholung vor dem Datum, damit "alle 2 Wochen" nicht als "in 2 Wochen" gelesen wird
+  var repeat = null, repWd = "";
+  if (L.rep) {
+    var RP = L.rep, lw = function (a) { return alt(a.map(function (w) { return lowerOf(w, L); })); };
+    var unitOf = {}, rc = L.counts || L.nums;
+    Object.keys(RP.units).forEach(function (u) { RP.units[u].forEach(function (w) { unitOf[lowerOf(w, L)] = u; }); });
+    var RNUM = "(\\d{1,3}|" + altKeys(rc) + ")", RUNIT = "(" + altKeys(unitOf) + ")";
+    // alle 3 Monate · every two weeks · co 2 tygodnie · 3 ayda bir
+    m = low.match(new RegExp(RP.numAfter ? " (?:" + lw(RP.wd) + " )?" + RNUM + " " + RUNIT + " bir(?= )"
+      : " (?:" + lw(RP.num) + ") " + RNUM + " " + RUNIT + "(?= )"));
+    if (m) {
+      var n = /\d/.test(m[1]) ? +m[1] : rc[m[1]], u = unitOf[m[2]];
+      if (u === "d" && n === 15 && RP.fortnight) n = 14;
+      if (n >= 1) {
+        repeat = u === "d" || u === "w" ? { every: 0, everyDays: Math.min(u === "w" ? 7 * n : n, 3650) }
+          : { every: Math.min(u === "y" ? 12 * n : n, 240), everyDays: 0 };
+        cut(m[0]);
+      }
+    }
+    // jede Woche · täglich · every other week (längste Wendung zuerst)
+    var fx = RP.fixed.map(function (f) { return [lowerOf(f[0], L), f[1]]; }).sort(function (a, b) { return b[0].length - a[0].length; });
+    for (var k = 0; k < fx.length && !repeat; k++) {
+      if (low.indexOf(" " + fx[k][0] + " ") >= 0) { repeat = parseRepeatValue(fx[k][1]); cut(" " + fx[k][0]); }
+    }
+    // jeden Montag · montags · w każdy wtorek: jede Woche - der Wochentag bleibt (ohne Mehrzahl) fürs Datum stehen
+    var PLS = RP.wdPl ? (L.fold ? foldSrc(RP.wdPl) : RP.wdPl) : "";
+    m = repeat ? null : low.match(new RegExp(" (?:" + lw(RP.wd) + ") (" + WD + ")" + (PLS ? "(?:" + PLS + ")?" : "") + "(?= )"));
+    if (!repeat && !m && RP.wdAlone && PLS) m = low.match(new RegExp(" (" + WD + ")" + PLS + "(?= )"));
+    if (m) { repeat = { every: 0, everyDays: 7 }; repWd = m[1]; cut(m[0], " " + m[1]); }
+  }
 
   function first(re, fn) {
     if (date) return;
@@ -1054,8 +1141,14 @@ function extract(text, L) {
   }
   // "haftaya salı" ist der Dienstag der nächsten Woche, nicht "in einer Woche"
   if (L.wdBeforeRel) { weekday(); relative(); } else { relative(); weekday(); }
+  // "jeden Montag ab 3. November": das Datum kam woanders her - auf den ersten Montag ab dann schieben,
+  // der Wochentag gehört nicht in den Titel
+  if (repWd && (m = low.match(new RegExp(" " + escRe(repWd) + "(?= )")))) {
+    cut(m[0]);
+    while (date && date.getDay() !== L.weekdays[repWd]) date = addDays(date, 1);
+  }
 
-  return { date: date, time: time, rest: cleanTitle(orig, L) };
+  return { date: date, time: time, rest: cleanTitle(orig, L), repeat: repeat };
 }
 
 function cleanTitle(s, L) {
@@ -1088,9 +1181,12 @@ function detectTemplate(text, L) {
 
 // Aus einem Satz wird ein Entwurf, den der Nutzer vor dem Speichern bestätigt
 function draftFrom(text) {
-  var L = lexFor(), tid = detectTemplate(text, L), tp = find(TEMPLATES, tid), x = extract(text, L);
+  var L = lexFor(), tid = detectTemplate(text, L), x = extract(text, L);
   // Hier wird der gesprochene Rest zum Titel ("Geburtstag von Anna", "Elternabend Grundschule")
-  var free = ["rechnung", "arzttermin", "eigene", "geburtstag", "hochzeitstag", "kinderarzt", "schule", "kinderpass"].indexOf(tid) >= 0;
+  var FREE = ["rechnung", "arzttermin", "eigene", "geburtstag", "hochzeitstag", "kinderarzt", "schule", "kinderpass"];
+  // Ausweis, Abo, TÜV … wiederholen sich nie täglich oder wöchentlich: "jeden Montag Fitnessstudio" ist eine eigene Frist
+  if (x.repeat && x.repeat.everyDays && FREE.indexOf(tid) < 0) tid = "eigene";
+  var tp = find(TEMPLATES, tid), free = FREE.indexOf(tid) >= 0;
   var title = free && x.rest.length >= 3 ? x.rest.slice(0, 60) : tplName(tp, {});
   var whatWord = L.whatWord && L.whatWord[tid];
   if (whatWord) {
@@ -1099,6 +1195,11 @@ function draftFrom(text) {
   }
   var d = { tpl: tid, title: title, due: "", time: x.time || "", every: 0, from: tp.from || "due", lead: tp.lead, renew: !!tp.renew };
 
+  // "jeden Tag …" ohne Datum: ab heute - oder ab morgen, wenn die Uhrzeit heute schon vorbei ist
+  if (!x.date && x.repeat && x.repeat.everyDays === 1) {
+    var now = new Date();
+    x.date = addDays(today(), x.time && x.time <= pad(now.getHours()) + ":" + pad(now.getMinutes()) ? 1 : 0);
+  }
   // Werte für die Vorlage: das gesprochene Datum (oder heute) in jedes Datumsfeld
   var iso = toISO(x.date || today()), v = {};
   tp.fields.forEach(function (f) {
@@ -1107,6 +1208,8 @@ function draftFrom(text) {
   var r = tp.compute(v);
   d.every = r.every || 0;
   d.everyDays = r.everyDays || 0;
+  // Gesagte Wiederholung ("alle 3 Monate", "jeden Montag") geht vor die der Vorlage
+  if (x.repeat) { d.every = x.repeat.every; d.everyDays = x.repeat.everyDays; d.lead = Math.min(d.lead, leadCap(x.repeat)); }
   var needsDate = tp.fields.some(function (f) { return f.type === "date" || f.type === "month"; });
   if (!needsDate) d.due = toISO(x.date || r.due);              // Kfz, Reifen, Steuer: Datum optional
   else if (!x.date) d.due = "";                                  // Datum fehlt → Nutzer trägt es ein
