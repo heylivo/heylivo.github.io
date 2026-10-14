@@ -18,6 +18,17 @@ on:
         description: "Language for that day: de or en"
         required: false
         default: "de"
+      format:
+        description: "reel or image (empty = DEFAULT_FORMAT below)"
+        required: false
+      post:
+        description: "Post to Instagram? (no = only make the file)"
+        required: false
+        default: "yes"
+
+# reel = 8-second video (reaches people who don't follow yet), image = still card
+env:
+  DEFAULT_FORMAT: image
 
 permissions:
   contents: write
@@ -58,6 +69,7 @@ jobs:
       - name: Install dependencies
         working-directory: automation
         run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
@@ -67,6 +79,7 @@ jobs:
         env:
           DAY_INPUT: ${{ inputs.day }}
           LANG_INPUT: ${{ inputs.lang }}
+          FORMAT_INPUT: ${{ inputs.format }}
         run: |
           if [[ "$DAY_INPUT" =~ ^[0-9]+$ ]]; then
             N="$DAY_INPUT"; L="de"; [ "$LANG_INPUT" = "en" ] && L="en"
@@ -75,30 +88,52 @@ jobs:
           fi
           echo "n=$N" >> "$GITHUB_OUTPUT"
           echo "lang=$L" >> "$GITHUB_OUTPUT"
-          echo "file=day-$N-$L-$(date -u +%F)" >> "$GITHUB_OUTPUT"
+          F="$DEFAULT_FORMAT"; [ "$FORMAT_INPUT" = "reel" ] && F=reel; [ "$FORMAT_INPUT" = "image" ] && F=image
+          EXT=jpg; [ "$F" = "reel" ] && EXT=mp4
+          echo "format=$F" >> "$GITHUB_OUTPUT"
+          echo "file=day-$N-$L-$(date -u +%F).$EXT" >> "$GITHUB_OUTPUT"
 
-      - name: Render card
+      - name: Make the post (card or Reel)
         working-directory: automation
+        env:
+          N: ${{ steps.day.outputs.n }}
+          L: ${{ steps.day.outputs.lang }}
+          FILE: ${{ steps.day.outputs.file }}
         run: |
-          python render_card.py "${{ steps.day.outputs.n }}" "output/${{ steps.day.outputs.file }}.png" "${{ steps.day.outputs.lang }}"
-          python to_jpeg.py "output/${{ steps.day.outputs.file }}.png" "output/${{ steps.day.outputs.file }}.jpg"
+          if [ "${{ steps.day.outputs.format }}" = "reel" ]; then
+            python render_reel.py "$N" "output/$FILE" "$L"
+          else
+            python render_card.py "$N" "output/${FILE%.jpg}.png" "$L"
+            python to_jpeg.py "output/${FILE%.jpg}.png" "output/$FILE"
+          fi
+          ls -la "output/$FILE"
 
-      - name: Commit and push the image (Instagram needs a public URL)
+      - name: Commit and push the file (Instagram needs a public URL)
         working-directory: automation
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "output/${{ steps.day.outputs.file }}.jpg"
-          git commit -m "chore: Instagram post image for day ${{ steps.day.outputs.n }} (${{ steps.day.outputs.lang }})"
+          git add "output/${{ steps.day.outputs.file }}"
+          # only the 7 newest videos stay on the website
+          python -c "import pathlib, subprocess; old = sorted(pathlib.Path('output').glob('*.mp4'), key=lambda p: p.stem[-10:], reverse=True)[7:]; [subprocess.run(['git', 'rm', '-q', str(p)], check=True) for p in old]"
+          git commit -m "chore: Instagram ${{ steps.day.outputs.format }} for day ${{ steps.day.outputs.n }} (${{ steps.day.outputs.lang }})"
           git pull --rebase
           git push
 
       - name: Post to Instagram
+        if: inputs.post != 'no'
         working-directory: automation
         env:
           INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
         run: |
-          IMAGE_URL="https://raw.githubusercontent.com/${{ github.repository }}/main/automation/output/${{ steps.day.outputs.file }}.jpg"
-          for i in $(seq 1 20); do curl -sfI "$IMAGE_URL" > /dev/null && break; sleep 3; done
-          python post_instagram.py "$IMAGE_URL" "${{ steps.day.outputs.n }}" "${{ steps.day.outputs.lang }}"
+          FILE="${{ steps.day.outputs.file }}"
+          if [ "${{ steps.day.outputs.format }}" = "reel" ]; then
+            # Videos via the website (GitHub serves them as video/mp4 there, raw.githubusercontent does not)
+            URL="https://heylivo.com/automation/output/$FILE"
+            for i in $(seq 1 60); do [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL")" = "200" ] && break; sleep 6; done
+          else
+            URL="https://raw.githubusercontent.com/${{ github.repository }}/main/automation/output/$FILE"
+            for i in $(seq 1 20); do curl -sfI "$URL" > /dev/null && break; sleep 3; done
+          fi
+          python post_instagram.py "$URL" "${{ steps.day.outputs.n }}" "${{ steps.day.outputs.lang }}"

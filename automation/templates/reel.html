@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="__LANG__">
+<head>
+<meta charset="utf-8">
+<!-- Vorlage für die täglichen Reels (1080 x 1920, 8 Sekunden). render_reel.py ersetzt die
+     Platzhalter wie bei card.html und nimmt das Video Bild für Bild auf: window.setTime(t)
+     stellt alle Animationen auf den Zeitpunkt t (Sekunden). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Noto+Sans:wght@500;700;800&display=swap">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; }
+  body { font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif; color: #fff; background: #3062f9; }
+  .reel { position: relative; box-sizing: border-box; display: flex; flex-direction: column; width: 1080px; height: 1920px;
+    padding: 170px 160px 420px 90px; overflow: hidden; background: linear-gradient(160deg, #08bdf8 0%, #3062f9 50%, #8a3cf5 100%); }
+  /* Rand rechts und unten frei lassen: dort liegen in Reels die Knöpfe und der Text von Instagram */
+  .glow { position: absolute; left: -240px; top: -280px; width: 980px; height: 980px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.24) 0, rgba(255,255,255,0) 62%); animation: drift 8s linear both; }
+  .ring { position: absolute; right: -280px; bottom: -300px; width: 860px; height: 860px; border-radius: 50%; background: rgba(255,255,255,.08);
+    animation: grow 8s linear both; }
+  .reel > .brand, .reel > .pill, .reel > .hook, .reel > .sub, .reel > .push, .reel > .foot { position: relative; }
+  .brand { display: flex; align-items: center; gap: 20px; font-size: 50px; font-weight: 800; letter-spacing: -.02em; animation: fadeUp .7s .1s both; }
+  .brand img { width: 84px; height: 84px; border-radius: 22px; }
+  .pill { align-self: flex-start; margin: 130px 0 36px; padding: 14px 30px; border-radius: 999px; background: rgba(255,255,255,.2);
+    font-size: 30px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; animation: fadeUp .6s .5s both; }
+  .hook { margin: 0; font-size: __HOOK_SIZE__px; line-height: 1.07; font-weight: 800; letter-spacing: -.03em; animation: fadeUp .8s .8s both; }
+  .sub { margin: 40px 0 0; font-size: 46px; line-height: 1.35; font-weight: 500; color: rgba(255,255,255,.9); animation: fadeUp .7s 1.7s both; }
+  .push { display: flex; align-items: center; gap: 28px; margin-top: auto; padding: 34px 38px; border-radius: 40px; background: #fff; color: #0d1330;
+    box-shadow: 0 44px 90px -30px rgba(15,10,70,.6); animation: slideIn .8s 2.9s cubic-bezier(.2,1.35,.4,1) both; }
+  .push img { flex: none; width: 96px; height: 96px; border-radius: 24px; box-shadow: 0 0 0 1px #ece8fb; }
+  .push b { display: block; margin-bottom: 6px; font-size: 36px; }
+  .push span { font-size: 36px; line-height: 1.3; color: #5d6480; }
+  .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 64px; font-size: 40px; font-weight: 700;
+    animation: fadeUp .6s 5.1s both; }
+  .foot .cta { padding: 22px 38px; border-radius: 24px; background: #fff; color: #5a32e6; font-weight: 800; animation: pop .6s 5.5s both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(44px); } to { opacity: 1; transform: none; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(170px) scale(.96); } to { opacity: 1; transform: none; } }
+  @keyframes pop { 0% { transform: scale(.86); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  @keyframes drift { from { transform: translate(0, 0); } to { transform: translate(240px, 300px); } }
+  @keyframes grow { from { transform: scale(1); } to { transform: scale(1.14); } }
+</style>
+</head>
+<body>
+<div class="reel">
+  <span class="glow"></span><span class="ring"></span>
+  <div class="brand"><img src="__LOGO_PATH__" alt="">heylivo</div>
+  <div class="pill">__CATEGORY__</div>
+  <h1 class="hook">__HOOK__</h1>
+  <p class="sub">__SUB__</p>
+  <div class="push"><img src="__LOGO_PATH__" alt=""><div><b>Hey Livo</b><span>__PUSH__</span></div></div>
+  <div class="foot"><span>heylivo.com</span><span class="cta">__CTA__</span></div>
+</div>
+<script>
+  // Aufnahme: alle Animationen anhalten und auf den Zeitpunkt t (Sekunden) stellen
+  window.setTime = function (t) {
+    document.getAnimations().forEach(function (a) { a.pause(); a.currentTime = t * 1000; });
+  };
+</script>
+</body>
+</html>

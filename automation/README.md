@@ -22,3 +22,7 @@ Ohne die ersten beiden Secrets postet die Automatik nichts.
 - Lokal ohne Python: `__preview-cards.html?day=1&lang=en` (nicht im Repo) über den lokalen Server öffnen.
 - Ein bestimmter Tag sofort: Actions → „Daily Instagram post“ → „Run workflow“ → Tag und Sprache (de/en) eintragen.
 - Ersten Post-Tag ändern: `START_DATE` in `get_day_number.py`.
+
+## Reels
+
+`render_reel.py` macht aus derselben Zeile ein 8-Sekunden-Video (1080 × 1920, `templates/reel.html`, Bild für Bild aufgenommen, ffmpeg). In `daily-post.yml` steht `DEFAULT_FORMAT` (`image` oder `reel`). Videos gehen über heylivo.com an Instagram (dort als video/mp4), nur die 7 neuesten bleiben im Repo. Test ohne Posten: „Run workflow“ mit format `reel` und post `no`. Lokale Einzelbilder: `__preview-reel.html?day=1&t=3`.
