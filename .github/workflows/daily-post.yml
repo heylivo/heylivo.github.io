@@ -116,7 +116,8 @@ jobs:
           git add "output/${{ steps.day.outputs.file }}"
           # only the 7 newest videos stay on the website
           python -c "import pathlib, subprocess; old = sorted(pathlib.Path('output').glob('*.mp4'), key=lambda p: p.stem[-10:], reverse=True)[7:]; [subprocess.run(['git', 'rm', '-q', str(p)], check=True) for p in old]"
-          git commit -m "chore: Instagram ${{ steps.day.outputs.format }} for day ${{ steps.day.outputs.n }} (${{ steps.day.outputs.lang }})"
+          # the same file may already be there (e.g. made by a test run earlier the same day)
+          git commit -m "chore: Instagram ${{ steps.day.outputs.format }} for day ${{ steps.day.outputs.n }} (${{ steps.day.outputs.lang }})" || echo "File already in the repo"
           git pull --rebase
           git push
 
