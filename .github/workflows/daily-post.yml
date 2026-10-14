@@ -28,7 +28,7 @@ on:
 
 # reel = 8-second video (reaches people who don't follow yet), image = still card
 env:
-  DEFAULT_FORMAT: image
+  DEFAULT_FORMAT: reel
 
 permissions:
   contents: write

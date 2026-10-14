@@ -2,8 +2,8 @@
 Prints today's post: "<day number> <language>", e.g. "12 en".
 
 The day number runs through the content calendar (1 .. number of rows) and then starts
-again at 1, so the plan never needs extending. Day 1 was posted by hand (German) on
-2026-10-14, the schedule continues with day 2 the same afternoon.
+again at 1, so the plan never needs extending. Days 1 (German image) and 2 (English Reel) were
+posted by hand on 2026-10-14, the schedule continued with day 3 that afternoon.
 
 German and English alternate every day. In the next pass through the calendar the
 languages swap, so over two passes every post appears once in each language.
@@ -13,7 +13,7 @@ import csv
 import datetime
 from pathlib import Path
 
-START_DATE = datetime.date(2026, 10, 13)
+START_DATE = datetime.date(2026, 10, 12)
 CALENDAR_PATH = Path(__file__).resolve().parent / "content_calendar.csv"
 
 
