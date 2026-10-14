@@ -1,9 +1,12 @@
 """
-Prints today's day number in the content calendar (1 .. number of rows).
+Prints today's post: "<day number> <language>", e.g. "12 en".
 
-The calendar loops: START_DATE is day 1, and after the last row it starts again at
-day 1 - so it never needs extending. Day 1 was posted by hand on 2026-10-14, the
-schedule continues with day 2 the same afternoon.
+The day number runs through the content calendar (1 .. number of rows) and then starts
+again at 1, so the plan never needs extending. Day 1 was posted by hand (German) on
+2026-10-14, the schedule continues with day 2 the same afternoon.
+
+German and English alternate every day. In the next pass through the calendar the
+languages swap, so over two passes every post appears once in each language.
 """
 
 import csv
@@ -19,10 +22,15 @@ def cycle_length() -> int:
         return sum(1 for _ in csv.DictReader(f))
 
 
-def today_day_number() -> int:
+def today_post() -> tuple[int, str]:
     elapsed_days = (datetime.date.today() - START_DATE).days
-    return (elapsed_days % cycle_length()) + 1
+    length = cycle_length()
+    day_number = (elapsed_days % length) + 1
+    pass_number = elapsed_days // length
+    lang = "de" if (elapsed_days + pass_number) % 2 == 0 else "en"
+    return day_number, lang
 
 
 if __name__ == "__main__":
-    print(today_day_number())
+    day, language = today_post()
+    print(f"{day} {language}")

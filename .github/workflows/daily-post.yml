@@ -1,7 +1,8 @@
 name: Daily Instagram post
 
-# Renders today's card from automation/content_calendar.csv and posts it to the heylivo
-# Instagram account (same idea as the Smart Menu Solutions daily post). Does nothing until
+# Renders today's card from automation/content_calendar.csv (German) or
+# content_calendar_en.csv (English, every other day) and posts it to the heylivo Instagram
+# account (same idea as the Smart Menu Solutions daily post). Does nothing until
 # the secrets INSTAGRAM_USER_ID and INSTAGRAM_ACCESS_TOKEN are set.
 
 on:
@@ -11,8 +12,12 @@ on:
   workflow_dispatch:
     inputs:
       day:
-        description: "Day number from content_calendar.csv instead of today's (optional)"
+        description: "Day number from the calendar instead of today's (optional)"
         required: false
+      lang:
+        description: "Language for that day: de or en"
+        required: false
+        default: "de"
 
 permissions:
   contents: write
@@ -61,15 +66,21 @@ jobs:
         id: day
         env:
           DAY_INPUT: ${{ inputs.day }}
+          LANG_INPUT: ${{ inputs.lang }}
         run: |
-          if [[ "$DAY_INPUT" =~ ^[0-9]+$ ]]; then N="$DAY_INPUT"; else N=$(python get_day_number.py); fi
+          if [[ "$DAY_INPUT" =~ ^[0-9]+$ ]]; then
+            N="$DAY_INPUT"; L="de"; [ "$LANG_INPUT" = "en" ] && L="en"
+          else
+            read -r N L <<< "$(python get_day_number.py)"
+          fi
           echo "n=$N" >> "$GITHUB_OUTPUT"
-          echo "file=day-$N-$(date -u +%F)" >> "$GITHUB_OUTPUT"
+          echo "lang=$L" >> "$GITHUB_OUTPUT"
+          echo "file=day-$N-$L-$(date -u +%F)" >> "$GITHUB_OUTPUT"
 
       - name: Render card
         working-directory: automation
         run: |
-          python render_card.py "${{ steps.day.outputs.n }}" "output/${{ steps.day.outputs.file }}.png"
+          python render_card.py "${{ steps.day.outputs.n }}" "output/${{ steps.day.outputs.file }}.png" "${{ steps.day.outputs.lang }}"
           python to_jpeg.py "output/${{ steps.day.outputs.file }}.png" "output/${{ steps.day.outputs.file }}.jpg"
 
       - name: Commit and push the image (Instagram needs a public URL)
@@ -78,7 +89,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "output/${{ steps.day.outputs.file }}.jpg"
-          git commit -m "chore: Instagram post image for day ${{ steps.day.outputs.n }}"
+          git commit -m "chore: Instagram post image for day ${{ steps.day.outputs.n }} (${{ steps.day.outputs.lang }})"
           git pull --rebase
           git push
 
@@ -90,4 +101,4 @@ jobs:
         run: |
           IMAGE_URL="https://raw.githubusercontent.com/${{ github.repository }}/main/automation/output/${{ steps.day.outputs.file }}.jpg"
           for i in $(seq 1 20); do curl -sfI "$IMAGE_URL" > /dev/null && break; sleep 3; done
-          python post_instagram.py "$IMAGE_URL" "${{ steps.day.outputs.n }}"
+          python post_instagram.py "$IMAGE_URL" "${{ steps.day.outputs.n }}" "${{ steps.day.outputs.lang }}"
