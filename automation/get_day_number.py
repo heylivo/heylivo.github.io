@@ -2,14 +2,15 @@
 Prints today's day number in the content calendar (1 .. number of rows).
 
 The calendar loops: START_DATE is day 1, and after the last row it starts again at
-day 1 - so it never needs extending. Set START_DATE to the day of the very first post.
+day 1 - so it never needs extending. Day 1 was posted by hand on 2026-10-14, the
+schedule continues with day 2 the same afternoon.
 """
 
 import csv
 import datetime
 from pathlib import Path
 
-START_DATE = datetime.date(2026, 10, 15)
+START_DATE = datetime.date(2026, 10, 13)
 CALENDAR_PATH = Path(__file__).resolve().parent / "content_calendar.csv"
 
 
