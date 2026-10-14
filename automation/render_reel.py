@@ -6,8 +6,8 @@ Usage:
 
 Fills templates/reel.html like render_card.py fills card.html, then records it frame by
 frame: window.setTime(t) puts every CSS animation at the frame's time, Playwright takes a
-screenshot, and ffmpeg joins the frames into an H.264 MP4 with a silent AAC track (Instagram
-expects an audio stream). Local preview of single frames: __preview-reel.html?day=N&t=3.
+screenshot, and ffmpeg joins the frames into an H.264 MP4 with the day's background music
+(music.py, faded in and out). Local preview of single frames: __preview-reel.html?day=N&t=3.
 """
 
 import html
@@ -19,6 +19,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+from music import track_for
 from render_card import AUTOMATION_DIR, CARD_CTA, LOGO_PATH, hook_font_size, load_day_row
 
 TEMPLATE_PATH = AUTOMATION_DIR / "templates" / "reel.html"
@@ -66,13 +67,16 @@ def render(day_number: int, output_path: Path, lang: str) -> None:
             browser.close()
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
+        music, _ = track_for(day_number)
         subprocess.run([
             "ffmpeg", "-y", "-loglevel", "error",
             "-framerate", str(FPS), "-i", str(frames / "f%04d.png"),
-            "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
-            "-shortest", "-r", str(FPS),
+            "-i", str(music),
+            "-map", "0:v", "-map", "1:a",
+            "-af", f"afade=t=in:d=0.4,afade=t=out:st={SECONDS - 1.2}:d=1.2",
+            "-t", str(SECONDS), "-r", str(FPS),
             "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p", "-crf", "23",
-            "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart",
+            "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart",
             str(output_path),
         ], check=True)
     finally:

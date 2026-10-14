@@ -21,6 +21,8 @@ from pathlib import Path
 
 import requests
 
+from music import credit_line
+
 API_VERSION = "v21.0"
 BASE = f"https://graph.instagram.com/{API_VERSION}"
 AUTOMATION_DIR = Path(__file__).resolve().parent
@@ -31,12 +33,14 @@ CTA = {
 }
 
 
-def caption_for(day_number: int, lang: str) -> str:
+# Reels also name their background music (the CC BY licence asks for a credit, see music.py)
+def caption_for(day_number: int, lang: str, reel: bool = False) -> str:
     path = AUTOMATION_DIR / CALENDARS[lang]
+    credit = f"\n{credit_line(day_number, lang)}" if reel else ""
     with open(path, newline="", encoding="utf-8-sig") as f:
         for row in csv.DictReader(f):
             if int(row["Tag"]) == day_number:
-                return f"{row['Hook']}\n\n{row['Caption']}\n\n{CTA[lang]}\n\n{row['Hashtags']}"
+                return f"{row['Hook']}\n\n{row['Caption']}\n\n{CTA[lang]}{credit}\n\n{row['Hashtags']}"
     raise ValueError(f"Day {day_number} not found in {path}")
 
 
@@ -90,7 +94,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     media_url = sys.argv[1]
-    caption = caption_for(int(sys.argv[2]), sys.argv[3] if len(sys.argv) == 4 else "de")
+    caption = caption_for(int(sys.argv[2]), sys.argv[3] if len(sys.argv) == 4 else "de", media_url.endswith(".mp4"))
     ig_user_id = os.environ["INSTAGRAM_USER_ID"]
     token = os.environ["INSTAGRAM_ACCESS_TOKEN"]
 

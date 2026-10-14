@@ -26,3 +26,5 @@ Ohne die ersten beiden Secrets postet die Automatik nichts.
 ## Reels
 
 `render_reel.py` macht aus derselben Zeile ein 8-Sekunden-Video (1080 × 1920, `templates/reel.html`, Bild für Bild aufgenommen, ffmpeg). In `daily-post.yml` steht `DEFAULT_FORMAT` (`image` oder `reel`). Videos gehen über heylivo.com an Instagram (dort als video/mp4), nur die 7 neuesten bleiben im Repo. Test ohne Posten: „Run workflow“ mit format `reel` und post `no`. Lokale Einzelbilder: `__preview-reel.html?day=1&t=3`.
+
+Musik: `music.py` wählt je Tag eins von drei 9-Sekunden-Stücken aus `assets/music/` (Kevin MacLeod, incompetech.com, CC BY 4.0 – siehe `assets/music/CREDITS.md`). Die Lizenz verlangt eine Nennung, deshalb steht unter jedem Reel „🎵 Musik: … von Kevin MacLeod (incompetech.com), CC BY 4.0“.
