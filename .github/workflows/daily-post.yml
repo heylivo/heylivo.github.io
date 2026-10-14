@@ -1,0 +1,93 @@
+name: Daily Instagram post
+
+# Renders today's card from automation/content_calendar.csv and posts it to the heylivo
+# Instagram account (same idea as the Smart Menu Solutions daily post). Does nothing until
+# the secrets INSTAGRAM_USER_ID and INSTAGRAM_ACCESS_TOKEN are set.
+
+on:
+  schedule:
+    # 15:00 UTC = 17:00/16:00 in Germany, 18:00/17:00 in Greece
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "Day number from content_calendar.csv instead of today's (optional)"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-post
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.secrets.outputs.ready }}
+    steps:
+      - id: secrets
+        env:
+          USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: |
+          if [ -n "$USER_ID" ] && [ -n "$TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Instagram secrets not set yet - nothing to post."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  post:
+    needs: check
+    if: needs.check.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: automation
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Determine day
+        working-directory: automation
+        id: day
+        env:
+          DAY_INPUT: ${{ inputs.day }}
+        run: |
+          if [[ "$DAY_INPUT" =~ ^[0-9]+$ ]]; then N="$DAY_INPUT"; else N=$(python get_day_number.py); fi
+          echo "n=$N" >> "$GITHUB_OUTPUT"
+          echo "file=day-$N-$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Render card
+        working-directory: automation
+        run: |
+          python render_card.py "${{ steps.day.outputs.n }}" "output/${{ steps.day.outputs.file }}.png"
+          python to_jpeg.py "output/${{ steps.day.outputs.file }}.png" "output/${{ steps.day.outputs.file }}.jpg"
+
+      - name: Commit and push the image (Instagram needs a public URL)
+        working-directory: automation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "output/${{ steps.day.outputs.file }}.jpg"
+          git commit -m "chore: Instagram post image for day ${{ steps.day.outputs.n }}"
+          git pull --rebase
+          git push
+
+      - name: Post to Instagram
+        working-directory: automation
+        env:
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: |
+          IMAGE_URL="https://raw.githubusercontent.com/${{ github.repository }}/main/automation/output/${{ steps.day.outputs.file }}.jpg"
+          for i in $(seq 1 20); do curl -sfI "$IMAGE_URL" > /dev/null && break; sleep 3; done
+          python post_instagram.py "$IMAGE_URL" "${{ steps.day.outputs.n }}"

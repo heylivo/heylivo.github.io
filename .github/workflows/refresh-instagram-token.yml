@@ -1,0 +1,30 @@
+name: Refresh Instagram token
+
+# Instagram access tokens run out after 60 days. This renews the token twice a month and
+# stores the new one in the secret INSTAGRAM_ACCESS_TOKEN. Writing a secret needs the
+# secret GH_SECRETS_TOKEN: a fine-grained GitHub token for this repository with the
+# permission "Secrets: Read and write". If this fails, GitHub sends an email - renew
+# within the 60 days, otherwise a new token has to be created in the Meta app.
+
+on:
+  schedule:
+    - cron: "0 5 3,18 * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Renew the token and save the new one
+        env:
+          TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "No INSTAGRAM_ACCESS_TOKEN yet - nothing to renew."; exit 0; fi
+          if [ -z "$GH_TOKEN" ]; then echo "GH_SECRETS_TOKEN is missing - the new token could not be saved."; exit 1; fi
+          RESP=$(curl -s "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=$TOKEN")
+          NEW=$(echo "$RESP" | jq -r '.access_token // empty')
+          if [ -z "$NEW" ]; then echo "Refresh failed: $(echo "$RESP" | jq -c '.error // .')"; exit 1; fi
+          echo "::add-mask::$NEW"
+          gh secret set INSTAGRAM_ACCESS_TOKEN --body "$NEW" --repo "$GITHUB_REPOSITORY"
+          echo "Token renewed - valid for $(( $(echo "$RESP" | jq -r '.expires_in') / 86400 )) more days."

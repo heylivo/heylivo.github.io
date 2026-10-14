@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<!-- Vorlage für die täglichen Instagram-Karten (1080 x 1350). render_card.py ersetzt die
+     __PLATZHALTER__ mit der Zeile des Tages aus content_calendar.csv. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Noto+Sans:wght@500;700;800&display=swap">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1350px; overflow: hidden; }
+  body { font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif; color: #fff; background: #3062f9; }
+  .card { position: relative; box-sizing: border-box; display: flex; flex-direction: column; width: 1080px; height: 1350px;
+    padding: 80px 84px 76px; overflow: hidden;
+    background: radial-gradient(circle at 88% 10%, rgba(255,255,255,.22) 0, rgba(255,255,255,0) 30%),
+                linear-gradient(150deg, #08bdf8 0%, #3062f9 50%, #8a3cf5 100%); }
+  .card::before { content: ""; position: absolute; right: -190px; bottom: -230px; width: 660px; height: 660px; border-radius: 50%; background: rgba(255,255,255,.08); }
+  .card > * { position: relative; }
+  .brand { display: flex; align-items: center; gap: 18px; font-size: 42px; font-weight: 800; letter-spacing: -.02em; }
+  .brand img { width: 68px; height: 68px; border-radius: 18px; }
+  .pill { align-self: flex-start; margin: 70px 0 30px; padding: 11px 24px; border-radius: 999px; background: rgba(255,255,255,.2);
+    font-size: 26px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .hook { margin: 0; font-size: __HOOK_SIZE__px; line-height: 1.07; font-weight: 800; letter-spacing: -.03em; }
+  .sub { margin: 30px 0 0; max-width: 880px; font-size: 38px; line-height: 1.35; font-weight: 500; color: rgba(255,255,255,.9); }
+  .push { display: flex; align-items: center; gap: 24px; margin-top: auto; max-width: 840px; padding: 28px 32px; border-radius: 32px;
+    background: #fff; color: #0d1330; box-shadow: 0 34px 70px -26px rgba(15,10,70,.55); }
+  .push img { flex: none; width: 80px; height: 80px; border-radius: 20px; box-shadow: 0 0 0 1px #ece8fb; }
+  .push b { display: block; margin-bottom: 4px; font-size: 30px; }
+  .push span { font-size: 30px; line-height: 1.3; color: #5d6480; }
+  .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 50px; font-size: 32px; font-weight: 700; }
+  .foot .cta { padding: 16px 30px; border-radius: 18px; background: #fff; color: #5a32e6; font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand"><img src="__LOGO_PATH__" alt="">heylivo</div>
+  <div class="pill">__CATEGORY__</div>
+  <h1 class="hook">__HOOK__</h1>
+  <p class="sub">__SUB__</p>
+  <div class="push"><img src="__LOGO_PATH__" alt=""><div><b>Hey Livo</b><span>__PUSH__</span></div></div>
+  <div class="foot"><span>heylivo.com</span><span class="cta">30 Tage kostenlos</span></div>
+</div>
+</body>
+</html>
