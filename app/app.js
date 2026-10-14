@@ -29,14 +29,14 @@ var TIME_ZONE = (function () { try { return Intl.DateTimeFormat().resolvedOption
 function toRow(it) {
   return {
     tpl: it.tpl || "eigene", title: it.title, due: it.due, due_time: it.time || null,
-    every_months: it.every || 0, from_done: it.from === "done", lead_days: it.lead, renew: !!it.renew,
+    every_months: it.every || 0, every_days: it.everyDays || 0, from_done: it.from === "done", lead_days: it.lead, renew: !!it.renew,
     remind_min: it.time && it.remindMin ? it.remindMin : null, tz: TIME_ZONE
   };
 }
 function fromRow(r) {
   return {
     id: r.id, tpl: r.tpl, title: r.title, due: r.due, time: r.due_time ? r.due_time.slice(0, 5) : "",
-    every: r.every_months, from: r.from_done ? "done" : "due", lead: r.lead_days, renew: r.renew,
+    every: r.every_months, everyDays: r.every_days || 0, from: r.from_done ? "done" : "due", lead: r.lead_days, renew: r.renew,
     remindMin: r.remind_min || 0
   };
 }
@@ -128,11 +128,19 @@ function whenText(days) {
   if (m < 24) return t("when.months", { n: m });
   return t("when.years", { n: Math.round(days / 365.25) });
 }
-function everyText(m) {
+// Wiederholung als Text; it hat every (Monate) oder everyDays (Tage)
+function everyText(it) {
+  var d = it.everyDays || 0, m = it.every || 0;
+  if (d) {
+    if (d === 1 || d === 7) return t("every.d" + d);
+    return d % 7 === 0 ? t("every.weeks", { n: d / 7 }) : t("every.days", { n: d });
+  }
   if (!m || m === 1 || m === 12) return t("every." + (m || 0));
   if (m % 12 === 0) return t("every.years", { n: m / 12 });
   return t("every.months", { n: m });
 }
+function repeats(it) { return (it.every || 0) > 0 || (it.everyDays || 0) > 0; }
+function nextRepeat(d, it) { return it.everyDays > 0 ? addDays(d, it.everyDays) : addMonths(d, it.every); }
 function dueText(it) { return fmt(fromISO(it.due)) + (it.time ? ", " + it.time + t("time.suffix") : ""); }
 function remindText(it) {
   var r = addDays(fromISO(it.due), -it.lead);
@@ -422,16 +430,51 @@ function readSoon(form) {
   return parseTime(form.elements.time.value) ? (parseInt(form.elements.soon.value, 10) || 0) : 0;
 }
 
+// Wiederholung: feste Auswahl plus "Benutzerdefiniert …" = alle N Tage, Wochen, Monate oder Jahre
+var REPEAT_UNITS = ["d", "w", "m", "y"];
+function repeatHTML(r, label) {
+  var v = repeatValue(r), custom = REPEAT_OPTIONS.indexOf(v) < 0, n = 1, unit = "w";
+  if (custom) {
+    // eigene Angabe vorbelegen: Tage als Wochen, wenn es aufgeht, Monate als Jahre
+    if (r.everyDays) { unit = r.everyDays % 7 === 0 ? "w" : "d"; n = unit === "w" ? r.everyDays / 7 : r.everyDays; }
+    else { unit = r.every % 12 === 0 ? "y" : "m"; n = unit === "y" ? r.every / 12 : r.every; }
+  }
+  return '<label class="field"><span>' + esc(label || t("form.every")) + '</span><select name="every">' +
+    REPEAT_OPTIONS.map(function (o) {
+      return '<option value="' + o + '"' + (o === v ? " selected" : "") + '>' + esc(repeatOptionText(o)) + '</option>';
+    }).join("") + '<option value="custom"' + (custom ? " selected" : "") + '>' + esc(t("everyopt.custom")) + '</option></select></label>' +
+    '<div class="field" id="repeatCustom"' + (custom ? "" : " hidden") + '><span>' + t("form.everyCustom") + '</span><div class="row2">' +
+    '<input name="everyN" type="number" min="1" max="999" inputmode="numeric" value="' + n + '">' +
+    '<select name="everyUnit">' + REPEAT_UNITS.map(function (u) {
+      return '<option value="' + u + '"' + (u === unit ? " selected" : "") + '>' + esc(t("unit." + u)) + '</option>';
+    }).join("") + '</select></div></div>';
+}
+function wireRepeat(form) {
+  if (!form.elements.everyN) return; // Vorlage ohne Wiederholungs-Auswahl
+  form.elements.every.addEventListener("change", function () {
+    document.getElementById("repeatCustom").hidden = form.elements.every.value !== "custom";
+  });
+}
+// { every, everyDays } aus dem Formular; null, wenn die eigene Angabe keine Zahl ab 1 ist
+// (mit Fehlermeldung, außer quiet - beim Tippen in der Vorschau)
+function readRepeat(form, quiet) {
+  var v = form.elements.every.value;
+  if (v !== "custom") return parseRepeatValue(v);
+  var n = parseInt(form.elements.everyN.value, 10), u = form.elements.everyUnit.value;
+  if (!(n >= 1)) {
+    if (!quiet) document.getElementById("err").textContent = t("form.errEvery");
+    return null;
+  }
+  if (u === "d" || u === "w") return { every: 0, everyDays: Math.min(n * (u === "w" ? 7 : 1), 3650) };
+  return { every: Math.min(n * (u === "y" ? 12 : 1), 240), everyDays: 0 };
+}
+
 function itemFormHTML(it, opts) {
-  var list = EVERY_OPTIONS.slice();
-  if (!list.some(function (o) { return o[0] === it.every; })) list.push([it.every, everyText(it.every)]);
   return '<form id="frm" novalidate>' + (opts.intro || "") +
     '<label class="field"><span>' + t("form.what") + '</span><input name="title" type="text" value="' + esc(it.title) + '"></label>' +
     '<label class="field"><span>' + (opts.dateLabel || t("form.due")) + '</span><input name="due" type="date" value="' + esc(it.due) + '"></label>' +
     timeHTML(it.time, it.remindMin) +
-    '<label class="field"><span>' + t("form.every") + '</span><select name="every">' + list.map(function (o) {
-      return '<option value="' + o[0] + '"' + (o[0] === it.every ? " selected" : "") + '>' + esc(o[1]) + '</option>';
-    }).join("") + '</select></label>' +
+    repeatHTML(it) +
     leadHTML(it.lead) +
     '<p class="err" id="err"></p><button class="btn" type="submit">' + t("save") + '</button>' + (opts.back || "") + '</form>';
 }
@@ -444,11 +487,14 @@ function readItemForm(form, it) {
   }
   var time = readTime(form);
   if (time === null) return false;
+  var rep = readRepeat(form);
+  if (!rep) return false;
   it.title = title;
   it.due = due;
   it.time = time;
   it.remindMin = readSoon(form);
-  it.every = parseInt(form.elements.every.value, 10) || 0;
+  it.every = rep.every;
+  it.everyDays = rep.everyDays;
   it.lead = readLead(form, it.lead);
   return true;
 }
@@ -463,6 +509,7 @@ function showDraft(d, said) {
     }));
   var form = document.getElementById("frm");
   wireTime(form);
+  wireRepeat(form);
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!readItemForm(form, d)) return;
@@ -490,6 +537,7 @@ async function saving(form, promise, okText) {
 function fieldHTML(tp, f) {
   var v = f.value != null ? f.value : "", ph = fieldPh(tp, f);
   var input;
+  if (f.type === "repeat") return repeatHTML(parseRepeatValue(v), fieldLabel(tp, f));
   if (f.type === "select") {
     input = '<select name="' + f.key + '">' + f.options.map(function (o) {
       return '<option value="' + o[0] + '"' + (String(o[0]) === String(v) ? " selected" : "") + '>' + esc(o[1]) + '</option>';
@@ -503,7 +551,9 @@ function fieldHTML(tp, f) {
 }
 function readValues(form, tp) {
   var v = {};
-  tp.fields.forEach(function (f) { v[f.key] = (form.elements[f.key].value || "").trim(); });
+  tp.fields.forEach(function (f) {
+    v[f.key] = f.type === "repeat" ? readRepeat(form, true) : (form.elements[f.key].value || "").trim();
+  });
   return v;
 }
 // Liefert die fertige Frist oder null, wenn Pflichtfelder fehlen oder das Datum ungültig ist
@@ -511,7 +561,7 @@ function build(tp, v, lead) {
   if (tp.fields.some(function (f) { return !f.optional && !v[f.key]; })) return null;
   var r = tp.compute(v);
   if (!isDate(r.due)) return null;
-  return { tpl: tp.id, title: tplName(tp, v), due: toISO(r.due), time: "", every: r.every || 0, from: tp.from || "due", lead: lead, renew: !!tp.renew };
+  return { tpl: tp.id, title: tplName(tp, v), due: toISO(r.due), time: "", every: r.every || 0, everyDays: r.everyDays || 0, from: tp.from || "due", lead: lead, renew: !!tp.renew };
 }
 
 function showNew(tid) {
@@ -529,6 +579,7 @@ function showNew(tid) {
 
   var form = document.getElementById("frm");
   wireTime(form);
+  wireRepeat(form);
   // Frist aus den Feldern der Vorlage plus der (freiwilligen) Uhrzeit
   function current() {
     var it = build(tp, readValues(form, tp), readLead(form, tp.lead));
@@ -541,12 +592,13 @@ function showNew(tid) {
   function update() {
     var it = current();
     document.getElementById("pv").innerHTML = it
-      ? t("preview", { due: esc(dueText(it)), remind: esc(remindText(it)), every: esc(everyText(it.every)) })
+      ? t("preview", { due: esc(dueText(it)), remind: esc(remindText(it)), every: esc(everyText(it)) })
       : t("preview.empty");
   }
   form.addEventListener("input", update);
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (form.elements.everyN && !readRepeat(form)) return;
     var it = current();
     if (!it) { document.getElementById("err").textContent = t("form.errFields"); return; }
     if (readTime(form) === null) return;
@@ -560,13 +612,13 @@ function showItem(id) {
   var it = find(items, id);
   if (!it) return;
   var s = status(it), tp = find(TEMPLATES, it.tpl), hint = tp ? tplHint(tp) : "";
-  var main = it.every > 0 ? t("done.next") : it.renew ? t("done.renew") : t("done");
+  var main = repeats(it) ? t("done.next") : it.renew ? t("done.renew") : t("done");
   openSheet('<div class="st-' + s.key + '"><div class="d-head"><span class="ico">' + iconOf(it) + '</span><div><h3>' + esc(it.title) + '</h3>' +
     '<span class="pill">' + esc(whenText(s.days)) + '</span></div></div>' +
     '<dl><dt>' + t("dl.due") + '</dt><dd>' + esc(dueText(it)) + '</dd>' +
     '<dt>' + t("dl.remind") + '</dt><dd>' + esc(t("dl.remindVal", { n: it.lead, x: remindText(it) })) + '</dd>' +
     (it.time && it.remindMin ? '<dt>' + t("dl.soon") + '</dt><dd>' + esc(soonText(it.remindMin)) + '</dd>' : "") +
-    '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it.every)) + '</dd></dl>' +
+    '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it)) + '</dd></dl>' +
     (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") +
     (canEdit()
       ? '<button type="button" class="btn" data-act="done" data-id="' + it.id + '">' + main + '</button>' +
@@ -579,9 +631,9 @@ async function markDone(id) {
   var it = find(items, id);
   if (!it) return;
   try {
-    if (it.every > 0) {
-      var next = addMonths(it.from === "done" ? today() : fromISO(it.due), it.every);
-      while (next <= today()) next = addMonths(next, it.every);
+    if (repeats(it)) {
+      var next = nextRepeat(it.from === "done" ? today() : fromISO(it.due), it);
+      while (next <= today()) next = nextRepeat(next, it);
       var old = it.due;
       it.due = toISO(next);
       try { await updateItem(it); } catch (e) { it.due = old; throw e; }
@@ -611,6 +663,7 @@ function showEdit(id, renewing) {
     }));
   var form = document.getElementById("frm");
   wireTime(form);
+  wireRepeat(form);
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     var before = Object.assign({}, it);

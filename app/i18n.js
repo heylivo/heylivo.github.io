@@ -51,6 +51,10 @@ var TXT = {
     "every.0": "einmalig", "every.1": "jeden Monat", "every.12": "jedes Jahr", "every.years": "alle {n} Jahre", "every.months": "alle {n} Monate",
     "everyopt.0": "Einmalig", "everyopt.1": "Jeden Monat", "everyopt.3": "Alle 3 Monate", "everyopt.6": "Alle 6 Monate",
     "everyopt.12": "Jedes Jahr", "everyopt.24": "Alle 2 Jahre", "everyopt.36": "Alle 3 Jahre", "everyopt.120": "Alle 10 Jahre",
+    "every.d1": "jeden Tag", "every.d7": "jede Woche", "every.weeks": "alle {n} Wochen", "every.days": "alle {n} Tage",
+    "everyopt.d1": "Jeden Tag", "everyopt.d7": "Jede Woche", "everyopt.d14": "Alle 2 Wochen", "everyopt.custom": "Benutzerdefiniert …",
+    "form.everyCustom": "Wiederholen alle", "unit.d": "Tage", "unit.w": "Wochen", "unit.m": "Monate", "unit.y": "Jahre",
+    "form.errEvery": "Bitte trag bei der Wiederholung eine Zahl ab 1 ein.",
     "remind.now": "sofort", "remind.from": "ab {date}",
     "voicebar.sub": "Frist einfach sagen, z. B. „Mein Ausweis läuft im März 2027 ab“",
     "status.plus": "Livo Plus aktiv bis {date}",
@@ -128,6 +132,10 @@ var TXT = {
     "every.0": "one-off", "every.1": "every month", "every.12": "every year", "every.years": "every {n} years", "every.months": "every {n} months",
     "everyopt.0": "One-off", "everyopt.1": "Every month", "everyopt.3": "Every 3 months", "everyopt.6": "Every 6 months",
     "everyopt.12": "Every year", "everyopt.24": "Every 2 years", "everyopt.36": "Every 3 years", "everyopt.120": "Every 10 years",
+    "every.d1": "every day", "every.d7": "every week", "every.weeks": "every {n} weeks", "every.days": "every {n} days",
+    "everyopt.d1": "Every day", "everyopt.d7": "Every week", "everyopt.d14": "Every 2 weeks", "everyopt.custom": "Custom …",
+    "form.everyCustom": "Repeat every", "unit.d": "days", "unit.w": "weeks", "unit.m": "months", "unit.y": "years",
+    "form.errEvery": "Please enter a number of 1 or more for the repeat.",
     "remind.now": "right away", "remind.from": "from {date}",
     "voicebar.sub": "Just say it, e.g. “My ID card expires in March 2027”",
     "status.plus": "Livo Plus active until {date}",
@@ -205,6 +213,10 @@ var TXT = {
     "every.0": "una volta", "every.1": "ogni mese", "every.12": "ogni anno", "every.years": "ogni {n} anni", "every.months": "ogni {n} mesi",
     "everyopt.0": "Una volta", "everyopt.1": "Ogni mese", "everyopt.3": "Ogni 3 mesi", "everyopt.6": "Ogni 6 mesi",
     "everyopt.12": "Ogni anno", "everyopt.24": "Ogni 2 anni", "everyopt.36": "Ogni 3 anni", "everyopt.120": "Ogni 10 anni",
+    "every.d1": "ogni giorno", "every.d7": "ogni settimana", "every.weeks": "ogni {n} settimane", "every.days": "ogni {n} giorni",
+    "everyopt.d1": "Ogni giorno", "everyopt.d7": "Ogni settimana", "everyopt.d14": "Ogni 2 settimane", "everyopt.custom": "Personalizzato …",
+    "form.everyCustom": "Ripeti ogni", "unit.d": "giorni", "unit.w": "settimane", "unit.m": "mesi", "unit.y": "anni",
+    "form.errEvery": "Per la ripetizione inserisci un numero da 1 in su.",
     "remind.now": "immediato", "remind.from": "dal {date}",
     "voicebar.sub": "Dillo e basta, ad es. “La mia carta d'identità scade a marzo 2027”",
     "status.plus": "Livo Plus attivo fino al {date}",
@@ -282,6 +294,10 @@ var TXT = {
     "every.0": "μία φορά", "every.1": "κάθε μήνα", "every.12": "κάθε χρόνο", "every.years": "κάθε {n} χρόνια", "every.months": "κάθε {n} μήνες",
     "everyopt.0": "Μία φορά", "everyopt.1": "Κάθε μήνα", "everyopt.3": "Κάθε 3 μήνες", "everyopt.6": "Κάθε 6 μήνες",
     "everyopt.12": "Κάθε χρόνο", "everyopt.24": "Κάθε 2 χρόνια", "everyopt.36": "Κάθε 3 χρόνια", "everyopt.120": "Κάθε 10 χρόνια",
+    "every.d1": "κάθε μέρα", "every.d7": "κάθε εβδομάδα", "every.weeks": "κάθε {n} εβδομάδες", "every.days": "κάθε {n} μέρες",
+    "everyopt.d1": "Κάθε μέρα", "everyopt.d7": "Κάθε εβδομάδα", "everyopt.d14": "Κάθε 2 εβδομάδες", "everyopt.custom": "Προσαρμογή …",
+    "form.everyCustom": "Επανάληψη κάθε", "unit.d": "μέρες", "unit.w": "εβδομάδες", "unit.m": "μήνες", "unit.y": "χρόνια",
+    "form.errEvery": "Γράψε για την επανάληψη έναν αριθμό από 1 και πάνω.",
     "remind.now": "άμεσα", "remind.from": "από {date}",
     "voicebar.sub": "Πες το απλά, π.χ. «Η ταυτότητά μου λήγει τον Μάρτιο του 2027»",
     "status.plus": "Livo Plus ενεργό έως {date}",
@@ -359,6 +375,10 @@ var TXT = {
     "every.0": "una vez", "every.1": "cada mes", "every.12": "cada año", "every.years": "cada {n} años", "every.months": "cada {n} meses",
     "everyopt.0": "Una vez", "everyopt.1": "Cada mes", "everyopt.3": "Cada 3 meses", "everyopt.6": "Cada 6 meses",
     "everyopt.12": "Cada año", "everyopt.24": "Cada 2 años", "everyopt.36": "Cada 3 años", "everyopt.120": "Cada 10 años",
+    "every.d1": "cada día", "every.d7": "cada semana", "every.weeks": "cada {n} semanas", "every.days": "cada {n} días",
+    "everyopt.d1": "Cada día", "everyopt.d7": "Cada semana", "everyopt.d14": "Cada 2 semanas", "everyopt.custom": "Personalizado …",
+    "form.everyCustom": "Repetir cada", "unit.d": "días", "unit.w": "semanas", "unit.m": "meses", "unit.y": "años",
+    "form.errEvery": "Introduce para la repetición un número de 1 o más.",
     "remind.now": "inmediato", "remind.from": "desde el {date}",
     "voicebar.sub": "Dilo sin más, p. ej. “Mi DNI caduca en marzo de 2027”",
     "status.plus": "Livo Plus activo hasta el {date}",
@@ -436,6 +456,10 @@ var TXT = {
     "every.0": "une fois", "every.1": "chaque mois", "every.12": "chaque année", "every.years": "tous les {n} ans", "every.months": "tous les {n} mois",
     "everyopt.0": "Une fois", "everyopt.1": "Chaque mois", "everyopt.3": "Tous les 3 mois", "everyopt.6": "Tous les 6 mois",
     "everyopt.12": "Chaque année", "everyopt.24": "Tous les 2 ans", "everyopt.36": "Tous les 3 ans", "everyopt.120": "Tous les 10 ans",
+    "every.d1": "chaque jour", "every.d7": "chaque semaine", "every.weeks": "toutes les {n} semaines", "every.days": "tous les {n} jours",
+    "everyopt.d1": "Chaque jour", "everyopt.d7": "Chaque semaine", "everyopt.d14": "Toutes les 2 semaines", "everyopt.custom": "Personnalisé …",
+    "form.everyCustom": "Intervalle de répétition", "unit.d": "jours", "unit.w": "semaines", "unit.m": "mois", "unit.y": "ans",
+    "form.errEvery": "Indiquez pour la répétition un nombre à partir de 1.",
     "remind.now": "immédiat", "remind.from": "à partir du {date}",
     "voicebar.sub": "Dites-le simplement, p. ex. « Ma carte d'identité expire en mars 2027 »",
     "status.plus": "Livo Plus actif jusqu'au {date}",
@@ -513,6 +537,10 @@ var TXT = {
     "every.0": "eenmalig", "every.1": "elke maand", "every.12": "elk jaar", "every.years": "elke {n} jaar", "every.months": "elke {n} maanden",
     "everyopt.0": "Eenmalig", "everyopt.1": "Elke maand", "everyopt.3": "Elke 3 maanden", "everyopt.6": "Elke 6 maanden",
     "everyopt.12": "Elk jaar", "everyopt.24": "Elke 2 jaar", "everyopt.36": "Elke 3 jaar", "everyopt.120": "Elke 10 jaar",
+    "every.d1": "elke dag", "every.d7": "elke week", "every.weeks": "elke {n} weken", "every.days": "elke {n} dagen",
+    "everyopt.d1": "Elke dag", "everyopt.d7": "Elke week", "everyopt.d14": "Elke 2 weken", "everyopt.custom": "Aangepast …",
+    "form.everyCustom": "Herhaal elke", "unit.d": "dagen", "unit.w": "weken", "unit.m": "maanden", "unit.y": "jaar",
+    "form.errEvery": "Vul bij de herhaling een getal van 1 of hoger in.",
     "remind.now": "direct", "remind.from": "vanaf {date}",
     "voicebar.sub": "Zeg het gewoon, bijv. “Mijn identiteitskaart verloopt in maart 2027”",
     "status.plus": "Livo Plus actief tot {date}",
@@ -590,6 +618,10 @@ var TXT = {
     "every.0": "uma vez", "every.1": "todos os meses", "every.12": "todos os anos", "every.years": "a cada {n} anos", "every.months": "a cada {n} meses",
     "everyopt.0": "Uma vez", "everyopt.1": "Todos os meses", "everyopt.3": "A cada 3 meses", "everyopt.6": "A cada 6 meses",
     "everyopt.12": "Todos os anos", "everyopt.24": "A cada 2 anos", "everyopt.36": "A cada 3 anos", "everyopt.120": "A cada 10 anos",
+    "every.d1": "todos os dias", "every.d7": "todas as semanas", "every.weeks": "a cada {n} semanas", "every.days": "a cada {n} dias",
+    "everyopt.d1": "Todos os dias", "everyopt.d7": "Todas as semanas", "everyopt.d14": "A cada 2 semanas", "everyopt.custom": "Personalizado …",
+    "form.everyCustom": "Repetir a cada", "unit.d": "dias", "unit.w": "semanas", "unit.m": "meses", "unit.y": "anos",
+    "form.errEvery": "Indique para a repetição um número a partir de 1.",
     "remind.now": "imediato", "remind.from": "a partir de {date}",
     "voicebar.sub": "Basta dizer, p. ex. “O meu cartão de cidadão expira em março de 2027”",
     "status.plus": "Livo Plus ativo até {date}",
@@ -667,6 +699,10 @@ var TXT = {
     "every.0": "bir kez", "every.1": "her ay", "every.12": "her yıl", "every.years": "{n} yılda bir", "every.months": "{n} ayda bir",
     "everyopt.0": "Bir kez", "everyopt.1": "Her ay", "everyopt.3": "3 ayda bir", "everyopt.6": "6 ayda bir",
     "everyopt.12": "Her yıl", "everyopt.24": "2 yılda bir", "everyopt.36": "3 yılda bir", "everyopt.120": "10 yılda bir",
+    "every.d1": "her gün", "every.d7": "her hafta", "every.weeks": "{n} haftada bir", "every.days": "{n} günde bir",
+    "everyopt.d1": "Her gün", "everyopt.d7": "Her hafta", "everyopt.d14": "2 haftada bir", "everyopt.custom": "Özel …",
+    "form.everyCustom": "Tekrar aralığı", "unit.d": "gün", "unit.w": "hafta", "unit.m": "ay", "unit.y": "yıl",
+    "form.errEvery": "Tekrar için 1 veya daha büyük bir sayı gir.",
     "remind.now": "hemen", "remind.from": "{date} itibarıyla",
     "voicebar.sub": "Söylemen yeterli, ör. “Kimliğim Mart 2027'de bitiyor”",
     "status.plus": "Livo Plus {date} tarihine kadar aktif",
@@ -746,6 +782,10 @@ var TXT = {
     "every.years": "co {n} lat", "every.years.few": "co {n} lata", "every.months": "co {n} miesięcy", "every.months.few": "co {n} miesiące",
     "everyopt.0": "Jednorazowo", "everyopt.1": "Co miesiąc", "everyopt.3": "Co 3 miesiące", "everyopt.6": "Co 6 miesięcy",
     "everyopt.12": "Co rok", "everyopt.24": "Co 2 lata", "everyopt.36": "Co 3 lata", "everyopt.120": "Co 10 lat",
+    "every.d1": "codziennie", "every.d7": "co tydzień", "every.weeks": "co {n} tygodni", "every.weeks.few": "co {n} tygodnie", "every.days": "co {n} dni",
+    "everyopt.d1": "Codziennie", "everyopt.d7": "Co tydzień", "everyopt.d14": "Co 2 tygodnie", "everyopt.custom": "Własne …",
+    "form.everyCustom": "Powtarzaj co", "unit.d": "dni", "unit.w": "tygodnie", "unit.m": "miesiące", "unit.y": "lata",
+    "form.errEvery": "Wpisz przy powtarzaniu liczbę od 1 wzwyż.",
     "remind.now": "od razu", "remind.from": "od {date}",
     "voicebar.sub": "Po prostu powiedz, np. „Mój dowód osobisty traci ważność w marcu 2027”",
     "status.plus": "Livo Plus aktywne do {date}",
@@ -825,10 +865,13 @@ function pluralKey(key, n) {
   return key;
 }
 
-// Text in der App-Sprache, fehlende Übersetzungen fallen auf Englisch zurück
+// Text in der App-Sprache, fehlende Übersetzungen fallen auf Englisch zurück.
+// Ein leerer Text ist gewollt (z. B. "time.suffix": "" - kein Wort hinter der Uhrzeit)
+// und darf nicht durch das deutsche " Uhr" ersetzt werden.
+function hasText(table, key) { return !!table && Object.prototype.hasOwnProperty.call(table, key); }
 function t(key, vars) {
   if (vars && typeof vars.n === "number") key = pluralKey(key, vars.n);
-  var s = (TXT[LANG] && TXT[LANG][key]) || TXT.en[key] || TXT.de[key] || key;
+  var s = hasText(TXT[LANG], key) ? TXT[LANG][key] : hasText(TXT.en, key) ? TXT.en[key] : hasText(TXT.de, key) ? TXT.de[key] : key;
   if (vars) s = s.replace(/\{(\w+)\}/g, function (m, k) { return vars[k] != null ? vars[k] : m; });
   return s;
 }

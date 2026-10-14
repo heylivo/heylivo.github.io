@@ -1106,6 +1106,7 @@ function draftFrom(text) {
   });
   var r = tp.compute(v);
   d.every = r.every || 0;
+  d.everyDays = r.everyDays || 0;
   var needsDate = tp.fields.some(function (f) { return f.type === "date" || f.type === "month"; });
   if (!needsDate) d.due = toISO(x.date || r.due);              // Kfz, Reifen, Steuer: Datum optional
   else if (!x.date) d.due = "";                                  // Datum fehlt → Nutzer trägt es ein

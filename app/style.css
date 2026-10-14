@@ -106,6 +106,10 @@ main { padding-bottom: 24px; }
 }
 
 .field[hidden] { display: none; }
+/* Wiederholung "Benutzerdefiniert": Zahl und Einheit nebeneinander */
+.row2 { display: flex; gap: 8px; }
+.field .row2 input { flex: none; width: 96px; }
+.field .row2 select { flex: 1; width: auto; min-width: 0; }
 
 /* Blatt von unten */
 .sheet-bg { position: fixed; inset: 0; z-index: 20; background: rgba(15,23,42,.45); }

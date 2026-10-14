@@ -19,7 +19,15 @@ var CATEGORIES = [
   { id: "own", icon: "📝" }
 ];
 
-var EVERY_OPTIONS = [0, 1, 3, 6, 12, 24, 36, 120].map(function (n) { return [n, t("everyopt." + n)]; });
+// Wiederholung: Monate ("m12") oder Tage ("d7"), "0" = einmalig, dazu "custom" = eigene Angabe.
+// Gespeichert wird every (Monate) bzw. everyDays (Tage) - nie beides.
+var REPEAT_OPTIONS = ["0", "d1", "d7", "d14", "m1", "m3", "m6", "m12", "m24", "m36", "m120"];
+function repeatOptionText(v) { return t("everyopt." + (v.charAt(0) === "m" ? v.slice(1) : v)); }
+function parseRepeatValue(v) {
+  var m = /^([md])(\d+)$/.exec(String(v || ""));
+  return { every: m && m[1] === "m" ? +m[2] : 0, everyDays: m && m[1] === "d" ? +m[2] : 0 };
+}
+function repeatValue(r) { return r.everyDays > 0 ? "d" + r.everyDays : r.every > 0 ? "m" + r.every : "0"; }
 // Fahrzeugprüfung: in den Niederlanden (APK) und Polen bei älteren Autos jedes Jahr, sonst meist alle 2 Jahre
 var TUEV_EVERY = { nl: 12, pl: 12 };
 
@@ -133,8 +141,11 @@ var TEMPLATES = [
   // Eigene
   {
     id: "eigene", cat: "own", lead: 14,
-    fields: [{ key: "title", type: "text" }, { key: "date", type: "date" }, { key: "every", type: "select", options: EVERY_OPTIONS, value: 0 }],
-    compute: function (v) { return { due: fromISO(v.date), every: parseInt(v.every, 10) || 0 }; }
+    fields: [{ key: "title", type: "text" }, { key: "date", type: "date" }, { key: "every", type: "repeat", value: "0" }],
+    compute: function (v) {
+      var r = v.every && typeof v.every === "object" ? v.every : parseRepeatValue(v.every);
+      return { due: fromISO(v.date), every: r.every, everyDays: r.everyDays };
+    }
   }
 ];
 
