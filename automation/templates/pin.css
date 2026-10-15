@@ -1,0 +1,9 @@
+/* Pinterest-Pin: dieselbe Karte wie card.html, aber hochkant 2:3 (1080 x 1620).
+   make_pins.py hängt diese Zeilen an das <style> von card.html an.
+   Der zusätzliche Platz verteilt sich gleich über und unter dem Text (zwei auto-Abstände). */
+html, body, .card { height: 1620px !important; }
+.card { padding-top: 100px; padding-bottom: 92px; }
+.pill { margin-top: auto; margin-bottom: 38px; }
+.sub { margin-top: 40px; font-size: 42px; }
+.push { margin-top: auto; }
+.foot { margin-top: 64px; }

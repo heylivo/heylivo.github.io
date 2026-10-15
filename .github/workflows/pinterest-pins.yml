@@ -1,0 +1,61 @@
+name: Daily Pinterest pins
+
+# Makes today's Pinterest pins (German + English, automation/make_pins.py) and updates the
+# RSS feeds automation/pinterest/feed-de.xml and feed-en.xml. Pinterest reads them itself
+# ("Auto-publish" in the business account) - no Pinterest API, no secrets.
+
+on:
+  schedule:
+    # 14:30 UTC, half an hour before the Instagram post (both push to main)
+    - cron: "30 14 * * *"
+  push:
+    branches: [main]
+    paths:
+      - automation/make_pins.py
+      - automation/templates/pin.css
+      - .github/workflows/pinterest-pins.yml
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "Day number from the calendar instead of today's (optional)"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pinterest-pins
+  cancel-in-progress: false
+
+jobs:
+  pins:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: automation
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Make the pins and the feeds
+        working-directory: automation
+        env:
+          DAY_INPUT: ${{ inputs.day }}
+        run: |
+          if [[ "$DAY_INPUT" =~ ^[0-9]+$ ]]; then python make_pins.py "$DAY_INPUT"; else python make_pins.py; fi
+          ls -la pinterest
+
+      - name: Commit and push (Pinterest needs public URLs)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A automation/pinterest
+          git commit -m "chore: Pinterest pins $(date -u +%F)" || echo "Nothing new"
+          git pull --rebase
+          git push
