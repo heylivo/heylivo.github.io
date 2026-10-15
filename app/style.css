@@ -139,6 +139,9 @@ main { padding-bottom: 24px; }
 .btn { display: block; width: 100%; padding: 14px; border: 0; border-radius: 14px; background: var(--brand); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 .btn:hover { background: var(--brand-dark); }
 .btn.light { margin-top: 8px; background: var(--later-bg); color: var(--ink); }
+/* "Alle Vorlagen" auf der leeren Liste: heller Verlauf wie die Hinweiszeile oben */
+.empty .btn.light { background: linear-gradient(135deg, #e3f6fe 0%, #eaf0ff 50%, #f2e9fe 100%); border: 1px solid #d3dcfb; color: var(--brand-dark); }
+.empty .btn.light:hover { border-color: #aebffa; }
 .btn.danger { margin-top: 4px; background: none; color: var(--late); }
 a.btn { text-align: center; text-decoration: none; }
 .legal { margin: 8px 2px 4px; color: var(--muted); font-size: 12px; line-height: 1.45; }
