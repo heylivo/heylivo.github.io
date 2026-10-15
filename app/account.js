@@ -17,6 +17,14 @@ function setUser(user) {
   userEmail = !user.is_anonymous && user.email ? user.email : "";
 }
 
+// "Beta:" vorne im Text wird zum Schild BETA (style.css .beta), der Rest beginnt groß
+function betaNote(s) {
+  var m = /^(B[eê]ta)\s*:\s*/.exec(s);
+  if (!m) return s;
+  return '<span class="beta">' + m[1] + '</span>' +
+    s.slice(m[0].length).replace(/^([^\p{L}]*)(\p{L})/u, function (x, p, c) { return p + c.toLocaleUpperCase(LOCALE); });
+}
+
 // Zeile oben: ohne Konto "nur in diesem Browser" (auf einem neuen Gerät ohne Fristen: "Anmelden"),
 // mit Konto die gesicherte Adresse
 function renderNote() {
@@ -27,9 +35,9 @@ function renderNote() {
     el.innerHTML = t("note.secured", { email: "<b>" + esc(userEmail) + "</b>" }) +
       ' · <button type="button" class="linkbtn" data-act="account">' + t("acc.manage") + '</button>';
   } else if (items.length) {
-    el.innerHTML = t("note.beta") + ' <button type="button" class="linkbtn" data-act="account">' + t("acc.secure") + '</button>';
+    el.innerHTML = betaNote(t("note.beta")) + ' <button type="button" class="linkbtn" data-act="account">' + t("acc.secure") + '</button>';
   } else {
-    el.innerHTML = t("note.new") + ' <button type="button" class="linkbtn" data-act="signin">' + t("note.signin") + '</button>';
+    el.innerHTML = betaNote(t("note.new")) + ' <button type="button" class="linkbtn" data-act="signin">' + t("note.signin") + '</button>';
   }
 }
 
