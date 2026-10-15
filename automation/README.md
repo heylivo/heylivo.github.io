@@ -37,4 +37,4 @@ Pinterest liest die Feeds selbst („Auto-publish“ im Pinterest-Unternehmensko
 - Deutsch: https://heylivo.com/automation/pinterest/feed-de.xml
 - Englisch: https://heylivo.com/automation/pinterest/feed-en.xml
 
-Jeder Pin verlinkt auf die Startseite mit `?pin=<sprache>-<datum>`. Test: Actions → „Daily Pinterest pins“ → „Run workflow“ (optional Tag). Lokale Vorschau: `__preview-cards.html?day=1&lang=de&pin=1`.
+Jeder Pin verlinkt auf die Startseite mit `?pin=<sprache>-<datum>`. Ein Pin pro Sprache und Tag: Läuft die Automatik am selben Tag noch einmal, bleibt der Feed unverändert (sonst legt Pinterest womöglich ein Doppel an; `make_pins.py <tag> --force` ersetzt ihn trotzdem). Test: Actions → „Daily Pinterest pins“ → „Run workflow“ (optional Tag). Lokale Vorschau: `__preview-cards.html?day=1&lang=de&pin=1`.
