@@ -29,7 +29,7 @@ function renderNote() {
   } else if (items.length) {
     el.innerHTML = t("note.beta") + ' <button type="button" class="linkbtn" data-act="account">' + t("acc.secure") + '</button>';
   } else {
-    el.innerHTML = t("note.new") + ' <button type="button" class="linkbtn" data-act="signin">' + t("acc.signin") + '</button>';
+    el.innerHTML = t("note.new") + ' <button type="button" class="linkbtn" data-act="signin">' + t("note.signin") + '</button>';
   }
 }
 

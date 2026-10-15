@@ -827,6 +827,9 @@ function setupLanguage() {
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") open(false); });
   document.querySelector(".fab").setAttribute("aria-label", t("add"));
   document.getElementById("brand").href = LANG === "de" ? "../" : "../en/";
+  // "← Startseite" oben in der Mitte - das Logo führt auch dorthin, aber das sieht man nicht
+  document.getElementById("homeLink").href = LANG === "de" ? "../" : "../en/";
+  document.getElementById("homeText").textContent = t("home");
   // Rechtliches unten: Deutsch auf die deutschen Seiten, alle anderen Sprachen auf die englischen
   var links = document.getElementById("appLinks"), de = LANG === "de";
   if (links) links.innerHTML = [

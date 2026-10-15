@@ -3,9 +3,9 @@
 // sonst Englisch. Neue Sprache = Eintrag in LANGS + Texte in TXT + Vorlagen-Texte
 // (templates.js) + Wörterbuch fürs Verstehen (voice.js).
 
-// Reihenfolge = Auswahl oben rechts: alphabetisch, Ελληνικά als "Elliniká" (wie die Kürzel)
+// Reihenfolge = Auswahl oben rechts: zuerst DE, EN, EL, dann die übrigen alphabetisch nach Kürzel
 var LANGS = {
-  de: "Deutsch", el: "Ελληνικά", en: "English", es: "Español", fr: "Français", it: "Italiano",
+  de: "Deutsch", en: "English", el: "Ελληνικά", es: "Español", fr: "Français", it: "Italiano",
   nl: "Nederlands", pl: "Polski", pt: "Português", tr: "Türkçe"
 };
 var LOCALES = {
@@ -97,7 +97,7 @@ var TXT = {
     "push.on": "🔔 Erinnerungen sind an",
     "toast.pushOn": "Erinnerungen sind an ✓", "toast.pushBlocked": "Benachrichtigungen sind blockiert.", "toast.pushOff": "Erinnerungen wurden nicht eingeschaltet.", "toast.retry": "Das hat nicht geklappt. Bitte nochmal versuchen.",
     "note.new": "Beta: Schon ein gesichertes Konto?", "note.secured": "🔒 Gesichert mit {email}",
-    "acc.secure": "Konto sichern", "acc.signin": "Anmelden", "acc.manage": "Konto",
+    "acc.secure": "Konto sichern", "acc.signin": "Anmelden", "note.signin": "Anmelden", "acc.manage": "Konto",
     "acc.secureIntro": "Deine Fristen, deine Testphase und Livo Plus hängen bisher nur an diesem Browser. Sichere sie mit deiner E-Mail-Adresse – dann sind sie auch nach dem Löschen der Browserdaten oder auf einem neuen Handy wieder da. Ein Passwort brauchst du nicht.",
     "acc.signinIntro": "Gib die E-Mail-Adresse ein, mit der du dein Konto gesichert hast. Wir schicken dir einen Code.",
     "acc.carry": "Die {n} Fristen, die du hier schon eingetragen hast, nimmst du in dein Konto mit.", "acc.carry.one": "Die Frist, die du hier schon eingetragen hast, nimmst du in dein Konto mit.",
@@ -115,7 +115,8 @@ var TXT = {
     "acc.signout": "Auf diesem Gerät abmelden", "acc.signoutConfirm": "Auf diesem Gerät abmelden? Deine Fristen bleiben in deinem Konto gespeichert.",
     "plus.secureFirst": "Bitte sichere vorher dein Konto. Dann gehört Livo Plus fest zu deiner E-Mail-Adresse und geht nicht verloren.",
     "legal.imprint": "Impressum", "legal.privacy": "Datenschutz", "legal.terms": "AGB",
-    "lang": "Sprache"
+    "lang": "Sprache",
+    "home": "Startseite"
   },
   en: {
     "q.open": "“", "q.close": "”",
@@ -178,7 +179,7 @@ var TXT = {
     "push.on": "🔔 Reminders are on",
     "toast.pushOn": "Reminders are on ✓", "toast.pushBlocked": "Notifications are blocked.", "toast.pushOff": "Reminders were not turned on.", "toast.retry": "That didn't work. Please try again.",
     "note.new": "Beta: already have a secured account?", "note.secured": "🔒 Secured with {email}",
-    "acc.secure": "Secure account", "acc.signin": "Sign in", "acc.manage": "Account",
+    "acc.secure": "Secure account", "acc.signin": "Sign in", "note.signin": "Sign in", "acc.manage": "Account",
     "acc.secureIntro": "Your deadlines, your trial and Livo Plus are only tied to this browser so far. Secure them with your email address – then they're still there after clearing your browser data or on a new phone. No password needed.",
     "acc.signinIntro": "Enter the email address you secured your account with. We'll send you a code.",
     "acc.carry": "The {n} deadlines you've already added here will move into your account.", "acc.carry.one": "The deadline you've already added here will move into your account.",
@@ -196,7 +197,8 @@ var TXT = {
     "acc.signout": "Sign out on this device", "acc.signoutConfirm": "Sign out on this device? Your deadlines stay saved in your account.",
     "plus.secureFirst": "Please secure your account first. Then Livo Plus belongs to your email address and can't get lost.",
     "legal.imprint": "Legal notice", "legal.privacy": "Privacy", "legal.terms": "Terms",
-    "lang": "Language"
+    "lang": "Language",
+    "home": "Home"
   },
   it: {
     "q.open": "“", "q.close": "”",
@@ -259,7 +261,7 @@ var TXT = {
     "push.on": "🔔 I promemoria sono attivi",
     "toast.pushOn": "Promemoria attivi ✓", "toast.pushBlocked": "Le notifiche sono bloccate.", "toast.pushOff": "I promemoria non sono stati attivati.", "toast.retry": "Non ha funzionato. Riprova.",
     "note.new": "Beta: hai già un account protetto?", "note.secured": "🔒 Account protetto: {email}",
-    "acc.secure": "Proteggi l'account", "acc.signin": "Accedi", "acc.manage": "Account",
+    "acc.secure": "Proteggi l'account", "acc.signin": "Accedi", "note.signin": "Accedi", "acc.manage": "Account",
     "acc.secureIntro": "Le tue scadenze, il periodo di prova e Livo Plus per ora sono legati solo a questo browser. Proteggili con il tuo indirizzo email: così restano anche se cancelli i dati del browser o cambi telefono. Non serve una password.",
     "acc.signinIntro": "Inserisci l'indirizzo email con cui hai protetto il tuo account. Ti mandiamo un codice.",
     "acc.carry": "Le {n} scadenze che hai già inserito qui passano nel tuo account.", "acc.carry.one": "La scadenza che hai già inserito qui passa nel tuo account.",
@@ -277,7 +279,8 @@ var TXT = {
     "acc.signout": "Esci su questo dispositivo", "acc.signoutConfirm": "Uscire su questo dispositivo? Le tue scadenze restano salvate nel tuo account.",
     "plus.secureFirst": "Prima proteggi il tuo account. Così Livo Plus resta legato al tuo indirizzo email e non va perso.",
     "legal.imprint": "Note legali", "legal.privacy": "Privacy", "legal.terms": "Termini",
-    "lang": "Lingua"
+    "lang": "Lingua",
+    "home": "Home"
   },
   el: {
     "q.open": "«", "q.close": "»",
@@ -331,7 +334,7 @@ var TXT = {
     "plus.offer": "<b>Livo Plus – 11,99 € με ΦΠΑ για 1 χρόνο</b> (λιγότερο από 1 € τον μήνα)<br>✓ Απεριόριστες προθεσμίες<br>✓ Υπενθυμίσεις στο κινητό<br>✓ Καταχώριση με φωνή: «Hey Livo …»<br>✓ Ολοκλήρωση, αλλαγή, ανανέωση",
     "plus.kept": "Οι προθεσμίες σου μένουν και μπορείς να τις βλέπεις.",
     "plus.buy": "Αγορά Livo Plus – 11,99 €", "plus.extend": "Παράταση 1 χρόνου – 11,99 €", "plus.soon": "Το Livo Plus έρχεται σύντομα",
-    "plus.legal": "Εφάπαξ πληρωμή, δεν ανανεώνεται αυτόματα. Το Livo Plus ισχύει για τον ασφαλισμένο λογαριασμό σου. Ισχύουν οι <a href=\"../en/terms.html\" target=\"_blank\">όροι</a> μας (με δικαίωμα υπαναχώρησης) και η <a href=\"../en/privacy.html\" target=\"_blank\">πολιτική απορρήτου</a>. Η πληρωμή γίνεται με ασφάλεια μέσω Stripe.",
+    "plus.legal": "Εφάπαξ πληρωμή, δεν ανανεώνεται αυτόματα. Το Livo Plus ισχύει για τον λογαριασμό σου. Ισχύουν οι <a href=\"../en/terms.html\" target=\"_blank\">όροι</a> μας (με δικαίωμα υπαναχώρησης) και η <a href=\"../en/privacy.html\" target=\"_blank\">πολιτική απορρήτου</a>. Η πληρωμή γίνεται με ασφάλεια μέσω Stripe.",
     "toast.thanks": "Ευχαριστούμε! Το Livo Plus ενεργοποιείται …", "toast.plusActive": "Το Livo Plus είναι ενεργό έως {date} ✓", "toast.plusPending": "Η πληρωμή έφτασε – το Plus θα εμφανιστεί σε λίγο. Φόρτωσε ξανά τη σελίδα σε ένα λεπτό.",
     "push.card": "Ενεργοποίηση υπενθυμίσεων", "push.cardSub": "Το Livo σε ειδοποιεί μόνο του όταν πλησιάζει μια προθεσμία.",
     "push.ios": "<b>🔔 Υπενθυμίσεις στο iPhone:</b> πάτα κάτω <b>Κοινοποίηση</b> (τετράγωνο με βέλος) και μετά <b>«Προσθήκη στην οθόνη Αφετηρίας»</b>. Άνοιξε μετά το heylivo από το νέο εικονίδιο – εκεί μπορείς να ενεργοποιήσεις τις υπενθυμίσεις.",
@@ -339,26 +342,27 @@ var TXT = {
     "push.unsupported": "Αυτός ο browser δεν μπορεί να δείξει υπενθυμίσεις. Λειτουργούν καλύτερα με Chrome σε Android και Safari σε iPhone.",
     "push.on": "🔔 Οι υπενθυμίσεις είναι ενεργές",
     "toast.pushOn": "Οι υπενθυμίσεις είναι ενεργές ✓", "toast.pushBlocked": "Οι ειδοποιήσεις είναι μπλοκαρισμένες.", "toast.pushOff": "Οι υπενθυμίσεις δεν ενεργοποιήθηκαν.", "toast.retry": "Δεν πέτυχε. Δοκίμασε ξανά.",
-    "note.new": "Beta: έχεις ήδη ασφαλισμένο λογαριασμό;", "note.secured": "🔒 Ασφαλισμένος λογαριασμός: {email}",
-    "acc.secure": "Ασφάλισε τον λογαριασμό", "acc.signin": "Σύνδεση", "acc.manage": "Λογαριασμός",
-    "acc.secureIntro": "Οι προθεσμίες σου, η δοκιμαστική περίοδος και το Livo Plus συνδέονται προς το παρόν μόνο με αυτόν τον browser. Ασφάλισέ τα με το email σου – έτσι μένουν ακόμα κι αν διαγράψεις τα δεδομένα του browser ή αλλάξεις κινητό. Δεν χρειάζεσαι κωδικό πρόσβασης.",
-    "acc.signinIntro": "Γράψε το email με το οποίο ασφάλισες τον λογαριασμό σου. Θα σου στείλουμε έναν κωδικό.",
+    "note.new": "Beta: Έχετε ήδη λογαριασμό;", "note.secured": "🔒 Λογαριασμός: {email}",
+    "acc.secure": "Δημιουργία λογαριασμού", "acc.signin": "Σύνδεση", "note.signin": "Συνδεθείτε", "acc.manage": "Λογαριασμός",
+    "acc.secureIntro": "Οι προθεσμίες σου, η δοκιμαστική περίοδος και το Livo Plus συνδέονται προς το παρόν μόνο με αυτόν τον browser. Δημιούργησε λογαριασμό με το email σου – έτσι μένουν ακόμα κι αν διαγράψεις τα δεδομένα του browser ή αλλάξεις κινητό. Δεν χρειάζεσαι κωδικό πρόσβασης.",
+    "acc.signinIntro": "Γράψε το email του λογαριασμού σου. Θα σου στείλουμε έναν κωδικό.",
     "acc.carry": "Οι {n} προθεσμίες που έχεις ήδη καταχωρίσει εδώ θα μεταφερθούν στον λογαριασμό σου.", "acc.carry.one": "Η προθεσμία που έχεις ήδη καταχωρίσει εδώ θα μεταφερθεί στον λογαριασμό σου.",
-    "acc.email": "Διεύθυνση email", "acc.sendCode": "Αποστολή κωδικού", "acc.toSignin": "Έχω ήδη λογαριασμό – σύνδεση", "acc.toSecure": "Δεν έχεις λογαριασμό; Ασφάλισε αυτόν εδώ",
+    "acc.email": "Διεύθυνση email", "acc.sendCode": "Αποστολή κωδικού", "acc.toSignin": "Έχω ήδη λογαριασμό – σύνδεση", "acc.toSecure": "Δεν έχεις λογαριασμό; Δημιούργησε έναν",
     "acc.codeTitle": "Γράψε τον κωδικό", "acc.codeSent": "Σου στείλαμε έναν 6ψήφιο κωδικό στο {email}. Κοίτα και στα ανεπιθύμητα (spam).",
     "acc.code": "Κωδικός", "acc.confirm": "Επιβεβαίωση", "acc.resend": "Στείλε ξανά τον κωδικό", "acc.resent": "Ένας νέος κωδικός είναι καθ' οδόν ✓", "acc.otherEmail": "Άλλη διεύθυνση email",
     "acc.errEmail": "Γράψε μια έγκυρη διεύθυνση email.",
     "acc.errExists": "Υπάρχει ήδη λογαριασμός με αυτό το email. Συνδέσου με αυτόν – οι προθεσμίες σου από εδώ έρχονται μαζί.",
-    "acc.errNoAccount": "Δεν υπάρχει ασφαλισμένος λογαριασμός με αυτό το email. Έλεγξε την ορθογραφία – ή ασφάλισε αυτόν τον λογαριασμό.",
+    "acc.errNoAccount": "Δεν υπάρχει λογαριασμός με αυτό το email. Έλεγξε την ορθογραφία – ή δημιούργησε λογαριασμό.",
     "acc.errWait": "Περίμενε ένα λεπτό και δοκίμασε ξανά.",
     "acc.errCode": "Ο κωδικός είναι λάθος ή έχει λήξει. Έλεγξέ τον – ή ζήτα έναν νέο.",
-    "acc.secured": "Ο λογαριασμός ασφαλίστηκε ✓", "acc.welcome": "Συνδέθηκες ✓", "acc.welcomeCarry": "Συνδέθηκες ✓ Μεταφέρθηκαν {n} προθεσμίες", "acc.welcomeCarry.one": "Συνδέθηκες ✓ Μεταφέρθηκε 1 προθεσμία",
-    "acc.infoTitle": "Ο λογαριασμός σου", "acc.info": "Οι προθεσμίες σου είναι ασφαλισμένες με το {email}.",
-    "acc.otherDevice": "Νέο κινητό ή άλλος browser; Άνοιξε το heylivo, πάτα «Σύνδεση» επάνω και γράψε αυτό το email.",
+    "acc.secured": "Ο λογαριασμός δημιουργήθηκε ✓", "acc.welcome": "Συνδέθηκες ✓", "acc.welcomeCarry": "Συνδέθηκες ✓ Μεταφέρθηκαν {n} προθεσμίες", "acc.welcomeCarry.one": "Συνδέθηκες ✓ Μεταφέρθηκε 1 προθεσμία",
+    "acc.infoTitle": "Ο λογαριασμός σου", "acc.info": "Οι προθεσμίες σου είναι αποθηκευμένες στον λογαριασμό {email}.",
+    "acc.otherDevice": "Νέο κινητό ή άλλος browser; Άνοιξε το heylivo, πάτα «Συνδεθείτε» επάνω και γράψε αυτό το email.",
     "acc.signout": "Αποσύνδεση σε αυτή τη συσκευή", "acc.signoutConfirm": "Αποσύνδεση σε αυτή τη συσκευή; Οι προθεσμίες σου μένουν αποθηκευμένες στον λογαριασμό σου.",
-    "plus.secureFirst": "Ασφάλισε πρώτα τον λογαριασμό σου. Έτσι το Livo Plus ανήκει στο email σου και δεν χάνεται.",
+    "plus.secureFirst": "Δημιούργησε πρώτα λογαριασμό. Έτσι το Livo Plus ανήκει στο email σου και δεν χάνεται.",
     "legal.imprint": "Νομικές πληροφορίες", "legal.privacy": "Απόρρητο", "legal.terms": "Όροι",
-    "lang": "Γλώσσα"
+    "lang": "Γλώσσα",
+    "home": "Αρχική"
   },
   es: {
     "q.open": "“", "q.close": "”",
@@ -421,7 +425,7 @@ var TXT = {
     "push.on": "🔔 Los avisos están activados",
     "toast.pushOn": "Avisos activados ✓", "toast.pushBlocked": "Las notificaciones están bloqueadas.", "toast.pushOff": "Los avisos no se han activado.", "toast.retry": "No ha funcionado. Inténtalo de nuevo.",
     "note.new": "Beta: ¿ya tienes una cuenta asegurada?", "note.secured": "🔒 Cuenta asegurada: {email}",
-    "acc.secure": "Asegurar cuenta", "acc.signin": "Iniciar sesión", "acc.manage": "Cuenta",
+    "acc.secure": "Asegurar cuenta", "acc.signin": "Iniciar sesión", "note.signin": "Iniciar sesión", "acc.manage": "Cuenta",
     "acc.secureIntro": "Tus plazos, tu periodo de prueba y Livo Plus de momento solo están ligados a este navegador. Asegúralos con tu correo electrónico: así siguen ahí aunque borres los datos del navegador o cambies de móvil. No necesitas contraseña.",
     "acc.signinIntro": "Escribe el correo electrónico con el que aseguraste tu cuenta. Te enviaremos un código.",
     "acc.carry": "Los {n} plazos que ya has añadido aquí pasan a tu cuenta.", "acc.carry.one": "El plazo que ya has añadido aquí pasa a tu cuenta.",
@@ -439,7 +443,8 @@ var TXT = {
     "acc.signout": "Cerrar sesión en este dispositivo", "acc.signoutConfirm": "¿Cerrar sesión en este dispositivo? Tus plazos siguen guardados en tu cuenta.",
     "plus.secureFirst": "Primero asegura tu cuenta. Así Livo Plus queda ligado a tu correo electrónico y no se pierde.",
     "legal.imprint": "Aviso legal", "legal.privacy": "Privacidad", "legal.terms": "Condiciones",
-    "lang": "Idioma"
+    "lang": "Idioma",
+    "home": "Inicio"
   },
   fr: {
     "q.open": "« ", "q.close": " »",
@@ -502,7 +507,7 @@ var TXT = {
     "push.on": "🔔 Les rappels sont activés",
     "toast.pushOn": "Rappels activés ✓", "toast.pushBlocked": "Les notifications sont bloquées.", "toast.pushOff": "Les rappels n'ont pas été activés.", "toast.retry": "Ça n'a pas marché. Réessayez.",
     "note.new": "Bêta : vous avez déjà un compte sécurisé ?", "note.secured": "🔒 Compte sécurisé : {email}",
-    "acc.secure": "Sécuriser le compte", "acc.signin": "Se connecter", "acc.manage": "Compte",
+    "acc.secure": "Sécuriser le compte", "acc.signin": "Se connecter", "note.signin": "Se connecter", "acc.manage": "Compte",
     "acc.secureIntro": "Vos échéances, votre période d'essai et Livo Plus ne sont pour l'instant liés qu'à ce navigateur. Sécurisez-les avec votre adresse e-mail : ils restent disponibles même si vous effacez les données du navigateur ou changez de téléphone. Aucun mot de passe n'est nécessaire.",
     "acc.signinIntro": "Saisissez l'adresse e-mail avec laquelle vous avez sécurisé votre compte. Nous vous envoyons un code.",
     "acc.carry": "Les {n} échéances que vous avez déjà ajoutées ici seront transférées dans votre compte.", "acc.carry.one": "L'échéance que vous avez déjà ajoutée ici sera transférée dans votre compte.",
@@ -520,7 +525,8 @@ var TXT = {
     "acc.signout": "Se déconnecter sur cet appareil", "acc.signoutConfirm": "Se déconnecter sur cet appareil ? Vos échéances restent enregistrées dans votre compte.",
     "plus.secureFirst": "Veuillez d'abord sécuriser votre compte. Ainsi, Livo Plus est lié à votre adresse e-mail et ne peut pas se perdre.",
     "legal.imprint": "Mentions légales", "legal.privacy": "Confidentialité", "legal.terms": "Conditions",
-    "lang": "Langue"
+    "lang": "Langue",
+    "home": "Accueil"
   },
   nl: {
     "q.open": "“", "q.close": "”",
@@ -583,7 +589,7 @@ var TXT = {
     "push.on": "🔔 Herinneringen staan aan",
     "toast.pushOn": "Herinneringen staan aan ✓", "toast.pushBlocked": "Meldingen zijn geblokkeerd.", "toast.pushOff": "Herinneringen zijn niet aangezet.", "toast.retry": "Dat is niet gelukt. Probeer het opnieuw.",
     "note.new": "Beta: heb je al een beveiligd account?", "note.secured": "🔒 Account beveiligd: {email}",
-    "acc.secure": "Account beveiligen", "acc.signin": "Inloggen", "acc.manage": "Account",
+    "acc.secure": "Account beveiligen", "acc.signin": "Inloggen", "note.signin": "Inloggen", "acc.manage": "Account",
     "acc.secureIntro": "Je deadlines, je proefperiode en Livo Plus zijn voorlopig alleen aan deze browser gekoppeld. Beveilig ze met je e-mailadres – dan zijn ze er nog, ook als je je browsergegevens wist of een nieuwe telefoon neemt. Een wachtwoord heb je niet nodig.",
     "acc.signinIntro": "Vul het e-mailadres in waarmee je je account hebt beveiligd. We sturen je een code.",
     "acc.carry": "De {n} deadlines die je hier al hebt ingevoerd, gaan mee naar je account.", "acc.carry.one": "De deadline die je hier al hebt ingevoerd, gaat mee naar je account.",
@@ -601,7 +607,8 @@ var TXT = {
     "acc.signout": "Uitloggen op dit apparaat", "acc.signoutConfirm": "Uitloggen op dit apparaat? Je deadlines blijven in je account opgeslagen.",
     "plus.secureFirst": "Beveilig eerst je account. Dan hoort Livo Plus bij je e-mailadres en raakt het niet kwijt.",
     "legal.imprint": "Colofon", "legal.privacy": "Privacy", "legal.terms": "Voorwaarden",
-    "lang": "Taal"
+    "lang": "Taal",
+    "home": "Home"
   },
   pt: {
     "q.open": "“", "q.close": "”",
@@ -664,7 +671,7 @@ var TXT = {
     "push.on": "🔔 Os lembretes estão ativos",
     "toast.pushOn": "Lembretes ativos ✓", "toast.pushBlocked": "As notificações estão bloqueadas.", "toast.pushOff": "Os lembretes não foram ativados.", "toast.retry": "Não resultou. Tente novamente.",
     "note.new": "Beta: já tem uma conta protegida?", "note.secured": "🔒 Conta protegida: {email}",
-    "acc.secure": "Proteger a conta", "acc.signin": "Iniciar sessão", "acc.manage": "Conta",
+    "acc.secure": "Proteger a conta", "acc.signin": "Iniciar sessão", "note.signin": "Iniciar sessão", "acc.manage": "Conta",
     "acc.secureIntro": "Os seus prazos, o período de teste e o Livo Plus estão, por enquanto, ligados apenas a este navegador. Proteja-os com o seu e-mail – assim continuam lá mesmo que apague os dados do navegador ou mude de telemóvel. Não precisa de palavra-passe.",
     "acc.signinIntro": "Introduza o e-mail com que protegeu a sua conta. Enviamos-lhe um código.",
     "acc.carry": "Os {n} prazos que já adicionou aqui passam para a sua conta.", "acc.carry.one": "O prazo que já adicionou aqui passa para a sua conta.",
@@ -682,7 +689,8 @@ var TXT = {
     "acc.signout": "Terminar sessão neste dispositivo", "acc.signoutConfirm": "Terminar sessão neste dispositivo? Os seus prazos continuam guardados na sua conta.",
     "plus.secureFirst": "Proteja primeiro a sua conta. Assim, o Livo Plus fica ligado ao seu e-mail e não se perde.",
     "legal.imprint": "Aviso legal", "legal.privacy": "Privacidade", "legal.terms": "Termos",
-    "lang": "Idioma"
+    "lang": "Idioma",
+    "home": "Início"
   },
   tr: {
     "q.open": "“", "q.close": "”",
@@ -745,7 +753,7 @@ var TXT = {
     "push.on": "🔔 Hatırlatmalar açık",
     "toast.pushOn": "Hatırlatmalar açık ✓", "toast.pushBlocked": "Bildirimler engellenmiş.", "toast.pushOff": "Hatırlatmalar açılmadı.", "toast.retry": "Olmadı. Lütfen tekrar dene.",
     "note.new": "Beta: güvenceye alınmış bir hesabın var mı?", "note.secured": "🔒 Hesap güvencede: {email}",
-    "acc.secure": "Hesabı güvenceye al", "acc.signin": "Giriş yap", "acc.manage": "Hesap",
+    "acc.secure": "Hesabı güvenceye al", "acc.signin": "Giriş yap", "note.signin": "Giriş yap", "acc.manage": "Hesap",
     "acc.secureIntro": "Tarihlerin, deneme süren ve Livo Plus şimdilik sadece bu tarayıcıya bağlı. Onları e-posta adresinle güvenceye al – böylece tarayıcı verilerini silsen ya da yeni bir telefon alsan da kaybolmazlar. Şifreye gerek yok.",
     "acc.signinIntro": "Hesabını güvenceye aldığın e-posta adresini yaz. Sana bir kod göndereceğiz.",
     "acc.carry": "Burada zaten eklediğin {n} tarih hesabına taşınacak.", "acc.carry.one": "Burada zaten eklediğin tarih hesabına taşınacak.",
@@ -763,7 +771,8 @@ var TXT = {
     "acc.signout": "Bu cihazda çıkış yap", "acc.signoutConfirm": "Bu cihazda çıkış yapılsın mı? Tarihlerin hesabında kayıtlı kalır.",
     "plus.secureFirst": "Lütfen önce hesabını güvenceye al. Böylece Livo Plus e-posta adresine bağlı olur ve kaybolmaz.",
     "legal.imprint": "Künye", "legal.privacy": "Gizlilik", "legal.terms": "Koşullar",
-    "lang": "Dil"
+    "lang": "Dil",
+    "home": "Ana sayfa"
   },
   pl: {
     "q.open": "„", "q.close": "”",
@@ -828,7 +837,7 @@ var TXT = {
     "push.on": "🔔 Przypomnienia są włączone",
     "toast.pushOn": "Przypomnienia włączone ✓", "toast.pushBlocked": "Powiadomienia są zablokowane.", "toast.pushOff": "Przypomnienia nie zostały włączone.", "toast.retry": "Nie udało się. Spróbuj ponownie.",
     "note.new": "Beta: masz już zabezpieczone konto?", "note.secured": "🔒 Konto zabezpieczone: {email}",
-    "acc.secure": "Zabezpiecz konto", "acc.signin": "Zaloguj się", "acc.manage": "Konto",
+    "acc.secure": "Zabezpiecz konto", "acc.signin": "Zaloguj się", "note.signin": "Zaloguj się", "acc.manage": "Konto",
     "acc.secureIntro": "Twoje terminy, okres próbny i Livo Plus są na razie powiązane tylko z tą przeglądarką. Zabezpiecz je swoim adresem e-mail – wtedy zostaną nawet po wyczyszczeniu danych przeglądarki albo na nowym telefonie. Hasło nie jest potrzebne.",
     "acc.signinIntro": "Wpisz adres e-mail, którym zostało zabezpieczone twoje konto. Wyślemy ci kod.",
     "acc.carry": "{n} terminów, które już tu dodano, przejdzie na twoje konto.", "acc.carry.few": "{n} terminy, które już tu dodano, przejdą na twoje konto.", "acc.carry.one": "Termin, który już tu dodano, przejdzie na twoje konto.",
@@ -846,7 +855,8 @@ var TXT = {
     "acc.signout": "Wyloguj się na tym urządzeniu", "acc.signoutConfirm": "Wylogować się na tym urządzeniu? Twoje terminy zostają zapisane na twoim koncie.",
     "plus.secureFirst": "Najpierw zabezpiecz konto. Wtedy Livo Plus jest powiązane z twoim adresem e-mail i nie przepadnie.",
     "legal.imprint": "Nota prawna", "legal.privacy": "Prywatność", "legal.terms": "Regulamin",
-    "lang": "Język"
+    "lang": "Język",
+    "home": "Strona główna"
   }
 };
 
