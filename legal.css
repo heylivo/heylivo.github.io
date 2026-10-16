@@ -20,12 +20,26 @@ header .wrap { display: flex; align-items: center; justify-content: space-betwee
 /* "← Startseite" in der Mitte der Kopfzeile, wie in der App */
 .homelink { display: flex; align-items: center; gap: 5px; padding: 8px 6px; color: var(--muted); font-size: 14px; font-weight: 700; white-space: nowrap; text-decoration: none; }
 .homelink:hover { color: var(--violet); }
-@media (max-width: 380px) { .homelink { gap: 3px; padding: 8px 4px; font-size: 12.5px; } }
+/* Logo, "← Startseite" und Knopf bleiben auf dem Handy in einer Reihe und brechen nie um */
+.wm, .lang, header .open { white-space: nowrap; }
+@media (max-width: 560px) {
+  .wrap { padding: 0 16px; }
+  header .wrap { gap: 6px; height: 58px; }
+  .logo { gap: 6px; }
+  .logo img { width: 28px; height: 28px; }
+  .wm { font-size: 19px; }
+  .homelink { gap: 3px; padding: 8px 2px; font-size: 12.5px; }
+  .lang { padding: 6px 10px; font-size: 13px; }
+  header .open { padding: 7px 11px; font-size: 13px; }
+  h1 { font-size: 26px; }
+}
+/* sehr schmale Handys: nur das Logo-Symbol, ohne Schriftzug */
+@media (max-width: 340px) { .wm { display: none; } }
 
-main { padding: 34px 0 56px; }
-h1 { margin: 0 0 6px; font-size: 32px; line-height: 1.2; letter-spacing: -.02em; }
+main { padding: 34px 0 56px; overflow-wrap: break-word; }
+h1 { margin: 0 0 6px; font-size: 32px; line-height: 1.2; letter-spacing: -.02em; overflow-wrap: break-word; }
 .stand { margin: 0 0 28px; color: var(--muted); font-size: 14px; }
-h2 { margin: 34px 0 10px; font-size: 20px; line-height: 1.3; }
+h2 { margin: 34px 0 10px; font-size: 20px; line-height: 1.3; overflow-wrap: break-word; }
 h3 { margin: 22px 0 8px; font-size: 17px; }
 p, ul, ol { margin: 0 0 14px; }
 li { margin: 0 0 6px; }
