@@ -168,7 +168,10 @@ function voicebarHTML() {
 // Zeile unter "Hey Livo": Stand der Testphase oder von Livo Plus
 function statusHTML() {
   if (DEMO) return "";
-  if (isPlus()) return '<p class="quota">' + t("status.plus", { date: fmt(fromISO(plusUntil)) }) + '</p>';
+  // Mit Plus: Kalender-Abo und Verlängern (beides im Plus-Fenster; ein neuer Kauf zählt ab dem alten Ende)
+  if (isPlus()) return '<p class="quota">' + t("status.plus", { date: fmt(fromISO(plusUntil)) }) +
+    ' · <button type="button" class="linkbtn" data-act="calendar">' + t("status.calendar") + '</button>' +
+    ' · <button type="button" class="linkbtn" data-act="plus">' + t("plus.extendShort") + '</button></p>';
   // Kaufen geht jederzeit - auch schon, bevor die erste Frist die Testphase startet
   var buy = ' · <button type="button" class="linkbtn" data-act="plus">Livo Plus</button>';
   var left = trialDaysLeft();
@@ -634,6 +637,7 @@ function showItem(id) {
       ? '<button type="button" class="btn" data-act="done" data-id="' + it.id + '">' + main + '</button>' +
         '<button type="button" class="btn light" data-act="edit" data-id="' + it.id + '">' + t("edit") + '</button>'
       : '<button type="button" class="btn" data-act="plus">' + t("plus.toEdit") + '</button>') +
+    '<button type="button" class="btn light" data-act="share" data-id="' + it.id + '">' + t("share") + '</button>' +
     '<button type="button" class="btn danger" data-act="del" data-id="' + it.id + '">' + t("delete") + '</button></div>');
 }
 
@@ -694,15 +698,86 @@ async function removeItem(id) {
   }
 }
 
+// Text in die Zwischenablage; geht das nicht, zum Abschreiben anzeigen
+async function copyText(text, okText) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(okText);
+  } catch (e) {
+    window.prompt("", text);
+  }
+}
+
+// Teilen über das Teilen-Menü des Geräts (WhatsApp, SMS, Mail …), sonst in die Zwischenablage.
+// Jeder darf teilen, auch nach der Testphase - der Link auf heylivo.com ist kostenlose Werbung.
+async function shareItem(id) {
+  var it = find(items, id);
+  if (!it) return;
+  var text = "📅 " + it.title + " – " + t("card.due", { x: dueText(it) }) + "\n\n" +
+    t("share.by") + " " + (LANG === "de" ? "https://heylivo.com/" : "https://heylivo.com/en/");
+  if (navigator.share) {
+    try {
+      await navigator.share({ text: text });
+      return;
+    } catch (e) {
+      if (e && e.name === "AbortError") return; // selbst abgebrochen
+    }
+  }
+  copyText(text, t("toast.shareCopied"));
+}
+
+/* ---------- Kalender-Abo (Livo Plus, Edge Function "calendar") ---------- */
+// Ein geheimer Link pro Konto; Google, Apple und Outlook holen darüber die Fristen ab.
+// Im Demo zeigen die Knöpfe auf den Beispiel-Kalender.
+var calFeedUrl = "";
+function calendarHTML() {
+  return '<div class="calbox" id="calBox"><h4>📅 ' + esc(t("cal.title")) + '</h4>' +
+    '<p class="muted">' + esc(t("cal.intro")) + '</p>' +
+    '<div id="calLinks"><p class="muted">' + esc(t("loading")) + '</p></div></div>';
+}
+// Holt den Link (renew = neuer Link, der alte geht dann nicht mehr) und zeigt die Abo-Knöpfe
+async function loadCalendar(renew) {
+  try {
+    var token = DEMO ? "demo-" + LANG : "";
+    if (!token) {
+      var r = await sb.rpc("calendar_feed", { feed_lang: LANG, renew: !!renew });
+      if (r.error) throw r.error;
+      token = r.data;
+    }
+    calFeedUrl = SUPABASE_URL + "/functions/v1/calendar/" + token + ".ics";
+  } catch (e) {
+    var failed = document.getElementById("calLinks");
+    if (failed) failed.innerHTML = '<p class="err">' + esc(t("cal.error")) + '</p>';
+    return false;
+  }
+  var box = document.getElementById("calLinks");
+  if (!box) return true; // Fenster inzwischen zu
+  var webcal = calFeedUrl.replace(/^https:/, "webcal:");
+  box.innerHTML = '<div class="calgrid">' +
+    '<a class="btn light" target="_blank" rel="noopener" href="' + esc("https://calendar.google.com/calendar/r?cid=" + encodeURIComponent(webcal)) + '">' + esc(t("cal.google")) + '</a>' +
+    '<a class="btn light" href="' + esc(webcal) + '">' + esc(t("cal.apple")) + '</a>' +
+    '<a class="btn light" target="_blank" rel="noopener" href="' + esc("https://outlook.live.com/calendar/0/addfromweb?url=" + encodeURIComponent(calFeedUrl) + "&name=heylivo") + '">' + esc(t("cal.outlook")) + '</a>' +
+    '<button type="button" class="btn light" data-act="calcopy">' + esc(t("cal.copy")) + '</button></div>' +
+    '<p class="hint">' + esc(t("cal.note")) + '</p>' +
+    (DEMO ? "" : '<button type="button" class="linkbtn" data-act="calreset">' + esc(t("cal.reset")) + '</button>');
+  return true;
+}
+async function resetCalendar() {
+  if (!confirm(t("cal.resetConfirm"))) return;
+  if (await loadCalendar(true)) toast(t("cal.resetDone"));
+}
+
 // Livo Plus: Angebot, und nach der Testphase der Hinweis statt Formular.
 // Kaufen nur mit gesichertem Konto - sonst wäre Plus mit den Browserdaten weg.
-function showPlus() {
-  var over = !canEdit();
+// Mit Plus (und im Demo) steht hier auch das Kalender-Abo; focus "calendar" springt dorthin.
+function showPlus(focus) {
+  var over = !canEdit(), calendar = isPlus() || DEMO;
   var buyUrl = PLUS_LINK && userId && !DEMO
     ? PLUS_LINK + "?client_reference_id=" + encodeURIComponent(userId) + "&prefilled_email=" + encodeURIComponent(userEmail) + "&locale=" + LANG : "";
   openSheet('<h3>' + (over ? t("plus.over", { n: TRIAL_DAYS }) : isPlus() ? t("plus.active") : "Livo Plus") + '</h3>' +
     (isPlus() ? '<p class="muted">' + t("plus.until", { date: fmt(fromISO(plusUntil)) }) + '</p>' : "") +
-    '<p class="hint">' + t("plus.offer") + '</p>' +
+    (calendar ? calendarHTML() : "") +
+    '<p class="hint">' + t("plus.offer") + '<br>✓ ' + t("plus.cal") + '</p>' +
     (over ? '<p class="muted">' + t("plus.kept") + '</p>' : "") +
     (buyUrl && !userEmail
       ? '<p class="hint">' + t("plus.secureFirst") + '</p>' +
@@ -712,6 +787,10 @@ function showPlus() {
         '<p class="legal">' + t("plus.legal") + '</p>'
       : '<button type="button" class="btn" disabled>' + t("plus.soon") + '</button>') +
     '<button type="button" class="btn light" data-act="close">OK</button>');
+  if (calendar) {
+    loadCalendar(false);
+    if (focus === "calendar") document.getElementById("calBox").scrollIntoView({ block: "start" });
+  }
 }
 
 // Rückkehr von Stripe (?plus=danke): kurz warten, bis der Webhook Plus eingetragen hat
@@ -744,6 +823,7 @@ document.addEventListener("click", function (e) {
   var act = el.getAttribute("data-act"), id = el.getAttribute("data-id");
   // Anlegen und Ändern nur in der Testphase oder mit Livo Plus (Löschen und Ansehen immer)
   var changes = el.hasAttribute("data-tpl") || act === "add" || act === "voice" || act === "done" || act === "edit";
+  if (act === "calendar") return showPlus("calendar");
   if (act === "plus" || (changes && !canEdit())) return showPlus();
   if (el.hasAttribute("data-tpl")) return showNew(el.getAttribute("data-tpl"));
   if (act === "push") {
@@ -763,6 +843,9 @@ document.addEventListener("click", function (e) {
   else if (act === "done") markDone(id);
   else if (act === "edit") showEdit(id, false);
   else if (act === "del") removeItem(id);
+  else if (act === "share") shareItem(id);
+  else if (act === "calcopy") copyText(calFeedUrl, t("toast.linkCopied"));
+  else if (act === "calreset") resetCalendar();
   else if (act === "account" || act === "signin") {
     // data-then="plus": nach dem Sichern bzw. Anmelden geht das Kauf-Fenster wieder auf
     var then = el.getAttribute("data-then") || (accFlow && el.closest("#sheet") ? accFlow.then : "");
