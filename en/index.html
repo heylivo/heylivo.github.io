@@ -185,11 +185,14 @@
   .final-box h2 { color: #fff; }
   .final-box p { margin: 0 0 28px; opacity: .9; }
   footer { padding: 30px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
-  footer .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+  /* Zwei Reihen: oben Logo + Rechtliches/Ratgeber, unten © + Sprachen - verrutscht auch auf dem Handy nicht */
+  footer .wrap { display: grid; gap: 16px; }
+  footer .frow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 14px; }
   footer .logo img { width: 28px; height: 28px; }
   footer .wm { font-size: 19px; }
   footer p { margin: 2px 0 0; font-size: 13px; }
-  footer nav a { margin-left: 14px; color: var(--muted); text-decoration: none; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  footer nav a { color: var(--muted); text-decoration: none; white-space: nowrap; }
 
   @media (max-width: 920px) {
     .hero .wrap { grid-template-columns: 1fr; }
@@ -227,8 +230,6 @@
     .note-hero { right: calc(50% - 150px); bottom: 8px; font-size: 23px; }
     .art::before { width: 320px; height: 320px; }
     .price { padding: 26px 22px; }
-    footer nav a { margin: 0 14px 0 0; }
-    footer nav .copy { margin-right: 14px; }
   }
 </style>
 </head>
@@ -390,6 +391,7 @@
         <details><summary>What happens after the 30 days?</summary><p>With Livo Plus everything carries on as before. Without Plus you can still view and delete your deadlines, but you can't add or change any, and reminders stop. Livo lets you know in time: 7 days before, on the last day and on the day after – by push if reminders are on, and by email if your account is secured.</p></details>
         <details><summary>Can I buy Livo Plus right away?</summary><p>Yes, the trial is optional. Tap “Livo Plus” in the app and secure your account: enter your email address and type in the 6-digit code from the email. Then tap “Buy Livo Plus – €11.99” and pay securely with Stripe. Plus is active immediately – for one year from the day of purchase.</p></details>
         <details><summary>Does Livo Plus renew automatically?</summary><p>No. You pay €11.99 once for one year. After that you decide whether to extend – there's no subscription and nothing to cancel.</p></details>
+        <details><summary>Can I see my deadlines in my calendar?</summary><p>Yes, with Livo Plus: tap “📅&nbsp;Calendar” in the app and choose Google Calendar, iPhone / Mac or Outlook. Your deadlines then show up in your calendar – new and changed ones are added automatically. Google and Outlook only fetch changes once or twice a day, so they appear there a little later. The link is yours alone; “Create a new link” makes the old one stop working at any time. If Livo Plus ends, the deadlines disappear from your calendar again – they stay in the app.</p></details>
         <details><summary>Does heylivo work on iPhone?</summary><p>Yes. To get reminders, tap “Share” in Safari, then “Add to Home Screen”, and open heylivo from the new icon.</p></details>
         <details><summary>How does “Hey Livo” work?</summary><p>Speech recognition is done by your browser (in Chrome, for example, via Google; in Safari via Apple). Livo only receives the recognised text and works out the type, date and time of the deadline. You check everything before it's saved. Livo understands 10 languages: English, German, Italian, Greek, Spanish, French, Dutch, Portuguese, Turkish and Polish.</p></details>
       </div>
@@ -409,12 +411,17 @@
 
 <footer>
   <div class="wrap">
-    <div>
-      <a class="logo" href="./"><img src="../icon.png" alt=""><span class="wm">hey<span>livo</span></span></a>
-      <p>Never miss a deadline again.</p>
+    <div class="frow">
+      <div>
+        <a class="logo" href="./"><img src="../icon.png" alt=""><span class="wm">hey<span>livo</span></span></a>
+        <p>Never miss a deadline again.</p>
+      </div>
+      <nav aria-label="Legal"><a href="imprint.html">Legal notice</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="deadlines-germany/">Guide</a></nav>
     </div>
-    <nav aria-label="Legal"><span class="copy">© 2026 heylivo</span><a href="imprint.html">Legal notice</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="deadlines-germany/">Guide: Deadlines in Germany</a></nav>
-    <nav aria-label="Language"><a href="../" lang="de" hreflang="de">Deutsch</a><a href="./" lang="en">English</a></nav>
+    <div class="frow">
+      <span>© 2026 heylivo</span>
+      <nav aria-label="Language"><a href="../" lang="de" hreflang="de">Deutsch</a><a href="./" lang="en">English</a></nav>
+    </div>
   </div>
 </footer>
 <script>
