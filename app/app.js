@@ -184,13 +184,18 @@ function statusHTML() {
 }
 
 function render() {
-  var list = document.getElementById("list");
+  var list = document.getElementById("list"), controls = document.getElementById("controls");
   renderNote();
-  if (!items.length) { list.innerHTML = emptyHTML(); return; }
+  if (!items.length) { controls.innerHTML = ""; list.innerHTML = emptyHTML(); return; }
   var all = sortedItems();
   var now = all.filter(function (it) { return status(it).key !== "later"; });
   var later = all.filter(function (it) { return status(it).key === "later"; });
-  var html = (canEdit() ? voicebarHTML() : "") + statusHTML() + pushHTML() + (now.length
+  // Oben fest (wandert beim Scrollen nicht mit): Hey Livo, Testphase/Plus und die Erinnerungen - die Karte
+  // "Erinnerungen einschalten" bzw. danach "Erinnerungen sind an". Die langen Hinweise (iPhone, blockiert,
+  // Browser kann es nicht) bleiben in der Liste, sonst belegt der feste Teil auf dem Handy fast den halben Bildschirm.
+  var push = pushHTML(), pushTop = pushState === "on" || pushState === "off";
+  controls.innerHTML = (canEdit() ? voicebarHTML() : "") + statusHTML() + (pushTop ? push : "");
+  var html = (pushTop ? "" : push) + (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
     : '<div class="allgood">' + t("allgood") + '</div>');
   if (later.length) html += '<h2 class="sec">' + t("sec.later") + '</h2>' + later.map(card).join("");

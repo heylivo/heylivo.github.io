@@ -32,6 +32,10 @@ body.lock { overflow: hidden; }
 /* Kopfzeile */
 .top { position: sticky; top: 0; z-index: 5; background: rgba(245,247,251,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .topbar { display: flex; align-items: center; justify-content: space-between; }
+/* Hinweiszeile, Hey Livo, Testphase/Plus und "Erinnerungen sind an" gehören zur festen Kopfzeile */
+.dock { padding-bottom: 12px; }
+/* Querformat und sehr niedrige Fenster: Kopfzeile scrollt mit, sonst bliebe für die Liste kaum Platz */
+@media (max-height: 500px) { .top { position: static; } }
 .brand { display: flex; align-items: center; gap: 8px; height: 58px; }
 /* "← Startseite" zwischen Logo und Sprache */
 .homelink { display: flex; align-items: center; gap: 5px; padding: 8px 6px; color: var(--muted); font-size: 14px; font-weight: 700; white-space: nowrap; text-decoration: none; }
