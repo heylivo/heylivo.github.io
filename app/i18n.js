@@ -134,7 +134,9 @@ var TXT = {
     "toast.linkCopied": "Link kopiert ✓",
     "share": "Teilen",
     "share.by": "Erinnert von heylivo – damit du keine Frist mehr verpasst:",
-    "toast.shareCopied": "Text kopiert – jetzt einfügen und senden ✓"
+    "toast.shareCopied": "Text kopiert – jetzt einfügen und senden ✓",
+    "legal.guides": "Ratgeber",
+    "guide.more": "📖 Mehr dazu im Ratgeber"
   },
   en: {
     "q.open": "“", "q.close": "”",
@@ -234,7 +236,9 @@ var TXT = {
     "toast.linkCopied": "Link copied ✓",
     "share": "Share",
     "share.by": "Reminded by heylivo – so you never miss a deadline:",
-    "toast.shareCopied": "Text copied – now paste and send ✓"
+    "toast.shareCopied": "Text copied – now paste and send ✓",
+    "legal.guides": "Guide",
+    "guide.more": "📖 More in our guide"
   },
   it: {
     "q.open": "“", "q.close": "”",
@@ -334,7 +338,9 @@ var TXT = {
     "toast.linkCopied": "Link copiato ✓",
     "share": "Condividi",
     "share.by": "Ricordato da heylivo – per non perdere più nessuna scadenza:",
-    "toast.shareCopied": "Testo copiato – ora incollalo e invialo ✓"
+    "toast.shareCopied": "Testo copiato – ora incollalo e invialo ✓",
+    "legal.guides": "Guida",
+    "guide.more": "📖 Altro nella nostra guida"
   },
   el: {
     "q.open": "«", "q.close": "»",
@@ -434,7 +440,9 @@ var TXT = {
     "toast.linkCopied": "Ο σύνδεσμος αντιγράφηκε ✓",
     "share": "Κοινοποίηση",
     "share.by": "Υπενθύμιση από το heylivo – για να μη χάνεις καμία προθεσμία:",
-    "toast.shareCopied": "Το κείμενο αντιγράφηκε – επικόλλησέ το και στείλ' το ✓"
+    "toast.shareCopied": "Το κείμενο αντιγράφηκε – επικόλλησέ το και στείλ' το ✓",
+    "legal.guides": "Οδηγός",
+    "guide.more": "📖 Περισσότερα στον οδηγό μας"
   },
   es: {
     "q.open": "“", "q.close": "”",
@@ -534,7 +542,9 @@ var TXT = {
     "toast.linkCopied": "Enlace copiado ✓",
     "share": "Compartir",
     "share.by": "Recordado por heylivo – para que no se te pase ningún plazo:",
-    "toast.shareCopied": "Texto copiado – pégalo y envíalo ✓"
+    "toast.shareCopied": "Texto copiado – pégalo y envíalo ✓",
+    "legal.guides": "Guía",
+    "guide.more": "📖 Más en nuestra guía"
   },
   fr: {
     "q.open": "« ", "q.close": " »",
@@ -634,7 +644,9 @@ var TXT = {
     "toast.linkCopied": "Lien copié ✓",
     "share": "Partager",
     "share.by": "Rappelé par heylivo – pour ne plus manquer aucune échéance :",
-    "toast.shareCopied": "Texte copié – collez-le et envoyez-le ✓"
+    "toast.shareCopied": "Texte copié – collez-le et envoyez-le ✓",
+    "legal.guides": "Guide",
+    "guide.more": "📖 Plus d'infos dans notre guide"
   },
   nl: {
     "q.open": "“", "q.close": "”",
@@ -734,7 +746,9 @@ var TXT = {
     "toast.linkCopied": "Link gekopieerd ✓",
     "share": "Delen",
     "share.by": "Herinnerd door heylivo – zodat je nooit meer een deadline mist:",
-    "toast.shareCopied": "Tekst gekopieerd – nu plakken en versturen ✓"
+    "toast.shareCopied": "Tekst gekopieerd – nu plakken en versturen ✓",
+    "legal.guides": "Gids",
+    "guide.more": "📖 Meer in onze gids"
   },
   pt: {
     "q.open": "“", "q.close": "”",
@@ -834,7 +848,9 @@ var TXT = {
     "toast.linkCopied": "Link copiado ✓",
     "share": "Partilhar",
     "share.by": "Lembrado pelo heylivo – para nunca mais perder um prazo:",
-    "toast.shareCopied": "Texto copiado – agora cole e envie ✓"
+    "toast.shareCopied": "Texto copiado – agora cole e envie ✓",
+    "legal.guides": "Guia",
+    "guide.more": "📖 Mais no nosso guia"
   },
   tr: {
     "q.open": "“", "q.close": "”",
@@ -934,7 +950,9 @@ var TXT = {
     "toast.linkCopied": "Bağlantı kopyalandı ✓",
     "share": "Paylaş",
     "share.by": "heylivo hatırlattı – hiçbir tarihi kaçırmaman için:",
-    "toast.shareCopied": "Metin kopyalandı – şimdi yapıştırıp gönder ✓"
+    "toast.shareCopied": "Metin kopyalandı – şimdi yapıştırıp gönder ✓",
+    "legal.guides": "Rehber",
+    "guide.more": "📖 Rehberimizde daha fazlası"
   },
   pl: {
     "q.open": "„", "q.close": "”",
@@ -1036,7 +1054,9 @@ var TXT = {
     "toast.linkCopied": "Link skopiowany ✓",
     "share": "Udostępnij",
     "share.by": "Przypomniane przez heylivo – żeby nie przegapić żadnego terminu:",
-    "toast.shareCopied": "Tekst skopiowany – teraz wklej i wyślij ✓"
+    "toast.shareCopied": "Tekst skopiowany – teraz wklej i wyślij ✓",
+    "legal.guides": "Poradnik",
+    "guide.more": "📖 Więcej w naszym poradniku"
   }
 };
 

@@ -17,6 +17,10 @@ header .wrap { display: flex; align-items: center; justify-content: space-betwee
 .wm span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .lang { padding: 7px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); font-size: 14px; font-weight: 800; text-decoration: none; }
 .lang:hover { border-color: var(--lav-2); color: var(--violet); }
+/* "← Startseite" in der Mitte der Kopfzeile, wie in der App */
+.homelink { display: flex; align-items: center; gap: 5px; padding: 8px 6px; color: var(--muted); font-size: 14px; font-weight: 700; white-space: nowrap; text-decoration: none; }
+.homelink:hover { color: var(--violet); }
+@media (max-width: 380px) { .homelink { gap: 3px; padding: 8px 4px; font-size: 12.5px; } }
 
 main { padding: 34px 0 56px; }
 h1 { margin: 0 0 6px; font-size: 32px; line-height: 1.2; letter-spacing: -.02em; }

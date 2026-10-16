@@ -577,12 +577,22 @@ function build(tp, v, lead) {
   return { tpl: tp.id, title: tplName(tp, v), due: toISO(r.due), time: "", every: r.every || 0, everyDays: r.everyDays || 0, from: tp.from || "due", lead: lead, renew: !!tp.renew };
 }
 
+// Ratgeber-Seite zur Vorlage (es gibt sie nur auf Deutsch und Englisch)
+var GUIDE_PAGES = {
+  de: { personalausweis: "../personalausweis-abgelaufen/", tuev: "../tuev-ueberzogen/", kfzversicherung: "../kfz-versicherung-wechseln/" },
+  en: { aufenthaltstitel: "../en/deadlines-germany/", tuev: "../en/deadlines-germany/" }
+};
+function guideLinkHTML(tp) {
+  var url = tp && GUIDE_PAGES[LANG] && GUIDE_PAGES[LANG][tp.id];
+  return url ? '<a class="guidelink" href="' + url + '" target="_blank" rel="noopener">' + esc(t("guide.more")) + '</a>' : "";
+}
+
 function showNew(tid) {
   var tp = find(TEMPLATES, tid);
   if (!tp) return;
   var hint = tplHint(tp);
   openSheet('<h3>' + find(CATEGORIES, tp.cat).icon + " " + esc(tplTitle(tp)) + '</h3><form id="frm" novalidate>' +
-    (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") +
+    (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") + guideLinkHTML(tp) +
     tp.fields.map(function (f) { return fieldHTML(tp, f); }).join("") +
     timeHTML("", undefined) +
     leadHTML(tp.lead) +
@@ -632,7 +642,7 @@ function showItem(id) {
     '<dt>' + t("dl.remind") + '</dt><dd>' + esc(t("dl.remindVal", { n: it.lead, x: remindText(it) })) + '</dd>' +
     (it.time && it.remindMin ? '<dt>' + t("dl.soon") + '</dt><dd>' + esc(soonText(it.remindMin)) + '</dd>' : "") +
     '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it)) + '</dd></dl>' +
-    (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") +
+    (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") + guideLinkHTML(tp) +
     (canEdit()
       ? '<button type="button" class="btn" data-act="done" data-id="' + it.id + '">' + main + '</button>' +
         '<button type="button" class="btn light" data-act="edit" data-id="' + it.id + '">' + t("edit") + '</button>'
@@ -913,9 +923,10 @@ function setupLanguage() {
   // "← Startseite" oben in der Mitte - das Logo führt auch dorthin, aber das sieht man nicht
   document.getElementById("homeLink").href = LANG === "de" ? "../" : "../en/";
   document.getElementById("homeText").textContent = t("home");
-  // Rechtliches unten: Deutsch auf die deutschen Seiten, alle anderen Sprachen auf die englischen
+  // Ratgeber und Rechtliches unten: Deutsch auf die deutschen Seiten, alle anderen Sprachen auf die englischen
   var links = document.getElementById("appLinks"), de = LANG === "de";
   if (links) links.innerHTML = [
+    [de ? "../ratgeber/" : "../en/deadlines-germany/", "legal.guides"],
     [de ? "../impressum.html" : "../en/imprint.html", "legal.imprint"],
     [de ? "../datenschutz.html" : "../en/privacy.html", "legal.privacy"],
     [de ? "../agb.html" : "../en/terms.html", "legal.terms"]
