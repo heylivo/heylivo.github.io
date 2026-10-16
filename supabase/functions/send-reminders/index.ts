@@ -4,7 +4,9 @@
 //   Erinnerungszeit erreicht ist (Fälligkeit minus lead_days) - einmal pro Fälligkeit
 //   (notified_for). Mehrere Fristen am selben Tag kommen als eine Nachricht.
 //   Danach die Hinweise zum Ende der Testphase (7 Tage vorher, am letzten Tag, am Tag danach)
-//   per Push und an gesicherte Konten per E-Mail (Resend) - einmal pro Stufe (usage.trial_notice).
+//   per Push und an gesicherte Konten per E-Mail (Resend) - einmal pro Stufe (usage.trial_notice) -
+//   und die Hinweise vor dem Ablauf von Livo Plus (30 und 7 Tage vorher, am Tag danach),
+//   einmal pro Stufe und Enddatum (plans.plus_notice / plus_notice_until).
 // - POST {"action":"soon"} mit Header x-cron-secret: jede Minute per pg_cron (0005_soon_reminders.sql).
 //   Erinnert kurz vor Terminen mit Uhrzeit (remind_min Minuten vorher), einmal pro Termin
 //   (time_notified_for). Die Uhrzeit gilt in der Zeitzone, in der die Frist gespeichert wurde.
@@ -668,7 +670,7 @@ function trialMail(stage: number, left: number, lastDay: string, lang?: string):
 
 async function sendMail(to: string, mail: Mail): Promise<boolean> {
   if (!RESEND_API_KEY) {
-    console.error('RESEND_API_KEY missing - no trial mail');
+    console.error('RESEND_API_KEY missing - no notice mail');
     return false;
   }
   try {
@@ -681,10 +683,10 @@ async function sendMail(to: string, mail: Mail): Promise<boolean> {
         headers: { 'List-Unsubscribe': `<mailto:${MAIL_REPLY_TO}?subject=Stop>` }
       })
     });
-    if (!response.ok) console.error('Trial mail failed', response.status, await response.text());
+    if (!response.ok) console.error('Notice mail failed', response.status, await response.text());
     return response.ok;
   } catch (error) {
-    console.error('Trial mail failed', error);
+    console.error('Notice mail failed', error);
     return false;
   }
 }
@@ -728,6 +730,251 @@ async function runTrialNotices(today: string) {
   return { notices, pushes, mails };
 }
 
+// --- Hinweise vor dem Ablauf von Livo Plus ---------------------------------------------
+// Livo Plus verlängert sich nicht von selbst. Stufe 1 "endet in n Tagen" (ab 30 Tage vorher),
+// 2 "endet in n Tagen / morgen / heute" (ab 7 Tage vorher), 3 "ist abgelaufen" (bis 3 Tage danach) -
+// Push an alle Geräte und E-Mail (Plus gibt es nur mit gesichertem Konto). plans.plus_notice merkt
+// sich die zuletzt verschickte Stufe für das Enddatum plans.plus_notice_until (0011_plus_notice.sql):
+// Nach einer Verlängerung beginnt alles von vorn. Abbestellen per Antwort-Mail: von Hand
+// plus_notice = 3 und plus_notice_until = plus_until setzen.
+const PLUS_NOTICE_FIRST = 30;
+const PLUS_NOTICE_SECOND = 7;
+
+// Texte je App-Sprache (die lokale Vorschau __preview-plusmails.html liest diesen Block mit)
+// <plus-text>
+const PLUS_TEXT: Record<string, Record<string, string>> = {
+  de: {
+    endsIn: 'Livo Plus endet in {n} Tagen', endsTomorrow: 'Livo Plus endet morgen',
+    endsToday: 'Livo Plus endet heute', over: 'Livo Plus ist abgelaufen',
+    overSubject: 'Livo Plus ist abgelaufen – Erinnerungen pausieren',
+    push1: 'Jetzt für 11,99 € um ein Jahr verlängern – du verlierst keinen Tag, das neue Jahr schließt direkt an.',
+    push2: 'Nach dem {date} erinnert dich Livo nur noch, wenn du verlängerst – 11,99 € für ein Jahr.',
+    push3: 'Deine Fristen sind noch da, aber Erinnerungen pausieren. Mit einer Verlängerung geht alles weiter.',
+    hi: 'Hallo!',
+    mail1: 'Dein Livo Plus läuft am {date} ab. Wenn du schon jetzt verlängerst, verlierst du keinen Tag: Das neue Jahr schließt direkt an dein jetziges an.',
+    mail2: 'Dein Livo Plus läuft am {date} ab. Danach erinnert dich Livo nicht mehr an deine Fristen, und neue Fristen kannst du nicht mehr eintragen. Deine Fristen bleiben gespeichert.',
+    mail3: 'Dein Livo Plus ist am {date} abgelaufen. Deine Fristen sind weiter gespeichert und du kannst sie ansehen. Erinnerungen bekommst du aber erst wieder, wenn du verlängerst – verlass dich bis dahin bitte nicht darauf, dass Livo sich meldet.',
+    plus: 'Livo Plus verlängern: 11,99 € inkl. MwSt. für ein weiteres Jahr – einmal zahlen, kein Abo, keine Kündigung.',
+    button: 'Livo Plus verlängern',
+    footer: 'Du bekommst diese E-Mail, weil du Livo Plus mit diesem Konto gekauft hast. Keine Hinweise zum Ablauf mehr? Antworte einfach auf diese E-Mail.'
+  },
+  en: {
+    endsIn: 'Your Livo Plus ends in {n} days', endsTomorrow: 'Your Livo Plus ends tomorrow',
+    endsToday: 'Your Livo Plus ends today', over: 'Your Livo Plus has expired',
+    overSubject: 'Your Livo Plus has expired – reminders are paused',
+    push1: "Renew for a year now for €11.99 – you won't lose a day, the new year starts right after the current one.",
+    push2: 'After {date}, Livo only reminds you if you renew – €11.99 for a year.',
+    push3: 'Your deadlines are still there, but reminders are paused. Renew and everything continues.',
+    hi: 'Hi!',
+    mail1: "Your Livo Plus ends on {date}. If you renew now, you won't lose a day: the new year starts right after your current one.",
+    mail2: "Your Livo Plus ends on {date}. After that, Livo will no longer remind you of your deadlines and you can't add new ones. Your deadlines stay saved.",
+    mail3: "Your Livo Plus expired on {date}. Your deadlines are still saved and you can view them. But reminders only come back once you renew – so until then, please don't count on Livo getting in touch.",
+    plus: 'Renew Livo Plus: €11.99 incl. VAT for another year – pay once, no subscription, nothing to cancel.',
+    button: 'Renew Livo Plus',
+    footer: "You're getting this email because you bought Livo Plus with this account. No more notices about it ending? Just reply to this email."
+  },
+  it: {
+    endsIn: 'Il tuo Livo Plus scade tra {n} giorni', endsTomorrow: 'Il tuo Livo Plus scade domani',
+    endsToday: 'Il tuo Livo Plus scade oggi', over: 'Il tuo Livo Plus è scaduto',
+    overSubject: 'Il tuo Livo Plus è scaduto – promemoria in pausa',
+    push1: 'Rinnova ora per un anno a 11,99 € – non perdi neanche un giorno: il nuovo anno parte alla fine di quello attuale.',
+    push2: 'Dopo il {date}, Livo ti ricorda le scadenze solo se rinnovi – 11,99 € per un anno.',
+    push3: 'Le tue scadenze ci sono ancora, ma i promemoria sono in pausa. Rinnova e tutto continua.',
+    hi: 'Ciao!',
+    mail1: 'Il tuo Livo Plus scade il {date}. Se rinnovi già ora non perdi neanche un giorno: il nuovo anno inizia alla fine di quello attuale.',
+    mail2: 'Il tuo Livo Plus scade il {date}. Dopo, Livo non ti ricorderà più le tue scadenze e non potrai aggiungerne di nuove. Le tue scadenze restano salvate.',
+    mail3: 'Il tuo Livo Plus è scaduto il {date}. Le tue scadenze sono ancora salvate e puoi vederle. I promemoria però tornano solo quando rinnovi: fino ad allora non contare sugli avvisi di Livo.',
+    plus: 'Rinnova Livo Plus: 11,99 € IVA inclusa per un altro anno – paghi una volta, nessun abbonamento, nessuna disdetta.',
+    button: 'Rinnova Livo Plus',
+    footer: 'Ricevi questa email perché hai acquistato Livo Plus con questo account. Non vuoi più avvisi sulla scadenza? Rispondi semplicemente a questa email.'
+  },
+  el: {
+    endsIn: 'Το Livo Plus σου λήγει σε {n} μέρες', endsTomorrow: 'Το Livo Plus σου λήγει αύριο',
+    endsToday: 'Το Livo Plus σου λήγει σήμερα', over: 'Το Livo Plus σου έληξε',
+    overSubject: 'Το Livo Plus σου έληξε – οι υπενθυμίσεις σταματούν',
+    push1: 'Ανανέωσε τώρα για έναν χρόνο με 11,99 € – δεν χάνεις ούτε μία μέρα, ο νέος χρόνος ξεκινά μόλις τελειώσει ο τωρινός.',
+    push2: 'Μετά τις {date} το Livo σού θυμίζει τις προθεσμίες μόνο αν ανανεώσεις – 11,99 € για έναν χρόνο.',
+    push3: 'Οι προθεσμίες σου είναι ακόμα εδώ, αλλά οι υπενθυμίσεις σταματούν. Με μια ανανέωση όλα συνεχίζουν.',
+    hi: 'Γεια σου!',
+    mail1: 'Το Livo Plus σου λήγει στις {date}. Αν ανανεώσεις ήδη τώρα, δεν χάνεις ούτε μία μέρα: ο νέος χρόνος ξεκινά μόλις τελειώσει ο τωρινός.',
+    mail2: 'Το Livo Plus σου λήγει στις {date}. Μετά το Livo δεν θα σου θυμίζει πια τις προθεσμίες σου και δεν θα μπορείς να προσθέτεις νέες. Οι προθεσμίες σου μένουν αποθηκευμένες.',
+    mail3: 'Το Livo Plus σου έληξε στις {date}. Οι προθεσμίες σου είναι ακόμα αποθηκευμένες και μπορείς να τις βλέπεις. Υπενθυμίσεις όμως θα παίρνεις ξανά μόνο αν ανανεώσεις – μέχρι τότε μη βασίζεσαι στις ειδοποιήσεις του Livo.',
+    plus: 'Ανανέωση Livo Plus: 11,99 € με ΦΠΑ για έναν ακόμη χρόνο – πληρώνεις μία φορά, χωρίς συνδρομή, χωρίς ακύρωση.',
+    button: 'Ανανέωση Livo Plus',
+    footer: 'Λαμβάνεις αυτό το email επειδή αγόρασες το Livo Plus με αυτόν τον λογαριασμό. Δεν θέλεις άλλες ειδοποιήσεις για τη λήξη; Απλώς απάντησε σε αυτό το email.'
+  },
+  es: {
+    endsIn: 'Tu Livo Plus termina en {n} días', endsTomorrow: 'Tu Livo Plus termina mañana',
+    endsToday: 'Tu Livo Plus termina hoy', over: 'Tu Livo Plus ha caducado',
+    overSubject: 'Tu Livo Plus ha caducado – avisos en pausa',
+    push1: 'Renueva ahora por un año por 11,99 € – no pierdes ni un día: el nuevo año empieza cuando termina el actual.',
+    push2: 'Después del {date}, Livo solo te avisa si renuevas – 11,99 € por un año.',
+    push3: 'Tus plazos siguen ahí, pero los avisos están en pausa. Renueva y todo sigue.',
+    hi: '¡Hola!',
+    mail1: 'Tu Livo Plus termina el {date}. Si renuevas ya, no pierdes ni un día: el nuevo año empieza cuando termina el actual.',
+    mail2: 'Tu Livo Plus termina el {date}. Después, Livo ya no te avisará de tus plazos y no podrás añadir nuevos. Tus plazos siguen guardados.',
+    mail3: 'Tu Livo Plus caducó el {date}. Tus plazos siguen guardados y puedes verlos. Pero solo volverás a recibir avisos cuando renueves: hasta entonces, no cuentes con que Livo te avise.',
+    plus: 'Renovar Livo Plus: 11,99 € IVA incluido por otro año – pagas una vez, sin suscripción, sin cancelaciones.',
+    button: 'Renovar Livo Plus',
+    footer: 'Recibes este correo porque compraste Livo Plus con esta cuenta. ¿No quieres más avisos sobre el vencimiento? Simplemente responde a este correo.'
+  },
+  fr: {
+    endsIn: 'Votre Livo Plus se termine dans {n} jours', endsTomorrow: 'Votre Livo Plus se termine demain',
+    endsToday: "Votre Livo Plus se termine aujourd'hui", over: 'Votre Livo Plus a expiré',
+    overSubject: 'Votre Livo Plus a expiré – rappels en pause',
+    push1: "Renouvelez dès maintenant pour un an à 11,99 € – vous ne perdez aucun jour : la nouvelle année commence à la fin de l'actuelle.",
+    push2: 'Après le {date}, Livo ne vous rappelle vos échéances que si vous renouvelez – 11,99 € pour un an.',
+    push3: 'Vos échéances sont toujours là, mais les rappels sont en pause. Renouvelez et tout continue.',
+    hi: 'Bonjour,',
+    mail1: "Votre Livo Plus se termine le {date}. Si vous renouvelez dès maintenant, vous ne perdez aucun jour : la nouvelle année commence à la fin de l'actuelle.",
+    mail2: 'Votre Livo Plus se termine le {date}. Ensuite, Livo ne vous rappellera plus vos échéances et vous ne pourrez plus en ajouter. Vos échéances restent enregistrées.',
+    mail3: "Votre Livo Plus a expiré le {date}. Vos échéances restent enregistrées et consultables. Mais vous ne recevrez de nouveau des rappels qu'après un renouvellement : d'ici là, ne comptez pas sur Livo pour vous prévenir.",
+    plus: 'Renouveler Livo Plus : 11,99 € TTC pour une année de plus – un seul paiement, sans abonnement, sans résiliation.',
+    button: 'Renouveler Livo Plus',
+    footer: "Vous recevez cet e-mail parce que vous avez acheté Livo Plus avec ce compte. Vous ne souhaitez plus d'informations sur l'expiration ? Répondez simplement à cet e-mail."
+  },
+  nl: {
+    endsIn: 'Je Livo Plus eindigt over {n} dagen', endsTomorrow: 'Je Livo Plus eindigt morgen',
+    endsToday: 'Je Livo Plus eindigt vandaag', over: 'Je Livo Plus is verlopen',
+    overSubject: 'Je Livo Plus is verlopen – herinneringen op pauze',
+    push1: 'Verleng nu voor een jaar voor € 11,99 – je verliest geen dag: het nieuwe jaar sluit direct aan.',
+    push2: 'Na {date} herinnert Livo je alleen nog als je verlengt – € 11,99 per jaar.',
+    push3: 'Je deadlines zijn er nog, maar herinneringen staan op pauze. Verleng en alles gaat door.',
+    hi: 'Hoi!',
+    mail1: 'Je Livo Plus eindigt op {date}. Als je nu al verlengt, verlies je geen dag: het nieuwe jaar sluit direct aan op je huidige.',
+    mail2: 'Je Livo Plus eindigt op {date}. Daarna herinnert Livo je niet meer aan je deadlines en kun je geen nieuwe toevoegen. Je deadlines blijven bewaard.',
+    mail3: 'Je Livo Plus is op {date} verlopen. Je deadlines zijn nog bewaard en je kunt ze bekijken. Herinneringen krijg je pas weer als je verlengt – reken er tot dan dus niet op dat Livo zich meldt.',
+    plus: 'Livo Plus verlengen: € 11,99 incl. btw voor nog een jaar – één keer betalen, geen abonnement, niets opzeggen.',
+    button: 'Livo Plus verlengen',
+    footer: 'Je krijgt deze e-mail omdat je Livo Plus met dit account hebt gekocht. Geen berichten meer over het aflopen? Beantwoord deze e-mail gewoon.'
+  },
+  pt: {
+    endsIn: 'O seu Livo Plus termina daqui a {n} dias', endsTomorrow: 'O seu Livo Plus termina amanhã',
+    endsToday: 'O seu Livo Plus termina hoje', over: 'O seu Livo Plus expirou',
+    overSubject: 'O seu Livo Plus expirou – lembretes em pausa',
+    push1: 'Renove já por um ano por 11,99 € – não perde nenhum dia: o novo ano começa quando terminar o atual.',
+    push2: 'Depois de {date}, o Livo só lhe lembra os prazos se renovar – 11,99 € por um ano.',
+    push3: 'Os seus prazos continuam aqui, mas os lembretes estão em pausa. Renove e tudo continua.',
+    hi: 'Olá!',
+    mail1: 'O seu Livo Plus termina a {date}. Se renovar já, não perde nenhum dia: o novo ano começa quando terminar o atual.',
+    mail2: 'O seu Livo Plus termina a {date}. Depois disso, o Livo deixa de lhe lembrar os seus prazos e não poderá adicionar novos. Os seus prazos continuam guardados.',
+    mail3: 'O seu Livo Plus expirou a {date}. Os seus prazos continuam guardados e pode vê-los. Mas só voltará a receber lembretes quando renovar – até lá, não conte com os avisos do Livo.',
+    plus: 'Renovar o Livo Plus: 11,99 € com IVA por mais um ano – paga uma vez, sem subscrição, sem cancelamentos.',
+    button: 'Renovar o Livo Plus',
+    footer: 'Recebe este e-mail porque comprou o Livo Plus com esta conta. Não quer mais avisos sobre o fim? Basta responder a este e-mail.'
+  },
+  tr: {
+    endsIn: "Livo Plus'ın {n} gün sonra bitiyor", endsTomorrow: "Livo Plus'ın yarın bitiyor",
+    endsToday: "Livo Plus'ın bugün bitiyor", over: "Livo Plus'ın süresi doldu",
+    overSubject: "Livo Plus'ın süresi doldu – hatırlatmalar duraklatıldı",
+    push1: 'Şimdi 11,99 € ile bir yıl uzat – hiçbir gün kaybetmezsin: yeni yıl mevcut sürenin bitişinden itibaren başlar.',
+    push2: '{date} tarihinden sonra Livo sana yalnızca uzatırsan hatırlatır – yılda 11,99 €.',
+    push3: 'Tarihlerin hâlâ duruyor ama hatırlatmalar duraklatıldı. Uzatırsan her şey devam eder.',
+    hi: 'Merhaba!',
+    mail1: "Livo Plus'ın {date} tarihinde bitiyor. Şimdiden uzatırsan hiçbir gün kaybetmezsin: yeni yıl mevcut sürenin bitişinden itibaren başlar.",
+    mail2: "Livo Plus'ın {date} tarihinde bitiyor. Sonrasında Livo sana tarihlerini hatırlatmaz ve yeni tarih ekleyemezsin. Tarihlerin kayıtlı kalır.",
+    mail3: "Livo Plus'ın {date} tarihinde sona erdi. Tarihlerin hâlâ kayıtlı ve onları görebilirsin. Ama hatırlatmaları ancak uzattığında yeniden alırsın – o zamana kadar Livo'nun sana haber vermesine güvenme.",
+    plus: "Livo Plus'ı uzat: Bir yıl daha için KDV dahil 11,99 € – bir kez öde, abonelik yok, iptal yok.",
+    button: "Livo Plus'ı uzat",
+    footer: "Bu e-postayı, Livo Plus'ı bu hesapla satın aldığın için alıyorsun. Bitişle ilgili başka bildirim istemiyor musun? Bu e-postayı yanıtlaman yeterli."
+  },
+  pl: {
+    endsIn: 'Twój Livo Plus kończy się za {n} dni', endsTomorrow: 'Twój Livo Plus kończy się jutro',
+    endsToday: 'Twój Livo Plus kończy się dziś', over: 'Twój Livo Plus wygasł',
+    overSubject: 'Twój Livo Plus wygasł – przypomnienia wstrzymane',
+    push1: 'Przedłuż teraz o rok za 11,99 € – nie tracisz ani dnia: nowy rok zaczyna się po zakończeniu obecnego.',
+    push2: 'Po {date} Livo przypomina o terminach tylko po przedłużeniu – 11,99 € za rok.',
+    push3: 'Twoje terminy nadal są zapisane, ale przypomnienia są wstrzymane. Przedłuż, a wszystko zadziała dalej.',
+    hi: 'Cześć!',
+    mail1: 'Twój Livo Plus kończy się {date}. Jeśli przedłużysz już teraz, nie stracisz ani dnia: nowy rok zaczyna się po zakończeniu obecnego.',
+    mail2: 'Twój Livo Plus kończy się {date}. Potem Livo nie będzie już przypominać o twoich terminach i nie dodasz nowych. Twoje terminy zostają zapisane.',
+    mail3: 'Twój Livo Plus wygasł {date}. Twoje terminy są nadal zapisane i możesz je przeglądać. Przypomnienia dostaniesz jednak dopiero po przedłużeniu – do tego czasu nie licz na to, że Livo się odezwie.',
+    plus: 'Przedłuż Livo Plus: 11,99 € z VAT za kolejny rok – płacisz raz, bez subskrypcji, bez wypowiadania.',
+    button: 'Przedłuż Livo Plus',
+    footer: 'Dostajesz tę wiadomość, bo na tym koncie kupiono Livo Plus. Nie chcesz więcej informacji o wygaśnięciu? Po prostu odpowiedz na tę wiadomość.'
+  }
+};
+// </plus-text>
+
+function plusTx(lang: string | undefined, key: string, vars: Record<string, string | number> = {}): string {
+  const table = PLUS_TEXT[lang ?? ''] ?? PLUS_TEXT.en;
+  const text = (table[key] ?? PLUS_TEXT.en[key] ?? key).replace(/\{(\w+)\}/g, (m, name) => (vars[name] != null ? String(vars[name]) : m));
+  // Französisch: geschütztes Leerzeichen vor : ? ! ;
+  return lang === 'fr' ? text.replace(/ ([:?!;])/g, `${NBSP}$1`) : text;
+}
+
+function plusStage(left: number): number {
+  if (left > PLUS_NOTICE_SECOND && left <= PLUS_NOTICE_FIRST) return 1;
+  if (left >= 0 && left <= PLUS_NOTICE_SECOND) return 2;
+  if (left < 0 && left >= -NOTICE_DAYS_AFTER) return 3;
+  return 0;
+}
+
+function plusTitle(stage: number, left: number, lang?: string): string {
+  if (stage === 3) return plusTx(lang, 'over');
+  if (left === 0) return plusTx(lang, 'endsToday');
+  if (left === 1) return plusTx(lang, 'endsTomorrow');
+  return plusTx(lang, 'endsIn', { n: left });
+}
+
+function plusPush(stage: number, left: number, until: string, lang?: string): Payload {
+  return { title: plusTitle(stage, left, lang), body: plusTx(lang, `push${stage}`, { date: fmt(until, lang) }), tag: 'livo-plus', url: PLUS_URL };
+}
+
+// Gleiches Aussehen wie die Mails zur Testphase (TRIAL_MAIL_HTML)
+function plusMail(stage: number, left: number, until: string, lang?: string): Mail {
+  const known = lang && PLUS_TEXT[lang] ? lang : 'en';
+  const url = `${PLUS_URL}&lang=${known}`;
+  const title = plusTitle(stage, left, known);
+  const parts: Record<string, string> = {
+    title,
+    hi: plusTx(known, 'hi'),
+    text: plusTx(known, `mail${stage}`, { date: fmt(until, known) }),
+    plus: plusTx(known, 'plus'),
+    button: plusTx(known, 'button'),
+    footer: plusTx(known, 'footer')
+  };
+  const html = TRIAL_MAIL_HTML.replace(/\{(\w+)\}/g, (m, name) =>
+    name === 'lang' ? known : name === 'url' ? url : parts[name] != null ? escapeHtml(parts[name]) : m);
+  const text = `${parts.hi}\n\n${parts.text}\n\n${parts.plus}\n${parts.button}: ${url}\n\n-- \n${parts.footer}\nheylivo.com`;
+  return { subject: stage === 3 ? plusTx(known, 'overSubject') : title, html, text };
+}
+
+type PlusRow = { user_id: string; plus_until: string; email: string | null; plus_notice: number | null; plus_notice_until: string | null };
+
+async function runPlusNotices(today: string) {
+  const rows = await fetchAll<PlusRow>((a, b) => supabase.from('plans')
+    .select('user_id, plus_until, email, plus_notice, plus_notice_until')
+    .gte('plus_until', addDays(today, -NOTICE_DAYS_AFTER))
+    .lte('plus_until', addDays(today, PLUS_NOTICE_FIRST))
+    .order('user_id').range(a, b));
+  const due = rows.map((row) => {
+    const left = daysBetween(today, row.plus_until);
+    // Eine Stufe gilt nur für das Enddatum, für das sie verschickt wurde
+    const sent = row.plus_notice_until === row.plus_until ? (row.plus_notice ?? 0) : 0;
+    return { ...row, left, stage: plusStage(left), sent };
+  }).filter((row) => row.stage > row.sent);
+  if (!due.length) return { notices: 0, pushes: 0, mails: 0 };
+  const subs = await subscriptionsOf(due.map((row) => row.user_id));
+
+  let notices = 0, pushes = 0, mails = 0;
+  for (const row of due) {
+    const targets = subs.filter((sub) => sub.user_id === row.user_id);
+    const { data } = await supabase.auth.admin.getUserById(row.user_id);
+    const user = data?.user;
+    const email = user && !user.is_anonymous && user.email ? user.email : row.email ?? '';
+    const pushed = targets.length ? await deliver(targets, plusPush(row.stage, row.left, row.plus_until, targets[0].lang)) : 0;
+    const lang = (user?.user_metadata?.lang as string | undefined) ?? targets[0]?.lang;
+    const mailed = email ? await sendMail(email, plusMail(row.stage, row.left, row.plus_until, lang)) : false;
+    if (!pushed && !mailed) continue;
+    notices++;
+    pushes += pushed;
+    if (mailed) mails++;
+    await supabase.from('plans').update({ plus_notice: row.stage, plus_notice_until: row.plus_until }).eq('user_id', row.user_id);
+  }
+  return { notices, pushes, mails };
+}
+
 function errorText(error: unknown): string {
   return String((error as { message?: string })?.message ?? error);
 }
@@ -753,8 +1000,8 @@ Deno.serve(async (request) => {
         return json({ error: errorText(error) }, 500);
       }
     }
-    // Erinnerungen und Hinweise zur Testphase getrennt - ein Fehler im einen Teil hält den anderen nicht auf
-    let reminders: unknown, trial: unknown, failed = false;
+    // Erinnerungen, Hinweise zur Testphase und zu Livo Plus getrennt - ein Fehler im einen Teil hält die anderen nicht auf
+    let reminders: unknown, trial: unknown, plus: unknown, failed = false;
     try {
       reminders = await runReminders();
     } catch (error) {
@@ -767,7 +1014,13 @@ Deno.serve(async (request) => {
       failed = true;
       trial = { error: errorText(error) };
     }
-    return json({ reminders, trial }, failed ? 500 : 200);
+    try {
+      plus = await runPlusNotices(berlinToday());
+    } catch (error) {
+      failed = true;
+      plus = { error: errorText(error) };
+    }
+    return json({ reminders, trial, plus }, failed ? 500 : 200);
   }
 
   if (body.action === 'test') {
