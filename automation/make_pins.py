@@ -20,6 +20,7 @@ import datetime
 import email.utils
 import html
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -72,6 +73,32 @@ def render_pin(day_number: int, lang: str, out_jpg: Path) -> dict:
     tmp_png.unlink(missing_ok=True)
     print(f"Pin day {day_number} {lang} [{row['Kategorie']}] -> {out_jpg}")
     return row
+
+
+# Pins about a guide topic link to that guide instead of the homepage: a word in the Hook that starts
+# with a keyword ("Ausweis" yes, "Parkausweis" no; case-insensitive, the first matching rule wins);
+# greeting and how-it-works pins stay on the homepage
+GUIDES = {
+    "de": [
+        (("ausweis", "personalausweis"), "https://heylivo.com/personalausweis-abgelaufen/"),
+        (("tüv", "hauptuntersuchung", "plakette"), "https://heylivo.com/tuev-ueberzogen/"),
+        (("kfz-versicherung",), "https://heylivo.com/kfz-versicherung-wechseln/"),
+    ],
+    "en": [
+        (("residence permit", "register", "tüv", "tax return", "car insurance", "id card", "passport"), "https://heylivo.com/en/deadlines-germany/"),
+    ],
+}
+GENERAL = {"Hallo!", "So geht's", "Hi!", "How it works"}
+
+
+def pin_link(row: dict, lang: str) -> str:
+    if row.get("Kategorie", "").strip() in GENERAL:
+        return FEED[lang]["link"]
+    text = row.get("Hook", "").lower()
+    for words, url in GUIDES[lang]:
+        if any(re.search(r"\b" + re.escape(word), text) for word in words):
+            return url
+    return FEED[lang]["link"]
 
 
 def pin_text(row: dict, lang: str) -> tuple[str, str]:
@@ -127,8 +154,9 @@ def write_feed(lang: str, items: list) -> Path:
         out += [
             "<item>",
             f"<title>{esc(i['title'])}</title>",
-            # a link of its own per pin (to be safe: Pinterest may skip feed items whose link it already pinned)
-            f"<link>{f['link']}?pin={lang}-{i['date']}</link>",
+            # a link of its own per pin (to be safe: Pinterest may skip feed items whose link it already pinned);
+            # items from before the guide links have no "link" and keep pointing to the homepage
+            f"<link>{i.get('link', f['link'])}?pin={lang}-{i['date']}</link>",
             f'<guid isPermaLink="false">heylivo-pin-{lang}-{i["date"]}</guid>',
             f"<pubDate>{rfc822(i['date'])}</pubDate>",
             f"<description>{esc(i['text'])}</description>",
@@ -153,7 +181,7 @@ def make(day_number: int, date_text: str, force: bool = False) -> None:
             continue
         row = render_pin(day_number, lang, PIN_DIR / name)
         title, text = pin_text(row, lang)
-        items = add_item(lang, {"date": date_text, "day": day_number, "file": name, "title": title, "text": text})
+        items = add_item(lang, {"date": date_text, "day": day_number, "file": name, "title": title, "text": text, "link": pin_link(row, lang)})
         print(f"Feed {lang}: {len(items)} pins -> {write_feed(lang, items)}")
 
 
