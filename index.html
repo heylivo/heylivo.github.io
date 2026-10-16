@@ -68,10 +68,9 @@
   .langdd svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .langdd .chev { width: 13px; height: 13px; color: var(--muted); transition: transform .15s; }
   .langdd[open] .chev { transform: rotate(180deg); }
-  .langdd .menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; min-width: 180px; padding: 6px; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(40,25,120,.35); }
-  .langdd .menu a { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; border-radius: 10px; color: var(--ink); font-size: 15px; text-decoration: none; }
-  .langdd .menu a[aria-current] { background: var(--lav); color: var(--violet); font-weight: 700; }
-  .langdd .menu a[aria-current]::after { content: "✓"; }
+  .langdd .menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: 76px; padding: 6px; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(40,25,120,.35); }
+  .langdd .menu a { display: flex; align-items: center; justify-content: center; padding: 11px 12px; border-radius: 10px; color: var(--ink); font-size: 15px; text-decoration: none; }
+  .langdd .menu a[aria-current] { color: var(--violet); font-weight: 800; }
 
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 15px 26px; border: 2px solid transparent; border-radius: 14px; background: var(--grad-btn); color: #fff; font-weight: 800; font-size: 16px; text-decoration: none; box-shadow: 0 14px 30px -14px rgba(90,60,240,.8); }
   .btn.small { padding: 9px 18px; font-size: 15px; border-radius: 12px; box-shadow: none; }
@@ -262,8 +261,8 @@
       <details class="langdd">
         <summary aria-label="Sprache wählen">DE<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary>
         <nav class="menu" aria-label="Sprache">
-          <a href="./" lang="de" aria-current="page">Deutsch</a>
-          <a href="en/" lang="en" hreflang="en">English</a>
+          <a href="./" lang="de" aria-current="page" title="Deutsch" aria-label="Deutsch">DE</a>
+          <a href="en/" lang="en" hreflang="en" title="English" aria-label="English">EN</a>
         </nav>
       </details>
       <a class="btn small" href="app/?lang=de">App öffnen</a>

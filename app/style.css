@@ -37,18 +37,18 @@ body.lock { overflow: hidden; }
 .homelink { display: flex; align-items: center; gap: 5px; padding: 8px 6px; color: var(--muted); font-size: 14px; font-weight: 700; white-space: nowrap; text-decoration: none; }
 .homelink:hover { color: var(--brand); }
 @media (max-width: 350px) { .homelink { gap: 3px; padding: 8px 4px; font-size: 12.5px; } }
-/* Sprache: Knopf "🌐 DE ▾" mit Scroll-Liste (zeigt etwa 6 von 10 Sprachen) */
+/* Sprache: Knopf "DE ▾" mit schmaler Scroll-Liste nur mit Kürzeln (zeigt etwa 6 von 10 Sprachen) */
 .langdd { position: relative; }
 .langbtn { display: flex; align-items: center; gap: 5px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 .langbtn[aria-expanded="true"] { border-color: #c7d4ff; background: var(--brand-soft); color: var(--brand); }
 .langbtn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .langbtn .chev { width: 13px; height: 13px; color: var(--muted); transition: transform .15s; }
 .langbtn[aria-expanded="true"] .chev { transform: rotate(180deg); }
-.langlist { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; width: 112px; max-height: min(290px, 60vh); overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 6px; list-style: none; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(15,23,42,.35); scrollbar-width: thin; scrollbar-color: #cdd6ee transparent; }
+.langlist { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; width: 76px; max-height: min(290px, 60vh); overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 6px; list-style: none; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(15,23,42,.35); scrollbar-width: thin; scrollbar-color: #cdd6ee transparent; }
 .langlist[hidden] { display: none; }
 .langlist::-webkit-scrollbar { width: 6px; }
 .langlist::-webkit-scrollbar-thumb { border-radius: 3px; background: #cdd6ee; }
-.langlist button { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 11px 12px; border: 0; border-radius: 10px; background: none; color: var(--ink); font: inherit; font-size: 15px; text-align: left; cursor: pointer; }
+.langlist button { display: flex; align-items: center; justify-content: center; width: 100%; padding: 11px 12px; border: 0; border-radius: 10px; background: none; color: var(--ink); font: inherit; font-size: 15px; text-align: center; cursor: pointer; }
 .langlist button:hover { background: var(--later-bg); }
 /* Gewählte Sprache: nur blaue Buchstaben, ohne Hintergrund und Häkchen */
 .langlist [aria-selected] button { color: var(--brand); font-weight: 800; }
