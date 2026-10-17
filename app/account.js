@@ -31,14 +31,30 @@ function renderNote() {
   var el = document.getElementById("note");
   if (DEMO) { el.textContent = t("note.demo"); return; }
   el.classList.toggle("ok", !!userEmail);
+  el.classList.toggle("row", !userEmail && !items.length);
   if (userEmail) {
     el.innerHTML = t("note.secured", { email: "<b>" + esc(userEmail) + "</b>" }) +
       ' · <button type="button" class="linkbtn" data-act="account">' + t("acc.manage") + '</button>';
   } else if (items.length) {
     el.innerHTML = betaNote(t("note.beta")) + ' <button type="button" class="linkbtn" data-act="account">' + t("acc.secure") + '</button>';
   } else {
-    el.innerHTML = betaNote(t("note.new")) + ' <button type="button" class="linkbtn" data-act="signin">' + t("note.signin") + '</button>';
+    // Neu hier: Text + "So funktioniert's" links, "Anmelden" als Knopf rechts
+    el.innerHTML = '<span class="note-txt">' + betaNote(t("note.new")) +
+      ' <button type="button" class="linkbtn plain" data-act="howto">' + t("note.how") + '</button></span>' +
+      '<button type="button" class="notebtn" data-act="signin">' + t("note.signin") + '</button>';
   }
+}
+
+// "So funktioniert's": vier kurze Schritte, darunter Anmelden
+function showHowto() {
+  var icons = ["📝", "🔔", "📱", "🔒"];
+  openSheet('<h3>' + t("how.title") + '</h3><ol class="howto">' +
+    icons.map(function (ic, i) {
+      return '<li><span class="howto-ico">' + ic + '</span><span><b>' + t("how." + (i + 1) + "t") + '</b>' + t("how." + (i + 1)) + '</span></li>';
+    }).join("") + '</ol>' +
+    '<p class="muted">' + t("how.signin") + '</p>' +
+    '<button type="button" class="btn" data-act="signin">' + t("acc.signin") + '</button>' +
+    '<button type="button" class="btn light" data-act="close">OK</button>');
 }
 
 function showAccount(mode) {

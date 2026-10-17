@@ -3,7 +3,7 @@
 // "Konto sichern" und "Anmelden" (E-Mail-Adresse + Code) stehen in account.js.
 // Alle Texte kommen aus i18n.js (t()), die Vorlagen-Texte aus templates.js.
 // URL-Parameter zum Testen: ?demo=1 zeigt Beispiel-Fristen (wird nicht gespeichert),
-// &show=add | voice | form:<vorlage> | item | account | signin öffnet direkt das passende Blatt,
+// &show=add | voice | form:<vorlage> | item | account | signin | howto öffnet direkt das passende Blatt,
 // &say=<Satz> verarbeitet einen Satz so, als wäre er gesprochen worden, &lang=en usw.
 
 var SUPABASE_URL = "https://fkhngrvqxlpqxpllrnoj.supabase.co";
@@ -198,8 +198,30 @@ function render() {
   var html = (pushTop ? "" : push) + (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
     : '<div class="allgood">' + t("allgood") + '</div>');
-  if (later.length) html += '<h2 class="sec">' + t("sec.later") + '</h2>' + later.map(card).join("");
+  if (later.length) html += laterHTML(later);
   list.innerHTML = html;
+}
+
+// Filter für "Alles im Blick": alle / fällig in den nächsten 7 bzw. 30 Tagen (ab heute gezählt).
+// "Jetzt kümmern" wird nie gefiltert - Überfälliges darf nicht verschwinden. Die Wahl merkt sich der Browser.
+var FILTER_DAYS = { all: 0, week: 7, month: 30 };
+var listFilter = "all";
+try { listFilter = FILTER_DAYS[localStorage.getItem("livo.filter")] != null ? localStorage.getItem("livo.filter") : "all"; } catch (e) {}
+function laterHTML(later) {
+  // Erst ab 3 Fristen - bei weniger lohnt sich kein Filter
+  var useFilter = later.length >= 3, days = useFilter ? FILTER_DAYS[listFilter] : 0;
+  var shown = days ? later.filter(function (it) { return status(it).days <= days; }) : later;
+  var filter = !useFilter ? "" : '<div class="filter" role="group" aria-label="' + esc(t("filter.label")) + '">' +
+    Object.keys(FILTER_DAYS).map(function (f) {
+      return '<button type="button" data-act="filter" data-id="' + f + '" aria-pressed="' + (f === listFilter) + '">' + t("filter." + f) + '</button>';
+    }).join("") + '</div>';
+  return '<div class="sec-row"><h2 class="sec">' + t("sec.later") + '</h2>' + filter + '</div>' +
+    (shown.length ? shown.map(card).join("") : '<p class="filter-none">' + t("filter.none", { n: days }) + '</p>');
+}
+function setFilter(f) {
+  listFilter = FILTER_DAYS[f] != null ? f : "all";
+  try { localStorage.setItem("livo.filter", listFilter); } catch (e) {}
+  render();
 }
 function card(it) {
   var s = status(it);
@@ -861,6 +883,8 @@ document.addEventListener("click", function (e) {
   else if (act === "share") shareItem(id);
   else if (act === "calcopy") copyText(calFeedUrl, t("toast.linkCopied"));
   else if (act === "calreset") resetCalendar();
+  else if (act === "howto") showHowto();
+  else if (act === "filter") setFilter(id);
   else if (act === "account" || act === "signin") {
     // data-then="plus": nach dem Sichern bzw. Anmelden geht das Kauf-Fenster wieder auf
     var then = el.getAttribute("data-then") || (accFlow && el.closest("#sheet") ? accFlow.then : "");
@@ -959,6 +983,7 @@ async function start() {
   // Erinnerungen im Hintergrund vorbereiten - die Liste wartet nie darauf
   if (!DEMO) initPush().then(render, render);
   if (!DEMO && params.get("plus") === "danke") afterPurchase();
+  if (params.get("filter")) setFilter(params.get("filter")); // zum Testen: &filter=week | month | all
   var show = params.get("show") || "";
   if (params.get("say")) understand(params.get("say"));
   else if (show === "add") showPicker();
@@ -967,6 +992,7 @@ async function start() {
   else if (show === "item" && items.length) showItem(sortedItems()[0].id);
   else if (show === "account") showAccount();
   else if (show === "signin") showAccount("signin");
+  else if (show === "howto") showHowto();
   else if (show === "plus") showPlus(); // "Jetzt starten" bei Livo Plus auf der Website
 }
 start();

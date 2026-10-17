@@ -63,6 +63,12 @@ body.lock { overflow: hidden; }
 .proto { font-size: 13px; color: #26304d; background: linear-gradient(135deg, #e3f6fe 0%, #eaf0ff 50%, #f2e9fe 100%); border: 1px solid #d3dcfb; border-radius: 10px; padding: 8px 12px; margin: 12px 0 0; }
 .proto:empty { display: none; }
 .proto .beta { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 6px; color: #fff; background: var(--grad); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; vertical-align: 1px; }
+/* Neu hier: Text und "So funktioniert's" links, "Anmelden" als Knopf rechts - auch am Handy daneben, der Text bricht um */
+.proto.row { display: flex; align-items: center; gap: 12px; }
+.note-txt { flex: 1; min-width: 0; }
+.linkbtn.plain { text-decoration: none; }
+.linkbtn.plain:hover { text-decoration: underline; }
+.notebtn { flex: none; max-width: 45%; margin-left: auto; padding: 7px clamp(10px, 3vw, 18px); border: 0; border-radius: 10px; background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 /* Konto gesichert: lange E-Mail-Adressen dürfen umbrechen */
 .proto b { word-break: break-all; }
 
@@ -73,6 +79,13 @@ main { padding-bottom: 24px; }
 .applinks a { margin-right: 14px; color: var(--muted); }
 .sec { display: flex; align-items: center; gap: 8px; margin: 22px 4px 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .sec-now { color: var(--now); }
+/* "Alles im Blick" mit Filter rechts daneben: Alle | 7 Tage | 30 Tage */
+.sec-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; margin: 22px 4px 8px; }
+.sec-row .sec { margin: 0; }
+.filter { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--later-bg); }
+.filter button { padding: 5px 10px; border: 0; border-radius: 8px; background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.filter [aria-pressed="true"] { background: #fff; color: var(--brand); box-shadow: 0 1px 3px rgba(15,23,42,.12); }
+.filter-none { margin: 4px 4px 12px; color: var(--muted); font-size: 14px; }
 .sec span { background: var(--now); color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; letter-spacing: 0; }
 .card {
   display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 8px; padding: 12px 14px;
@@ -177,6 +190,11 @@ dd { margin: 0; font-weight: 600; }
 .voicebar b { display: block; font-size: 17px; }
 .voicebar small { font-size: 13px; opacity: .9; }
 .muted { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
+/* "So funktioniert's": vier Schritte mit Symbol */
+.howto { display: grid; gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; }
+.howto li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: var(--muted); }
+.howto b { display: block; margin-bottom: 2px; font-size: 15px; color: var(--ink); }
+.howto-ico { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--brand-soft); font-size: 20px; }
 .mic {
   display: block; width: 96px; height: 96px; margin: 18px auto 10px; border: 0; border-radius: 50%;
   background: var(--grad); color: #fff; font-size: 40px; cursor: pointer; box-shadow: 0 10px 24px -8px rgba(48,98,249,.65);

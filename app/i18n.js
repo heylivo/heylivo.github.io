@@ -136,7 +136,14 @@ var TXT = {
     "share.by": "Erinnert von heylivo – damit du keine Frist mehr verpasst:",
     "toast.shareCopied": "Text kopiert – jetzt einfügen und senden ✓",
     "legal.guides": "Ratgeber",
-    "guide.more": "📖 Mehr dazu im Ratgeber"
+    "guide.more": "📖 Mehr dazu im Ratgeber",
+    "note.how": "So funktioniert's", "how.title": "So funktioniert heylivo",
+    "how.1t": "Frist eintragen", "how.1": "Wähle eine Vorlage oder sag einfach „Hey Livo, …“. Livo rechnet das Datum für dich aus.",
+    "how.2t": "Rechtzeitig erinnert", "how.2": "Schalte die Erinnerungen ein – Livo meldet sich auf deinem Handy, bevor eine Frist abläuft.",
+    "how.3t": "Ohne Konto: nur in diesem Browser", "how.3": "Du kannst sofort loslegen, ganz ohne Anmeldung. Deine Fristen sind dann nur in diesem Browser gespeichert.",
+    "how.4t": "Konto sichern", "how.4": "Sichere deine Fristen mit deiner E-Mail-Adresse. Dann sind sie auf jedem Gerät da – du meldest dich mit einem Code an, ohne Passwort.",
+    "how.signin": "Schon ein gesichertes Konto? Dann melde dich hier an.",
+    "filter.all": "Alle", "filter.week": "7 Tage", "filter.month": "30 Tage", "filter.none": "In den nächsten {n} Tagen ist sonst nichts fällig.", "filter.label": "Filtern"
   },
   en: {
     "q.open": "“", "q.close": "”",
@@ -238,7 +245,14 @@ var TXT = {
     "share.by": "Reminded by heylivo – so you never miss a deadline:",
     "toast.shareCopied": "Text copied – now paste and send ✓",
     "legal.guides": "Guide",
-    "guide.more": "📖 More in our guide"
+    "guide.more": "📖 More in our guide",
+    "note.how": "How it works", "how.title": "How heylivo works",
+    "how.1t": "Add a deadline", "how.1": "Pick a template or just say “Hey Livo, …”. Livo works out the date for you.",
+    "how.2t": "Reminded in time", "how.2": "Turn on reminders – Livo notifies you on your phone before a deadline runs out.",
+    "how.3t": "No account? Only in this browser", "how.3": "Start right away, no sign-up needed. Your deadlines are then stored only in this browser.",
+    "how.4t": "Secure your account", "how.4": "Secure your deadlines with your email address. Then they're on every device – you sign in with a code, no password.",
+    "how.signin": "Already have a secured account? Sign in here.",
+    "filter.all": "All", "filter.week": "7 days", "filter.month": "30 days", "filter.none": "Nothing else is due in the next {n} days.", "filter.label": "Filter"
   },
   it: {
     "q.open": "“", "q.close": "”",
@@ -340,7 +354,14 @@ var TXT = {
     "share.by": "Ricordato da heylivo – per non perdere più nessuna scadenza:",
     "toast.shareCopied": "Testo copiato – ora incollalo e invialo ✓",
     "legal.guides": "Guida",
-    "guide.more": "📖 Altro nella nostra guida"
+    "guide.more": "📖 Altro nella nostra guida",
+    "note.how": "Come funziona", "how.title": "Come funziona heylivo",
+    "how.1t": "Aggiungi una scadenza", "how.1": "Scegli un modello o di' semplicemente «Hey Livo, …». Livo calcola la data per te.",
+    "how.2t": "Promemoria in tempo", "how.2": "Attiva i promemoria: Livo ti avvisa sul telefono prima che una scadenza arrivi.",
+    "how.3t": "Senza account: solo in questo browser", "how.3": "Puoi iniziare subito, senza registrarti. Le tue scadenze restano salvate solo in questo browser.",
+    "how.4t": "Proteggi l'account", "how.4": "Proteggi le tue scadenze con il tuo indirizzo email. Così le ritrovi su ogni dispositivo: accedi con un codice, senza password.",
+    "how.signin": "Hai già un account protetto? Accedi qui.",
+    "filter.all": "Tutte", "filter.week": "7 giorni", "filter.month": "30 giorni", "filter.none": "Nient'altro in scadenza nei prossimi {n} giorni.", "filter.label": "Filtra"
   },
   el: {
     "q.open": "«", "q.close": "»",
@@ -442,7 +463,14 @@ var TXT = {
     "share.by": "Υπενθύμιση από το heylivo – για να μη χάνεις καμία προθεσμία:",
     "toast.shareCopied": "Το κείμενο αντιγράφηκε – επικόλλησέ το και στείλ' το ✓",
     "legal.guides": "Οδηγός",
-    "guide.more": "📖 Περισσότερα στον οδηγό μας"
+    "guide.more": "📖 Περισσότερα στον οδηγό μας",
+    "note.how": "Πώς λειτουργεί", "how.title": "Πώς λειτουργεί το heylivo",
+    "how.1t": "Πρόσθεσε μια προθεσμία", "how.1": "Διάλεξε ένα πρότυπο ή πες απλά «Hey Livo, …». Το Livo υπολογίζει την ημερομηνία για σένα.",
+    "how.2t": "Υπενθύμιση εγκαίρως", "how.2": "Ενεργοποίησε τις υπενθυμίσεις – το Livo σε ειδοποιεί στο κινητό πριν λήξει μια προθεσμία.",
+    "how.3t": "Χωρίς λογαριασμό: μόνο σε αυτόν τον browser", "how.3": "Ξεκινάς αμέσως, χωρίς εγγραφή. Οι προθεσμίες σου αποθηκεύονται τότε μόνο σε αυτόν τον browser.",
+    "how.4t": "Δημιουργία λογαριασμού", "how.4": "Αποθήκευσε τις προθεσμίες σου με τη διεύθυνση email σου. Έτσι τις έχεις σε κάθε συσκευή – συνδέεσαι με έναν κωδικό, χωρίς συνθηματικό.",
+    "how.signin": "Έχεις ήδη λογαριασμό; Συνδέσου εδώ.",
+    "filter.all": "Όλες", "filter.week": "7 μέρες", "filter.month": "30 μέρες", "filter.none": "Τίποτα άλλο δεν λήγει τις επόμενες {n} μέρες.", "filter.label": "Φίλτρο"
   },
   es: {
     "q.open": "“", "q.close": "”",
@@ -544,7 +572,14 @@ var TXT = {
     "share.by": "Recordado por heylivo – para que no se te pase ningún plazo:",
     "toast.shareCopied": "Texto copiado – pégalo y envíalo ✓",
     "legal.guides": "Guía",
-    "guide.more": "📖 Más en nuestra guía"
+    "guide.more": "📖 Más en nuestra guía",
+    "note.how": "Cómo funciona", "how.title": "Cómo funciona heylivo",
+    "how.1t": "Añade un plazo", "how.1": "Elige una plantilla o di simplemente «Hey Livo, …». Livo calcula la fecha por ti.",
+    "how.2t": "Avisos a tiempo", "how.2": "Activa los avisos: Livo te avisa en el móvil antes de que venza un plazo.",
+    "how.3t": "Sin cuenta: solo en este navegador", "how.3": "Puedes empezar ya, sin registrarte. Tus plazos se guardan entonces solo en este navegador.",
+    "how.4t": "Asegura tu cuenta", "how.4": "Asegura tus plazos con tu correo electrónico. Así los tienes en todos tus dispositivos: inicias sesión con un código, sin contraseña.",
+    "how.signin": "¿Ya tienes una cuenta asegurada? Inicia sesión aquí.",
+    "filter.all": "Todos", "filter.week": "7 días", "filter.month": "30 días", "filter.none": "No vence nada más en los próximos {n} días.", "filter.label": "Filtrar"
   },
   fr: {
     "q.open": "« ", "q.close": " »",
@@ -646,7 +681,14 @@ var TXT = {
     "share.by": "Rappelé par heylivo – pour ne plus manquer aucune échéance :",
     "toast.shareCopied": "Texte copié – collez-le et envoyez-le ✓",
     "legal.guides": "Guide",
-    "guide.more": "📖 Plus d'infos dans notre guide"
+    "guide.more": "📖 Plus d'infos dans notre guide",
+    "note.how": "Comment ça marche", "how.title": "Comment fonctionne heylivo",
+    "how.1t": "Ajoutez une échéance", "how.1": "Choisissez un modèle ou dites simplement « Hey Livo, … ». Livo calcule la date pour vous.",
+    "how.2t": "Rappelé à temps", "how.2": "Activez les rappels : Livo vous prévient sur votre téléphone avant qu'une échéance n'arrive.",
+    "how.3t": "Sans compte : uniquement dans ce navigateur", "how.3": "Vous pouvez commencer tout de suite, sans inscription. Vos échéances sont alors enregistrées uniquement dans ce navigateur.",
+    "how.4t": "Sécurisez votre compte", "how.4": "Sécurisez vos échéances avec votre adresse e-mail. Vous les retrouvez alors sur tous vos appareils – connexion avec un code, sans mot de passe.",
+    "how.signin": "Vous avez déjà un compte sécurisé ? Connectez-vous ici.",
+    "filter.all": "Toutes", "filter.week": "7 jours", "filter.month": "30 jours", "filter.none": "Rien d'autre n'arrive à échéance dans les {n} prochains jours.", "filter.label": "Filtrer"
   },
   nl: {
     "q.open": "“", "q.close": "”",
@@ -748,7 +790,14 @@ var TXT = {
     "share.by": "Herinnerd door heylivo – zodat je nooit meer een deadline mist:",
     "toast.shareCopied": "Tekst gekopieerd – nu plakken en versturen ✓",
     "legal.guides": "Gids",
-    "guide.more": "📖 Meer in onze gids"
+    "guide.more": "📖 Meer in onze gids",
+    "note.how": "Zo werkt het", "how.title": "Zo werkt heylivo",
+    "how.1t": "Deadline toevoegen", "how.1": "Kies een sjabloon of zeg gewoon „Hey Livo, …”. Livo rekent de datum voor je uit.",
+    "how.2t": "Op tijd herinnerd", "how.2": "Zet herinneringen aan – Livo laat het je op je telefoon weten voordat een deadline verloopt.",
+    "how.3t": "Zonder account: alleen in deze browser", "how.3": "Je kunt meteen beginnen, zonder aanmelden. Je deadlines worden dan alleen in deze browser opgeslagen.",
+    "how.4t": "Account beveiligen", "how.4": "Beveilig je deadlines met je e-mailadres. Dan heb je ze op elk apparaat – je logt in met een code, zonder wachtwoord.",
+    "how.signin": "Heb je al een beveiligd account? Log hier in.",
+    "filter.all": "Alle", "filter.week": "7 dagen", "filter.month": "30 dagen", "filter.none": "Verder verloopt er niets in de komende {n} dagen.", "filter.label": "Filteren"
   },
   pt: {
     "q.open": "“", "q.close": "”",
@@ -850,7 +899,14 @@ var TXT = {
     "share.by": "Lembrado pelo heylivo – para nunca mais perder um prazo:",
     "toast.shareCopied": "Texto copiado – agora cole e envie ✓",
     "legal.guides": "Guia",
-    "guide.more": "📖 Mais no nosso guia"
+    "guide.more": "📖 Mais no nosso guia",
+    "note.how": "Como funciona", "how.title": "Como funciona o heylivo",
+    "how.1t": "Adicione um prazo", "how.1": "Escolha um modelo ou diga simplesmente «Hey Livo, …». O Livo calcula a data por si.",
+    "how.2t": "Lembrado a tempo", "how.2": "Ative os lembretes – o Livo avisa-o no telemóvel antes de um prazo terminar.",
+    "how.3t": "Sem conta: só neste navegador", "how.3": "Pode começar já, sem registo. Os seus prazos ficam então guardados apenas neste navegador.",
+    "how.4t": "Proteja a sua conta", "how.4": "Proteja os seus prazos com o seu e-mail. Assim tem-nos em todos os dispositivos – inicia sessão com um código, sem palavra-passe.",
+    "how.signin": "Já tem uma conta protegida? Inicie sessão aqui.",
+    "filter.all": "Todos", "filter.week": "7 dias", "filter.month": "30 dias", "filter.none": "Nada mais vence nos próximos {n} dias.", "filter.label": "Filtrar"
   },
   tr: {
     "q.open": "“", "q.close": "”",
@@ -952,7 +1008,14 @@ var TXT = {
     "share.by": "heylivo hatırlattı – hiçbir tarihi kaçırmaman için:",
     "toast.shareCopied": "Metin kopyalandı – şimdi yapıştırıp gönder ✓",
     "legal.guides": "Rehber",
-    "guide.more": "📖 Rehberimizde daha fazlası"
+    "guide.more": "📖 Rehberimizde daha fazlası",
+    "note.how": "Nasıl çalışır", "how.title": "heylivo nasıl çalışır",
+    "how.1t": "Tarih ekle", "how.1": "Bir şablon seç ya da sadece „Hey Livo, …“ de. Livo tarihi senin için hesaplar.",
+    "how.2t": "Zamanında hatırlatma", "how.2": "Hatırlatmaları aç – bir tarih dolmadan önce Livo telefonundan haber verir.",
+    "how.3t": "Hesap olmadan: sadece bu tarayıcıda", "how.3": "Hemen başlayabilirsin, kayıt gerekmez. Tarihlerin o zaman sadece bu tarayıcıda kayıtlı olur.",
+    "how.4t": "Hesabı güvenceye al", "how.4": "Tarihlerini e-posta adresinle güvenceye al. Böylece her cihazda yanında olurlar – şifre olmadan, bir kodla giriş yaparsın.",
+    "how.signin": "Güvenceye alınmış bir hesabın var mı? Buradan giriş yap.",
+    "filter.all": "Tümü", "filter.week": "7 gün", "filter.month": "30 gün", "filter.none": "Önümüzdeki {n} günde başka bir şey yok.", "filter.label": "Filtrele"
   },
   pl: {
     "q.open": "„", "q.close": "”",
@@ -1056,7 +1119,14 @@ var TXT = {
     "share.by": "Przypomniane przez heylivo – żeby nie przegapić żadnego terminu:",
     "toast.shareCopied": "Tekst skopiowany – teraz wklej i wyślij ✓",
     "legal.guides": "Poradnik",
-    "guide.more": "📖 Więcej w naszym poradniku"
+    "guide.more": "📖 Więcej w naszym poradniku",
+    "note.how": "Jak to działa", "how.title": "Jak działa heylivo",
+    "how.1t": "Dodaj termin", "how.1": "Wybierz szablon albo po prostu powiedz „Hey Livo, …”. Livo samo wyliczy datę.",
+    "how.2t": "Przypomnienie na czas", "how.2": "Włącz przypomnienia – Livo da ci znać na telefonie, zanim minie termin.",
+    "how.3t": "Bez konta: tylko w tej przeglądarce", "how.3": "Możesz zacząć od razu, bez rejestracji. Twoje terminy są wtedy zapisane tylko w tej przeglądarce.",
+    "how.4t": "Zabezpiecz konto", "how.4": "Zabezpiecz swoje terminy adresem e-mail. Wtedy masz je na każdym urządzeniu – logujesz się kodem, bez hasła.",
+    "how.signin": "Masz już zabezpieczone konto? Zaloguj się tutaj.",
+    "filter.all": "Wszystkie", "filter.week": "7 dni", "filter.month": "30 dni", "filter.none": "W ciągu najbliższych {n} dni nic więcej nie mija.", "filter.label": "Filtruj"
   }
 };
 
