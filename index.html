@@ -86,6 +86,8 @@
   h1 em { display: block; font-style: normal; margin-bottom: -.14em; }
   .lead { font-size: 19px; color: var(--muted); margin: 0 0 30px; max-width: 30em; }
   .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+  /* Drei Knöpfe nebeneinander (testen, Demo, App öffnen): etwas kleiner, damit sie in eine Reihe passen */
+  .ctas .btn { padding: 13px 18px; font-size: 15px; white-space: nowrap; }
   .hsteps { display: flex; gap: 10px; margin: -6px 0 28px; padding: 0; list-style: none; max-width: 560px; }
   .hsteps li { flex: 1; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.75); }
   .hsteps b { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--lav); color: var(--violet); font-size: 14px; display: grid; place-items: center; }
@@ -288,6 +290,7 @@
         <div class="ctas">
           <a class="btn" href="app/?lang=de">30 Tage kostenlos testen</a>
           <a class="btn ghost" href="app/?demo=1&amp;lang=de">▶&nbsp; Demo ansehen</a>
+          <a class="btn" href="app/?lang=de">App öffnen</a>
         </div>
         <ul class="checks"><li>Ohne Anmeldung</li><li>Ohne Kreditkarte</li><li>Für iPhone und Android</li></ul>
       </div>
