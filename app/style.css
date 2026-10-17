@@ -189,6 +189,10 @@ dd { margin: 0; font-weight: 600; }
 .mic-ico { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.2); font-size: 22px; }
 .voicebar b { display: block; font-size: 17px; }
 .voicebar small { font-size: 13px; opacity: .9; }
+.vb-txt { flex: 1; min-width: 0; }
+.vb-go { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.2); }
+.vb-go svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.voicebar:hover .vb-go { background: rgba(255,255,255,.32); }
 .muted { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
 /* "So funktioniert's": vier Schritte mit Symbol */
 .howto { display: grid; gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; }

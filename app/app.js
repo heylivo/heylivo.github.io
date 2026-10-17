@@ -162,7 +162,9 @@ function sortedItems() {
 /* ---------- Liste ---------- */
 function voicebarHTML() {
   return '<button type="button" class="voicebar" data-act="voice"><span class="mic-ico">🎤</span>' +
-    '<span><b>Hey Livo …</b><small>' + esc(t("voicebar.sub")) + '</small></span></button>';
+    '<span class="vb-txt"><b>Hey Livo …</b><small>' + esc(t("voicebar.sub")) + '</small></span>' +
+    // Pfeil rechts: zeigt, dass das ganze Feld ein Knopf ist
+    '<span class="vb-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>';
 }
 
 // Zeile unter "Hey Livo": Stand der Testphase oder von Livo Plus
