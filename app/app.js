@@ -160,19 +160,63 @@ function sortedItems() {
 }
 
 /* ---------- Liste ---------- */
+// "Hey Livo": Feld mit Text, rechts daneben ein runder Mikrofon-Knopf (beide starten die Spracheingabe)
 function voicebarHTML() {
-  return '<button type="button" class="voicebar" data-act="voice"><span class="mic-ico">🎤</span>' +
-    '<span class="vb-txt"><b>Hey Livo …</b><small>' + esc(t("voicebar.sub")) + '</small></span>' +
-    // Pfeil rechts: zeigt, dass das ganze Feld ein Knopf ist
-    '<span class="vb-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>';
+  return '<div class="vbrow"><button type="button" class="voicebar" data-act="voice">' +
+    '<span class="vb-txt"><b>Hey Livo …</b><small>' + esc(t("voicebar.sub")) + '</small></span></button>' +
+    '<button type="button" class="vb-mic" data-act="voice" aria-label="Hey Livo"><svg viewBox="0 0 24 24">' +
+    '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></button></div>';
+}
+
+// Symbole unter "Hey Livo" (scrollen mit): Konto, Kalender, Erinnerungen, Livo Plus - Linien-Symbole wie das Mikrofon,
+// damit sie auf jedem Gerät gleich aussehen, mit kleiner Beschriftung darunter.
+// Ein Tipp auf ein Symbol zeigt darunter seinen Text; ein zweiter Tipp blendet ihn aus.
+// Offen ist zuerst, was Aufmerksamkeit braucht (Testphase vorbei, Konto nicht gesichert, Erinnerungen aus),
+// sonst die Zeile zu Livo Plus bzw. zur Testphase.
+var INFO_SVG = {
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  bell: '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  belloff: '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0M3 3l18 18"/>'
+};
+var infoTab = "";
+function infoParts() {
+  var left = trialDaysLeft(), plusOn = isPlus(), push = pushHTML(), parts = [];
+  parts.push({ id: "acc", svg: userEmail ? "lock" : "unlock", warn: !userEmail, html: accountLineHTML() });
+  parts.push({ id: "cal", svg: "cal", html: '<button type="button" class="linkbtn" data-act="calendar">' + esc(t("plus.cal")) + '</button>' });
+  if (push) parts.push({ id: "push", svg: pushState === "on" ? "bell" : "belloff", warn: pushState !== "on", html: push });
+  // Plus: Schild "PLUS" - grün mit Haken (aktiv), blau (Testphase), rot (Testphase vorbei)
+  parts.push({ id: "plus", plus: plusOn ? "on" : left !== null && left < 0 ? "over" : "trial",
+    warn: !plusOn && left !== null && left < 0, html: statusHTML() });
+  return parts;
+}
+function infoHTML() {
+  var parts = infoParts(), tab = infoTab;
+  // Solange niemand getippt hat, wird die Auswahl jedes Mal neu bestimmt (Konto und Plus laden erst nach dem ersten Anzeigen)
+  if (!tab) {
+    var first = find(parts, "plus").warn ? find(parts, "plus") : parts.filter(function (p) { return p.warn; })[0];
+    tab = (first || find(parts, "plus")).id;
+  }
+  var open = tab === "none" ? null : find(parts, tab);
+  return '<div class="infobar" role="tablist">' + parts.map(function (p) {
+    var ico = p.plus ? '<span class="plus-pill ' + p.plus + '">PLUS' + (p.plus === "on" ? " ✓" : "") + '</span>'
+      : '<svg viewBox="0 0 24 24">' + INFO_SVG[p.svg] + '</svg>';
+    return '<button type="button" class="info-item" role="tab" data-act="info" data-id="' + p.id + '" aria-selected="' + (open === p) + '">' +
+      '<span class="info-ico' + (p.warn ? " warn" : "") + '">' + ico + '</span><span class="info-lbl">' + esc(t("info." + p.id)) + '</span></button>';
+  }).join("") + '</div>' + (open ? '<div class="infotext">' + open.html + '</div>' : "");
+}
+function setInfoTab(id) {
+  var shown = document.querySelector('.info-item[aria-selected="true"]');
+  infoTab = shown && shown.getAttribute("data-id") === id ? "none" : id;
+  document.getElementById("status").innerHTML = infoHTML();
 }
 
 // Zeile unter "Hey Livo": Stand der Testphase oder von Livo Plus
 function statusHTML() {
   if (DEMO) return "";
-  // Mit Plus: Kalender-Abo und Verlängern (beides im Plus-Fenster; ein neuer Kauf zählt ab dem alten Ende)
+  // Mit Plus: Verlängern (im Plus-Fenster; ein neuer Kauf zählt ab dem alten Ende). Das Kalender-Abo hat ein eigenes Symbol.
   if (isPlus()) return '<p class="quota">' + t("status.plus", { date: fmt(fromISO(plusUntil)) }) +
-    ' · <button type="button" class="linkbtn" data-act="calendar">' + t("status.calendar") + '</button>' +
     ' · <button type="button" class="linkbtn" data-act="plus">' + t("plus.extendShort") + '</button></p>';
   // Kaufen geht jederzeit - auch schon, bevor die erste Frist die Testphase startet
   var buy = ' · <button type="button" class="linkbtn" data-act="plus">Livo Plus</button>';
@@ -186,18 +230,18 @@ function statusHTML() {
 }
 
 function render() {
-  var list = document.getElementById("list"), controls = document.getElementById("controls");
+  var list = document.getElementById("list"), controls = document.getElementById("controls"), stat = document.getElementById("status");
   renderNote();
-  if (!items.length) { controls.innerHTML = ""; list.innerHTML = emptyHTML(); return; }
+  if (!items.length) { controls.innerHTML = stat.innerHTML = ""; list.innerHTML = emptyHTML(); return; }
   var all = sortedItems();
   var now = all.filter(function (it) { return status(it).key !== "later"; });
   var later = all.filter(function (it) { return status(it).key === "later"; });
-  // Oben fest (wandert beim Scrollen nicht mit): Hey Livo, Testphase/Plus und die Erinnerungen - die Karte
-  // "Erinnerungen einschalten" bzw. danach "Erinnerungen sind an". Die langen Hinweise (iPhone, blockiert,
-  // Browser kann es nicht) bleiben in der Liste, sonst belegt der feste Teil auf dem Handy fast den halben Bildschirm.
-  var push = pushHTML(), pushTop = pushState === "on" || pushState === "off";
-  controls.innerHTML = (canEdit() ? voicebarHTML() : "") + statusHTML() + (pushTop ? push : "");
-  var html = (pushTop ? "" : push) + (now.length
+  // Oben fest (wandert beim Scrollen nicht mit) ist nur "Hey Livo". Konto, Kalender, Erinnerungen und Plus/Testphase
+  // stehen darunter als Symbole mit ausklappbarem Text und scrollen mit: fest oben belegten sie am Handy
+  // mit großer Schrift mehr als den halben Bildschirm.
+  controls.innerHTML = canEdit() ? voicebarHTML() : "";
+  stat.innerHTML = infoHTML();
+  var html = (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
     : '<div class="allgood">' + t("allgood") + '</div>');
   if (later.length) html += laterHTML(later);
@@ -887,6 +931,7 @@ document.addEventListener("click", function (e) {
   else if (act === "calreset") resetCalendar();
   else if (act === "howto") showHowto();
   else if (act === "filter") setFilter(id);
+  else if (act === "info") setInfoTab(id);
   else if (act === "account" || act === "signin") {
     // data-then="plus": nach dem Sichern bzw. Anmelden geht das Kauf-Fenster wieder auf
     var then = el.getAttribute("data-then") || (accFlow && el.closest("#sheet") ? accFlow.then : "");

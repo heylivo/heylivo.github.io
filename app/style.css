@@ -32,8 +32,10 @@ body.lock { overflow: hidden; }
 /* Kopfzeile */
 .top { position: sticky; top: 0; z-index: 5; background: rgba(245,247,251,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .topbar { display: flex; align-items: center; justify-content: space-between; }
-/* Hinweiszeile, Hey Livo, Testphase/Plus und "Erinnerungen sind an" gehören zur festen Kopfzeile */
+/* Nur "Hey Livo" gehört zur festen Kopfzeile; Hinweiszeile, Testphase/Plus und Erinnerungen (.infos) scrollen mit */
 .dock { padding-bottom: 12px; }
+.dock:has(#controls:empty) { display: none; }
+.infos { margin-bottom: 4px; }
 /* Querformat und sehr niedrige Fenster: Kopfzeile scrollt mit, sonst bliebe für die Liste kaum Platz */
 @media (max-height: 500px) { .top { position: static; } }
 .brand { display: flex; align-items: center; gap: 8px; height: 58px; }
@@ -62,7 +64,7 @@ body.lock { overflow: hidden; }
 /* Hinweiszeile oben: heller Verlauf in den Logo-Farben, "Beta:" wird zum Schild BETA (account.js) */
 .proto { font-size: 13px; color: #26304d; background: linear-gradient(135deg, #e3f6fe 0%, #eaf0ff 50%, #f2e9fe 100%); border: 1px solid #d3dcfb; border-radius: 10px; padding: 8px 12px; margin: 12px 0 0; }
 .proto:empty { display: none; }
-.proto .beta { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 6px; color: #fff; background: var(--grad); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; vertical-align: 1px; }
+.proto .beta, .infotext .beta { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 6px; color: #fff; background: var(--grad); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; vertical-align: 1px; }
 /* Neu hier: Text und "So funktioniert's" links, "Anmelden" als Knopf rechts - auch am Handy daneben, der Text bricht um */
 .proto.row { display: flex; align-items: center; gap: 12px; }
 .note-txt { flex: 1; min-width: 0; }
@@ -180,19 +182,40 @@ dt { color: var(--muted); }
 dd { margin: 0; font-weight: 600; }
 
 /* Hey Livo – Spracheingabe */
+/* Feld "Hey Livo" und rechts daneben der runde Mikrofon-Knopf */
+.vbrow { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; }
+.empty .vbrow { margin: 0 0 18px; }
 .voicebar {
-  display: flex; align-items: center; gap: 12px; width: 100%; margin: 14px 0 0; padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; padding: 14px 16px;
   border: 0; border-radius: 18px; background: var(--grad); color: #fff;
   text-align: left; font: inherit; cursor: pointer; box-shadow: 0 8px 20px -10px rgba(48,98,249,.75);
 }
-.empty .voicebar { margin: 0 0 18px; }
+.vb-mic { flex: none; width: 58px; height: 58px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--grad); cursor: pointer; box-shadow: 0 8px 20px -10px rgba(48,98,249,.75); }
+.vb-mic svg { width: 26px; height: 26px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* Symbole unter "Hey Livo" (Konto, Kalender, Erinnerungen, Plus); der Text des gewählten steht darunter */
+.infobar { display: flex; gap: 4px; margin: 12px 0 0; }
+.info-item { display: grid; justify-items: center; gap: 4px; min-width: 52px; padding: 0 2px; border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer; }
+.info-ico { position: relative; min-width: 42px; height: 42px; display: grid; place-items: center; padding: 0 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--brand-dark); }
+.info-ico svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.info-lbl { font-size: 10.5px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+.info-item[aria-selected="true"] .info-ico { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 1px var(--brand); }
+.info-item[aria-selected="true"] .info-lbl { color: var(--brand); }
+/* roter Punkt: braucht Aufmerksamkeit (Konto nicht gesichert, Erinnerungen aus, Testphase vorbei) */
+.info-ico.warn { color: var(--late); }
+.info-ico.warn::after { content: ""; position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; border: 2px solid var(--bg); border-radius: 50%; background: var(--late); }
+/* Schild PLUS: grün mit Haken (aktiv), blau (Testphase), rot (vorbei) */
+.plus-pill { padding: 3px 6px; border-radius: 6px; background: #16a34a; color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; white-space: nowrap; }
+.plus-pill.trial { background: var(--brand); }
+.plus-pill.over { background: var(--late); }
+.infotext { margin: 10px 4px 0; color: var(--muted); font-size: 14px; }
+.infotext .quota { margin: 0; font-size: 14px; }
+.infotext .pushcard, .infotext .pushinfo, .infotext .expired { margin: 0 -4px; }
+.infotext b { overflow-wrap: anywhere; }
+.infotext > .linkbtn { text-align: left; }
 .mic-ico { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.2); font-size: 22px; }
 .voicebar b { display: block; font-size: 17px; }
 .voicebar small { font-size: 13px; opacity: .9; }
 .vb-txt { flex: 1; min-width: 0; }
-.vb-go { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.2); }
-.vb-go svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-.voicebar:hover .vb-go { background: rgba(255,255,255,.32); }
 .muted { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
 /* "So funktioniert's": vier Schritte mit Symbol */
 .howto { display: grid; gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; }
@@ -226,3 +249,19 @@ a.brand { color: inherit; text-decoration: none; }
 .pushinfo { margin: 12px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--brand-soft); color: #1e3a8a; font-size: 14px; }
 
 .toast { position: fixed; left: 50%; bottom: 96px; z-index: 30; max-width: 90vw; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: var(--ink); color: #fff; font-size: 14px; }
+
+/* Handy: "Hey Livo" kompakter, damit der feste Bereich klein bleibt; Karten mit zweizeiligem Titel,
+   das Schild ("in 2 Tagen") steht unter dem Text statt rechts daneben */
+@media (max-width: 560px) {
+  .dock { padding-bottom: 10px; }
+  .vbrow { gap: 8px; margin-top: 6px; }
+  .voicebar { gap: 10px; padding: 10px 12px; border-radius: 16px; }
+  .vb-mic { width: 50px; height: 50px; }
+  .vb-mic svg { width: 23px; height: 23px; }
+  .voicebar b { font-size: 16px; }
+  .voicebar small { display: block; font-size: 12.5px; line-height: 1.35; }
+  .card { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: start; padding: 12px; }
+  .card .ico { grid-row: span 2; width: 38px; height: 38px; font-size: 19px; }
+  .card .txt b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .card .pill { grid-column: 2; justify-self: start; padding: 3px 9px; }
+}

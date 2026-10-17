@@ -143,7 +143,8 @@ var TXT = {
     "how.3t": "Ohne Konto: nur in diesem Browser", "how.3": "Du kannst sofort loslegen, ganz ohne Anmeldung. Deine Fristen sind dann nur in diesem Browser gespeichert.",
     "how.4t": "Konto sichern", "how.4": "Sichere deine Fristen mit deiner E-Mail-Adresse. Dann sind sie auf jedem Gerät da – du meldest dich mit einem Code an, ohne Passwort.",
     "how.signin": "Schon ein gesichertes Konto? Dann melde dich hier an.",
-    "filter.all": "Alle", "filter.week": "7 Tage", "filter.month": "30 Tage", "filter.none": "In den nächsten {n} Tagen ist sonst nichts fällig.", "filter.label": "Filtern"
+    "filter.all": "Alle", "filter.week": "7 Tage", "filter.month": "30 Tage", "filter.none": "In den nächsten {n} Tagen ist sonst nichts fällig.", "filter.label": "Filtern",
+    "info.acc": "Konto", "info.cal": "Kalender", "info.push": "Erinnern", "info.plus": "Plus"
   },
   en: {
     "q.open": "“", "q.close": "”",
@@ -252,7 +253,8 @@ var TXT = {
     "how.3t": "No account? Only in this browser", "how.3": "Start right away, no sign-up needed. Your deadlines are then stored only in this browser.",
     "how.4t": "Secure your account", "how.4": "Secure your deadlines with your email address. Then they're on every device – you sign in with a code, no password.",
     "how.signin": "Already have a secured account? Sign in here.",
-    "filter.all": "All", "filter.week": "7 days", "filter.month": "30 days", "filter.none": "Nothing else is due in the next {n} days.", "filter.label": "Filter"
+    "filter.all": "All", "filter.week": "7 days", "filter.month": "30 days", "filter.none": "Nothing else is due in the next {n} days.", "filter.label": "Filter",
+    "info.acc": "Account", "info.cal": "Calendar", "info.push": "Reminders", "info.plus": "Plus"
   },
   it: {
     "q.open": "“", "q.close": "”",
@@ -361,7 +363,8 @@ var TXT = {
     "how.3t": "Senza account: solo in questo browser", "how.3": "Puoi iniziare subito, senza registrarti. Le tue scadenze restano salvate solo in questo browser.",
     "how.4t": "Proteggi l'account", "how.4": "Proteggi le tue scadenze con il tuo indirizzo email. Così le ritrovi su ogni dispositivo: accedi con un codice, senza password.",
     "how.signin": "Hai già un account protetto? Accedi qui.",
-    "filter.all": "Tutte", "filter.week": "7 giorni", "filter.month": "30 giorni", "filter.none": "Nient'altro in scadenza nei prossimi {n} giorni.", "filter.label": "Filtra"
+    "filter.all": "Tutte", "filter.week": "7 giorni", "filter.month": "30 giorni", "filter.none": "Nient'altro in scadenza nei prossimi {n} giorni.", "filter.label": "Filtra",
+    "info.acc": "Account", "info.cal": "Calendario", "info.push": "Promemoria", "info.plus": "Plus"
   },
   el: {
     "q.open": "«", "q.close": "»",
@@ -470,7 +473,8 @@ var TXT = {
     "how.3t": "Χωρίς λογαριασμό: μόνο σε αυτόν τον browser", "how.3": "Ξεκινάς αμέσως, χωρίς εγγραφή. Οι προθεσμίες σου αποθηκεύονται τότε μόνο σε αυτόν τον browser.",
     "how.4t": "Δημιουργία λογαριασμού", "how.4": "Αποθήκευσε τις προθεσμίες σου με τη διεύθυνση email σου. Έτσι τις έχεις σε κάθε συσκευή – συνδέεσαι με έναν κωδικό, χωρίς συνθηματικό.",
     "how.signin": "Έχεις ήδη λογαριασμό; Συνδέσου εδώ.",
-    "filter.all": "Όλες", "filter.week": "7 μέρες", "filter.month": "30 μέρες", "filter.none": "Τίποτα άλλο δεν λήγει τις επόμενες {n} μέρες.", "filter.label": "Φίλτρο"
+    "filter.all": "Όλες", "filter.week": "7 μέρες", "filter.month": "30 μέρες", "filter.none": "Τίποτα άλλο δεν λήγει τις επόμενες {n} μέρες.", "filter.label": "Φίλτρο",
+    "info.acc": "Λογαριασμός", "info.cal": "Ημερολόγιο", "info.push": "Υπενθύμιση", "info.plus": "Plus"
   },
   es: {
     "q.open": "“", "q.close": "”",
@@ -579,7 +583,8 @@ var TXT = {
     "how.3t": "Sin cuenta: solo en este navegador", "how.3": "Puedes empezar ya, sin registrarte. Tus plazos se guardan entonces solo en este navegador.",
     "how.4t": "Asegura tu cuenta", "how.4": "Asegura tus plazos con tu correo electrónico. Así los tienes en todos tus dispositivos: inicias sesión con un código, sin contraseña.",
     "how.signin": "¿Ya tienes una cuenta asegurada? Inicia sesión aquí.",
-    "filter.all": "Todos", "filter.week": "7 días", "filter.month": "30 días", "filter.none": "No vence nada más en los próximos {n} días.", "filter.label": "Filtrar"
+    "filter.all": "Todos", "filter.week": "7 días", "filter.month": "30 días", "filter.none": "No vence nada más en los próximos {n} días.", "filter.label": "Filtrar",
+    "info.acc": "Cuenta", "info.cal": "Calendario", "info.push": "Avisos", "info.plus": "Plus"
   },
   fr: {
     "q.open": "« ", "q.close": " »",
@@ -688,7 +693,8 @@ var TXT = {
     "how.3t": "Sans compte : uniquement dans ce navigateur", "how.3": "Vous pouvez commencer tout de suite, sans inscription. Vos échéances sont alors enregistrées uniquement dans ce navigateur.",
     "how.4t": "Sécurisez votre compte", "how.4": "Sécurisez vos échéances avec votre adresse e-mail. Vous les retrouvez alors sur tous vos appareils – connexion avec un code, sans mot de passe.",
     "how.signin": "Vous avez déjà un compte sécurisé ? Connectez-vous ici.",
-    "filter.all": "Toutes", "filter.week": "7 jours", "filter.month": "30 jours", "filter.none": "Rien d'autre n'arrive à échéance dans les {n} prochains jours.", "filter.label": "Filtrer"
+    "filter.all": "Toutes", "filter.week": "7 jours", "filter.month": "30 jours", "filter.none": "Rien d'autre n'arrive à échéance dans les {n} prochains jours.", "filter.label": "Filtrer",
+    "info.acc": "Compte", "info.cal": "Calendrier", "info.push": "Rappels", "info.plus": "Plus"
   },
   nl: {
     "q.open": "“", "q.close": "”",
@@ -797,7 +803,8 @@ var TXT = {
     "how.3t": "Zonder account: alleen in deze browser", "how.3": "Je kunt meteen beginnen, zonder aanmelden. Je deadlines worden dan alleen in deze browser opgeslagen.",
     "how.4t": "Account beveiligen", "how.4": "Beveilig je deadlines met je e-mailadres. Dan heb je ze op elk apparaat – je logt in met een code, zonder wachtwoord.",
     "how.signin": "Heb je al een beveiligd account? Log hier in.",
-    "filter.all": "Alle", "filter.week": "7 dagen", "filter.month": "30 dagen", "filter.none": "Verder verloopt er niets in de komende {n} dagen.", "filter.label": "Filteren"
+    "filter.all": "Alle", "filter.week": "7 dagen", "filter.month": "30 dagen", "filter.none": "Verder verloopt er niets in de komende {n} dagen.", "filter.label": "Filteren",
+    "info.acc": "Account", "info.cal": "Agenda", "info.push": "Herinneren", "info.plus": "Plus"
   },
   pt: {
     "q.open": "“", "q.close": "”",
@@ -906,7 +913,8 @@ var TXT = {
     "how.3t": "Sem conta: só neste navegador", "how.3": "Pode começar já, sem registo. Os seus prazos ficam então guardados apenas neste navegador.",
     "how.4t": "Proteja a sua conta", "how.4": "Proteja os seus prazos com o seu e-mail. Assim tem-nos em todos os dispositivos – inicia sessão com um código, sem palavra-passe.",
     "how.signin": "Já tem uma conta protegida? Inicie sessão aqui.",
-    "filter.all": "Todos", "filter.week": "7 dias", "filter.month": "30 dias", "filter.none": "Nada mais vence nos próximos {n} dias.", "filter.label": "Filtrar"
+    "filter.all": "Todos", "filter.week": "7 dias", "filter.month": "30 dias", "filter.none": "Nada mais vence nos próximos {n} dias.", "filter.label": "Filtrar",
+    "info.acc": "Conta", "info.cal": "Calendário", "info.push": "Lembretes", "info.plus": "Plus"
   },
   tr: {
     "q.open": "“", "q.close": "”",
@@ -1015,7 +1023,8 @@ var TXT = {
     "how.3t": "Hesap olmadan: sadece bu tarayıcıda", "how.3": "Hemen başlayabilirsin, kayıt gerekmez. Tarihlerin o zaman sadece bu tarayıcıda kayıtlı olur.",
     "how.4t": "Hesabı güvenceye al", "how.4": "Tarihlerini e-posta adresinle güvenceye al. Böylece her cihazda yanında olurlar – şifre olmadan, bir kodla giriş yaparsın.",
     "how.signin": "Güvenceye alınmış bir hesabın var mı? Buradan giriş yap.",
-    "filter.all": "Tümü", "filter.week": "7 gün", "filter.month": "30 gün", "filter.none": "Önümüzdeki {n} günde başka bir şey yok.", "filter.label": "Filtrele"
+    "filter.all": "Tümü", "filter.week": "7 gün", "filter.month": "30 gün", "filter.none": "Önümüzdeki {n} günde başka bir şey yok.", "filter.label": "Filtrele",
+    "info.acc": "Hesap", "info.cal": "Takvim", "info.push": "Hatırlatma", "info.plus": "Plus"
   },
   pl: {
     "q.open": "„", "q.close": "”",
@@ -1126,7 +1135,8 @@ var TXT = {
     "how.3t": "Bez konta: tylko w tej przeglądarce", "how.3": "Możesz zacząć od razu, bez rejestracji. Twoje terminy są wtedy zapisane tylko w tej przeglądarce.",
     "how.4t": "Zabezpiecz konto", "how.4": "Zabezpiecz swoje terminy adresem e-mail. Wtedy masz je na każdym urządzeniu – logujesz się kodem, bez hasła.",
     "how.signin": "Masz już zabezpieczone konto? Zaloguj się tutaj.",
-    "filter.all": "Wszystkie", "filter.week": "7 dni", "filter.month": "30 dni", "filter.none": "W ciągu najbliższych {n} dni nic więcej nie mija.", "filter.label": "Filtruj"
+    "filter.all": "Wszystkie", "filter.week": "7 dni", "filter.month": "30 dni", "filter.none": "W ciągu najbliższych {n} dni nic więcej nie mija.", "filter.label": "Filtruj",
+    "info.acc": "Konto", "info.cal": "Kalendarz", "info.push": "Przypomnienia", "info.plus": "Plus"
   }
 };
 

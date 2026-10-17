@@ -25,18 +25,26 @@ function betaNote(s) {
     s.slice(m[0].length).replace(/^([^\p{L}]*)(\p{L})/u, function (x, p, c) { return p + c.toLocaleUpperCase(LOCALE); });
 }
 
-// Zeile oben: ohne Konto "nur in diesem Browser" (auf einem neuen Gerät ohne Fristen: "Anmelden"),
-// mit Konto die gesicherte Adresse
+// Konto-Zeile: mit Konto die gesicherte Adresse, ohne Konto "nur in diesem Browser"
+function accountLineHTML() {
+  if (userEmail) {
+    return t("note.secured", { email: "<b>" + esc(userEmail) + "</b>" }) +
+      ' · <button type="button" class="linkbtn" data-act="account">' + t("acc.manage") + '</button>';
+  }
+  return betaNote(t("note.beta")) + ' <button type="button" class="linkbtn" data-act="account">' + t("acc.secure") + '</button>';
+}
+
+// Zeile oben. Mit Fristen steht die Konto-Zeile hinter dem Schloss-Symbol (infoHTML in app.js),
+// hier bleibt dann nichts. Ohne Fristen: gesicherte Adresse bzw. "Schon ein Konto? So funktioniert's | Anmelden".
 function renderNote() {
   var el = document.getElementById("note");
   if (DEMO) { el.textContent = t("note.demo"); return; }
   el.classList.toggle("ok", !!userEmail);
   el.classList.toggle("row", !userEmail && !items.length);
-  if (userEmail) {
-    el.innerHTML = t("note.secured", { email: "<b>" + esc(userEmail) + "</b>" }) +
-      ' · <button type="button" class="linkbtn" data-act="account">' + t("acc.manage") + '</button>';
-  } else if (items.length) {
-    el.innerHTML = betaNote(t("note.beta")) + ' <button type="button" class="linkbtn" data-act="account">' + t("acc.secure") + '</button>';
+  if (items.length) {
+    el.innerHTML = "";
+  } else if (userEmail) {
+    el.innerHTML = accountLineHTML();
   } else {
     // Neu hier: Text + "So funktioniert's" links, "Anmelden" als Knopf rechts
     el.innerHTML = '<span class="note-txt">' + betaNote(t("note.new")) +
