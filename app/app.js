@@ -321,9 +321,10 @@ function showYear() {
     '<div class="ynav"><button type="button" class="linkbtn plain" data-act="ynav" data-id="-12" aria-label="‹">‹</button>' +
     '<b>' + esc(shortFmt.format(start)) + ' – ' + esc(shortFmt.format(end)) + '</b>' +
     '<button type="button" class="linkbtn plain" data-act="ynav" data-id="12" aria-label="›">›</button></div>' +
-    '<p class="ylegend"><span class="yd due"></span>' + esc(t("year.legendDue")) + '<span class="yd part"></span>' + esc(t("year.legendPart")) +
-    '<span class="yd late"></span>' + esc(t("year.legendLate")) +
-    '<span class="yd today"></span>' + esc(t("year.legendToday")) + '<span class="yd"></span>' + esc(t("year.legendFree")) + '</p>' +
+    // Punkt und Wort bleiben zusammen (sonst rutscht beim Umbruch z. B. der Ring von "heute" in die Zeile davor)
+    '<p class="ylegend">' + [["due", "year.legendDue"], ["part", "year.legendPart"], ["late", "year.legendLate"], ["today", "year.legendToday"], ["", "year.legendFree"]].map(function (l) {
+      return '<span class="ylg"><span class="yd ' + l[0] + '"></span>' + esc(t(l[1])) + '</span>';
+    }).join("") + '</p>' +
     '<div class="ymonths">' + months + '</div>' +
     '<div class="ydetail" id="ydetail"><p class="muted">' + esc(t("year.hint")) + '</p>' +
     '<button type="button" class="btn light" data-act="close">OK</button></div>');
