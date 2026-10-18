@@ -17,6 +17,7 @@ var CATEGORIES = [
   { id: "family", icon: "👪" },
   { id: "travel", icon: "✈️" },
   { id: "money", icon: "💶" },
+  { id: "appt", icon: "📌" },
   { id: "own", icon: "📝" }
 ];
 
@@ -101,7 +102,8 @@ var TEMPLATES = [
     compute: function (v) { return { due: addMonths(fromISO(v.date), 120), every: 120 }; }
   },
   {
-    id: "arzttermin", cat: "health", lead: 1,
+    // also: steht zusätzlich in der Auswahl unter "Termine" (Symbol bleibt das von Gesundheit)
+    id: "arzttermin", cat: "health", also: "appt", lead: 1,
     fields: [{ key: "who", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
   },
 
@@ -168,6 +170,24 @@ var TEMPLATES = [
     compute: function () { return { due: nextYearly(7, 31), every: 12 }; }
   },
 
+  // Termine
+  {
+    id: "termin", cat: "appt", lead: 1,
+    fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
+  },
+  {
+    id: "behoerde", cat: "appt", lead: 2,
+    fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
+  },
+  {
+    id: "handwerker", cat: "appt", lead: 1,
+    fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
+  },
+  {
+    id: "friseur", cat: "appt", lead: 1,
+    fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
+  },
+
   // Eigene
   {
     id: "eigene", cat: "own", lead: 14,
@@ -183,7 +203,7 @@ var TEMPLATES = [
 // name = Titel mit {what} (Anbieter, Arzt, …), name0 = Titel ohne
 var TPL_TEXT = {
   de: {
-    cat: { doc: "Ausweise & Dokumente", car: "Auto", contract: "Verträge & Versicherungen", health: "Gesundheit", family: "Familie & Kinder", travel: "Reisen & Urlaub", money: "Geld & Steuern", own: "Eigene" },
+    cat: { doc: "Ausweise & Dokumente", car: "Auto", contract: "Verträge & Versicherungen", health: "Gesundheit", family: "Familie & Kinder", travel: "Reisen & Urlaub", money: "Geld & Steuern", appt: "Termine", own: "Eigene" },
     geburtstag: { title: "Geburtstag", hint: "Livo erinnert dich jedes Jahr eine Woche vorher – Zeit genug für ein Geschenk.", labels: { who: "Wer hat Geburtstag?", date: "Geburtstag (das Jahr ist egal)" }, ph: { who: "z. B. Mama, Anna" }, name: "Geburtstag {what}", name0: "Geburtstag" },
     hochzeitstag: { title: "Hochzeitstag", hint: "Livo erinnert dich jedes Jahr eine Woche vorher.", labels: { date: "Hochzeitsdatum (das Jahr ist egal)" }, name0: "Hochzeitstag" },
     kinderarzt: { title: "Kinderarzt (U-Untersuchung, Impfung)", hint: "Die U-Untersuchungen stehen im gelben Kinderuntersuchungsheft, die Impfungen im Impfpass – den Termin am besten früh ausmachen.", labels: { who: "Für wen?", date: "Termin am" }, ph: { who: "z. B. Lena" }, name: "Kinderarzt – {what}", name0: "Kinderarzt" },
@@ -231,10 +251,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Reiseimpfung", hint: "Manche Impfungen brauchen mehrere Termine. Lass dich am besten 6 bis 8 Wochen vor der Reise beim Hausarzt oder in einer reisemedizinischen Praxis beraten.", labels: { date: "Abreise am" }, name0: "Reiseimpfung – Beratung beim Arzt" },
     einreise: { title: "Einreise-Erlaubnis / Visum", hint: "Länder wie die USA (ESTA), Kanada (eTA) und Großbritannien (ETA) verlangen vor der Reise eine Online-Genehmigung. Sie gilt je nach Land 2 bis 5 Jahre – endet aber, wenn dein Pass abläuft.", labels: { what: "Für welches Land?", date: "Gültig bis" }, ph: { what: "z. B. ESTA USA" }, name: "{what} – gültig bis", name0: "Einreise-Erlaubnis / Visum" },
     reiseversicherung: { title: "Auslandskrankenversicherung", hint: "Die gesetzliche Krankenkasse zahlt im Ausland oft nur einen Teil oder gar nichts – zum Beispiel keinen Rücktransport. Prüf rechtzeitig, ob deine Versicherung noch läuft.", labels: { what: "Welche Versicherung?", date: "Läuft ab am" }, ph: { what: "z. B. Jahres-Reiseversicherung" }, name: "{what} – läuft ab", name0: "Auslandskrankenversicherung – läuft ab" },
+    termin: { title: "Termin", labels: { what: "Was / mit wem?", date: "Datum" }, ph: { what: "z. B. Besprechung mit Herrn Weber" }, name: "{what}", name0: "Termin" },
+    behoerde: { title: "Behördentermin (Bürgeramt, Finanzamt …)", hint: "Ausweis und Unterlagen nicht vergessen. Viele Ämter vergeben Termine nur online – oft Wochen im Voraus.", labels: { what: "Welches Amt?", date: "Datum" }, ph: { what: "z. B. Bürgeramt" }, name: "Termin {what}", name0: "Behördentermin" },
+    handwerker: { title: "Handwerker / Lieferung", hint: "Livo erinnert dich am Tag vorher – Zeit zum Aufräumen oder um den Zugang freizumachen.", labels: { what: "Wer / was?", date: "Datum" }, ph: { what: "z. B. Klempner, Sofa-Lieferung" }, name: "{what}", name0: "Handwerker / Lieferung" },
+    friseur: { title: "Friseur / Beauty", labels: { what: "Wo?", date: "Datum" }, ph: { what: "z. B. Salon Anna" }, name: "Friseur – {what}", name0: "Friseur / Beauty" },
     demo: { bill: "Stadtwerke", phone: "Telekom" }
   },
   en: {
-    cat: { doc: "IDs & documents", car: "Car", contract: "Contracts & insurance", health: "Health", family: "Family & kids", travel: "Travel & holidays", money: "Money", own: "Your own" },
+    cat: { doc: "IDs & documents", car: "Car", contract: "Contracts & insurance", health: "Health", family: "Family & kids", travel: "Travel & holidays", money: "Money", appt: "Appointments", own: "Your own" },
     geburtstag: { title: "Birthday", hint: "Livo reminds you a week before, every year – plenty of time for a present.", labels: { who: "Whose birthday?", date: "Birthday (any year)" }, ph: { who: "e.g. Mum, Anna" }, name: "{what}'s birthday", name0: "Birthday" },
     hochzeitstag: { title: "Wedding anniversary", hint: "Livo reminds you a week before, every year.", labels: { date: "Wedding date (any year)" }, name0: "Wedding anniversary" },
     kinderarzt: { title: "Paediatrician (check-up, vaccination)", hint: "Check-ups and vaccinations are listed in your child's health record – book appointments early.", labels: { who: "For whom?", date: "Appointment on" }, ph: { who: "e.g. Lena" }, name: "Paediatrician – {what}", name0: "Paediatrician" },
@@ -278,10 +302,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Travel vaccinations", hint: "Some vaccinations need several appointments. Ideally get advice from your GP or a travel clinic 6 to 8 weeks before you travel.", labels: { date: "Departure on" }, name0: "Travel vaccinations – see a doctor" },
     einreise: { title: "Travel authorisation / visa", hint: "Countries such as the USA (ESTA), Canada (eTA) and the UK (ETA) require an online travel authorisation before you travel. Depending on the country it's valid for 2 to 5 years – but it ends when your passport expires.", labels: { what: "For which country?", date: "Valid until" }, ph: { what: "e.g. ESTA USA" }, name: "{what} – valid until", name0: "Travel authorisation / visa" },
     reiseversicherung: { title: "Travel health insurance", hint: "Your regular health cover often pays only part of the costs abroad, or nothing – for example no repatriation. Check in good time that your cover is still running.", labels: { what: "Which insurance?", date: "Expires on" }, ph: { what: "e.g. annual travel insurance" }, name: "{what} – expires", name0: "Travel health insurance – expires" },
+    termin: { title: "Appointment", labels: { what: "What / with whom?", date: "Date" }, ph: { what: "e.g. meeting with Mr Weber" }, name: "{what}", name0: "Appointment" },
+    behoerde: { title: "Public office appointment", hint: "Don't forget your ID and documents. Many offices only give appointments online – often weeks ahead.", labels: { what: "Which office?", date: "Date" }, ph: { what: "e.g. Citizens' Office" }, name: "Appointment – {what}", name0: "Public office appointment" },
+    handwerker: { title: "Tradesperson / delivery", hint: "Livo reminds you the day before – time to tidy up or clear the way.", labels: { what: "Who / what?", date: "Date" }, ph: { what: "e.g. plumber, sofa delivery" }, name: "{what}", name0: "Tradesperson / delivery" },
+    friseur: { title: "Hairdresser / beauty", labels: { what: "Where?", date: "Date" }, ph: { what: "e.g. Salon Anna" }, name: "Hairdresser – {what}", name0: "Hairdresser / beauty" },
     demo: { bill: "Electricity", phone: "Vodafone" }
   },
   it: {
-    cat: { doc: "Documenti", car: "Auto", contract: "Contratti e assicurazioni", health: "Salute", family: "Famiglia e bambini", travel: "Viaggi e vacanze", money: "Pagamenti", own: "Personalizzata" },
+    cat: { doc: "Documenti", car: "Auto", contract: "Contratti e assicurazioni", health: "Salute", family: "Famiglia e bambini", travel: "Viaggi e vacanze", money: "Pagamenti", appt: "Appuntamenti", own: "Personalizzata" },
     geburtstag: { title: "Compleanno / onomastico", hint: "Livo ti avvisa ogni anno una settimana prima – c'è tempo per il regalo.", labels: { who: "Di chi è il compleanno?", date: "Data (l'anno non conta)" }, ph: { who: "es. mamma, Anna" }, name: "Compleanno di {what}", name0: "Compleanno" },
     hochzeitstag: { title: "Anniversario di matrimonio", hint: "Livo ti avvisa ogni anno una settimana prima.", labels: { date: "Data del matrimonio (l'anno non conta)" }, name0: "Anniversario di matrimonio" },
     kinderarzt: { title: "Pediatra (controllo, vaccino)", hint: "Controlli e vaccini sono indicati nel libretto sanitario del bambino – prenota per tempo.", labels: { who: "Per chi?", date: "Appuntamento il" }, ph: { who: "es. Giulia" }, name: "Pediatra – {what}", name0: "Pediatra" },
@@ -325,10 +353,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Vaccinazioni per il viaggio", hint: "Alcuni vaccini richiedono più appuntamenti. Meglio chiedere consiglio al medico o a un ambulatorio di medicina dei viaggi 6–8 settimane prima della partenza.", labels: { date: "Partenza il" }, name0: "Vaccinazioni per il viaggio – dal medico" },
     einreise: { title: "Autorizzazione di viaggio / visto", hint: "Paesi come gli USA (ESTA), il Canada (eTA) e il Regno Unito (ETA) richiedono un'autorizzazione online prima del viaggio. Vale da 2 a 5 anni a seconda del Paese, ma scade insieme al passaporto.", labels: { what: "Per quale Paese?", date: "Valida fino al" }, ph: { what: "es. ESTA USA" }, name: "{what} – valida fino al", name0: "Autorizzazione di viaggio / visto" },
     reiseversicherung: { title: "Assicurazione sanitaria di viaggio", hint: "All'estero l'assistenza sanitaria pubblica spesso copre solo una parte dei costi o niente, ad esempio il rimpatrio. Controlla per tempo che la copertura sia ancora attiva.", labels: { what: "Quale assicurazione?", date: "Scade il" }, ph: { what: "es. assicurazione annuale" }, name: "{what} – scade", name0: "Assicurazione di viaggio – scade" },
+    termin: { title: "Appuntamento", labels: { what: "Cosa / con chi?", date: "Data" }, ph: { what: "es. riunione con il sig. Rossi" }, name: "{what}", name0: "Appuntamento" },
+    behoerde: { title: "Appuntamento in un ufficio pubblico", hint: "Non dimenticare documento d'identità e documenti. Molti uffici danno appuntamenti solo online – spesso con settimane di anticipo.", labels: { what: "Quale ufficio?", date: "Data" }, ph: { what: "es. Anagrafe" }, name: "Appuntamento – {what}", name0: "Ufficio pubblico" },
+    handwerker: { title: "Artigiano / consegna", hint: "Livo ti avvisa il giorno prima – il tempo per mettere in ordine o liberare l'accesso.", labels: { what: "Chi / cosa?", date: "Data" }, ph: { what: "es. idraulico, consegna divano" }, name: "{what}", name0: "Artigiano / consegna" },
+    friseur: { title: "Parrucchiere / estetista", labels: { what: "Dove?", date: "Data" }, ph: { what: "es. Salone Anna" }, name: "Parrucchiere – {what}", name0: "Parrucchiere / estetista" },
     demo: { bill: "Luce", phone: "TIM" }
   },
   el: {
-    cat: { doc: "Έγγραφα", car: "Αυτοκίνητο", contract: "Συμβόλαια & ασφάλειες", health: "Υγεία", family: "Οικογένεια & παιδιά", travel: "Ταξίδια & διακοπές", money: "Πληρωμές", own: "Δικές σου" },
+    cat: { doc: "Έγγραφα", car: "Αυτοκίνητο", contract: "Συμβόλαια & ασφάλειες", health: "Υγεία", family: "Οικογένεια & παιδιά", travel: "Ταξίδια & διακοπές", money: "Πληρωμές", appt: "Ραντεβού", own: "Δικές σου" },
     geburtstag: { title: "Γενέθλια / γιορτή", hint: "Το Livo σε ειδοποιεί κάθε χρόνο μία εβδομάδα πριν – έχεις χρόνο για δώρο.", labels: { who: "Ποιος γιορτάζει;", date: "Ημερομηνία (το έτος δεν παίζει ρόλο)" }, ph: { who: "π.χ. μαμά, Μαρία" }, name: "Γενέθλια – {what}", name0: "Γενέθλια" },
     hochzeitstag: { title: "Επέτειος γάμου", hint: "Το Livo σε ειδοποιεί κάθε χρόνο μία εβδομάδα πριν.", labels: { date: "Ημερομηνία γάμου (το έτος δεν παίζει ρόλο)" }, name0: "Επέτειος γάμου" },
     kinderarzt: { title: "Παιδίατρος (έλεγχος, εμβόλιο)", hint: "Οι έλεγχοι και τα εμβόλια γράφονται στο βιβλιάριο υγείας του παιδιού – κλείσε ραντεβού νωρίς.", labels: { who: "Για ποιον;", date: "Ραντεβού στις" }, ph: { who: "π.χ. Ελένη" }, name: "Παιδίατρος – {what}", name0: "Παιδίατρος" },
@@ -372,10 +404,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Εμβόλια για ταξίδι", hint: "Κάποια εμβόλια χρειάζονται περισσότερα ραντεβού. Καλύτερα να συμβουλευτείς γιατρό 6 έως 8 εβδομάδες πριν το ταξίδι.", labels: { date: "Αναχώρηση στις" }, name0: "Εμβόλια για ταξίδι – στον γιατρό" },
     einreise: { title: "Άδεια εισόδου / βίζα", hint: "Χώρες όπως οι ΗΠΑ (ESTA), ο Καναδάς (eTA) και το Ηνωμένο Βασίλειο (ETA) ζητούν ηλεκτρονική άδεια πριν το ταξίδι. Ισχύει 2 έως 5 χρόνια ανάλογα με τη χώρα, αλλά λήγει μαζί με το διαβατήριο.", labels: { what: "Για ποια χώρα;", date: "Ισχύει έως" }, ph: { what: "π.χ. ESTA ΗΠΑ" }, name: "{what} – ισχύει έως", name0: "Άδεια εισόδου / βίζα" },
     reiseversicherung: { title: "Ταξιδιωτική ασφάλιση υγείας", hint: "Στο εξωτερικό η δημόσια ασφάλιση συχνά καλύπτει μόνο μέρος του κόστους ή τίποτα – για παράδειγμα όχι τον επαναπατρισμό. Έλεγξε εγκαίρως ότι η κάλυψή σου ισχύει ακόμα.", labels: { what: "Ποια ασφάλεια;", date: "Λήγει στις" }, ph: { what: "π.χ. ετήσια ταξιδιωτική" }, name: "{what} – λήγει", name0: "Ταξιδιωτική ασφάλιση – λήγει" },
+    termin: { title: "Ραντεβού", labels: { what: "Τι / με ποιον;", date: "Ημερομηνία" }, ph: { what: "π.χ. συνάντηση με τον κ. Παπαδόπουλο" }, name: "{what}", name0: "Ραντεβού" },
+    behoerde: { title: "Ραντεβού σε δημόσια υπηρεσία", hint: "Μην ξεχάσεις ταυτότητα και δικαιολογητικά. Πολλές υπηρεσίες κλείνουν ραντεβού μόνο online – συχνά εβδομάδες πριν.", labels: { what: "Ποια υπηρεσία;", date: "Ημερομηνία" }, ph: { what: "π.χ. ΚΕΠ" }, name: "Ραντεβού – {what}", name0: "Δημόσια υπηρεσία" },
+    handwerker: { title: "Τεχνίτης / παράδοση", hint: "Το Livo σού θυμίζει την προηγούμενη μέρα – χρόνος να τακτοποιήσεις ή να ελευθερώσεις την πρόσβαση.", labels: { what: "Ποιος / τι;", date: "Ημερομηνία" }, ph: { what: "π.χ. υδραυλικός, παράδοση καναπέ" }, name: "{what}", name0: "Τεχνίτης / παράδοση" },
+    friseur: { title: "Κομμωτήριο / ομορφιά", labels: { what: "Πού;", date: "Ημερομηνία" }, ph: { what: "π.χ. Κομμωτήριο Άννα" }, name: "Κομμωτήριο – {what}", name0: "Κομμωτήριο / ομορφιά" },
     demo: { bill: "ΔΕΗ", phone: "Cosmote" }
   },
   es: {
-    cat: { doc: "Documentos", car: "Coche", contract: "Contratos y seguros", health: "Salud", family: "Familia e hijos", travel: "Viajes y vacaciones", money: "Pagos", own: "Personalizado" },
+    cat: { doc: "Documentos", car: "Coche", contract: "Contratos y seguros", health: "Salud", family: "Familia e hijos", travel: "Viajes y vacaciones", money: "Pagos", appt: "Citas", own: "Personalizado" },
     geburtstag: { title: "Cumpleaños", hint: "Livo te avisa cada año una semana antes – hay tiempo para el regalo.", labels: { who: "¿De quién es el cumpleaños?", date: "Cumpleaños (da igual el año)" }, ph: { who: "p. ej. mamá, Ana" }, name: "Cumpleaños de {what}", name0: "Cumpleaños" },
     hochzeitstag: { title: "Aniversario de boda", hint: "Livo te avisa cada año una semana antes.", labels: { date: "Fecha de la boda (da igual el año)" }, name0: "Aniversario de boda" },
     kinderarzt: { title: "Pediatra (revisión, vacuna)", hint: "Las revisiones y vacunas están en la cartilla de salud del niño – pide cita con tiempo.", labels: { who: "¿Para quién?", date: "Cita el" }, ph: { who: "p. ej. Lucía" }, name: "Pediatra – {what}", name0: "Pediatra" },
@@ -419,10 +455,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Vacunas para el viaje", hint: "Algunas vacunas necesitan varias citas. Lo mejor es consultar con tu médico o un centro de vacunación internacional 6 a 8 semanas antes del viaje.", labels: { date: "Salida el" }, name0: "Vacunas para el viaje – ir al médico" },
     einreise: { title: "Autorización de viaje / visado", hint: "Países como EE. UU. (ESTA), Canadá (eTA) y Reino Unido (ETA) exigen una autorización online antes del viaje. Según el país vale de 2 a 5 años, pero caduca con el pasaporte.", labels: { what: "¿Para qué país?", date: "Válida hasta" }, ph: { what: "p. ej. ESTA EE. UU." }, name: "{what} – válida hasta", name0: "Autorización de viaje / visado" },
     reiseversicherung: { title: "Seguro médico de viaje", hint: "En el extranjero, la sanidad pública a menudo cubre solo una parte de los costes o nada, por ejemplo la repatriación. Comprueba a tiempo que tu seguro sigue vigente.", labels: { what: "¿Qué seguro?", date: "Vence el" }, ph: { what: "p. ej. seguro anual de viaje" }, name: "{what} – vence", name0: "Seguro de viaje – vence" },
+    termin: { title: "Cita", labels: { what: "¿Qué / con quién?", date: "Fecha" }, ph: { what: "p. ej. reunión con el Sr. García" }, name: "{what}", name0: "Cita" },
+    behoerde: { title: "Cita en la administración", hint: "No olvides el DNI y los documentos. Muchas oficinas solo dan cita online, a menudo con semanas de antelación.", labels: { what: "¿Qué oficina?", date: "Fecha" }, ph: { what: "p. ej. Ayuntamiento" }, name: "Cita – {what}", name0: "Cita en la administración" },
+    handwerker: { title: "Técnico / entrega", hint: "Livo te avisa el día anterior: tiempo para ordenar o despejar el acceso.", labels: { what: "¿Quién / qué?", date: "Fecha" }, ph: { what: "p. ej. fontanero, entrega del sofá" }, name: "{what}", name0: "Técnico / entrega" },
+    friseur: { title: "Peluquería / estética", labels: { what: "¿Dónde?", date: "Fecha" }, ph: { what: "p. ej. Salón Ana" }, name: "Peluquería – {what}", name0: "Peluquería / estética" },
     demo: { bill: "Luz", phone: "Movistar" }
   },
   fr: {
-    cat: { doc: "Papiers d'identité", car: "Voiture", contract: "Contrats et assurances", health: "Santé", family: "Famille & enfants", travel: "Voyages & vacances", money: "Paiements", own: "Personnalisé" },
+    cat: { doc: "Papiers d'identité", car: "Voiture", contract: "Contrats et assurances", health: "Santé", family: "Famille & enfants", travel: "Voyages & vacances", money: "Paiements", appt: "Rendez-vous", own: "Personnalisé" },
     geburtstag: { title: "Anniversaire", hint: "Livo vous prévient chaque année une semaine avant – le temps de trouver un cadeau.", labels: { who: "L'anniversaire de qui ?", date: "Date d'anniversaire (peu importe l'année)" }, ph: { who: "p. ex. maman, Léa" }, name: "Anniversaire de {what}", name0: "Anniversaire" },
     hochzeitstag: { title: "Anniversaire de mariage", hint: "Livo vous prévient chaque année une semaine avant.", labels: { date: "Date du mariage (peu importe l'année)" }, name0: "Anniversaire de mariage" },
     kinderarzt: { title: "Pédiatre (visite, vaccin)", hint: "Les visites et les vaccins figurent dans le carnet de santé de l'enfant – prenez rendez-vous tôt.", labels: { who: "Pour qui ?", date: "Rendez-vous le" }, ph: { who: "p. ex. Léa" }, name: "Pédiatre – {what}", name0: "Pédiatre" },
@@ -466,10 +506,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Vaccins de voyage", hint: "Certains vaccins demandent plusieurs rendez-vous. Consultez de préférence votre médecin ou un centre de vaccinations internationales 6 à 8 semaines avant le départ.", labels: { date: "Départ le" }, name0: "Vaccins de voyage – voir le médecin" },
     einreise: { title: "Autorisation de voyage / visa", hint: "Des pays comme les États-Unis (ESTA), le Canada (AVE) et le Royaume-Uni (ETA) exigent une autorisation en ligne avant le voyage. Selon le pays, elle vaut 2 à 5 ans, mais expire avec le passeport.", labels: { what: "Pour quel pays ?", date: "Valable jusqu'au" }, ph: { what: "ex. ESTA États-Unis" }, name: "{what} – valable jusqu'au", name0: "Autorisation de voyage / visa" },
     reiseversicherung: { title: "Assurance santé voyage", hint: "À l'étranger, l'assurance maladie ne couvre souvent qu'une partie des frais, voire rien – par exemple pas le rapatriement. Vérifiez à temps que votre couverture est toujours valable.", labels: { what: "Quelle assurance ?", date: "Expire le" }, ph: { what: "ex. assurance voyage annuelle" }, name: "{what} – expire", name0: "Assurance voyage – expire" },
+    termin: { title: "Rendez-vous", labels: { what: "Quoi / avec qui ?", date: "Date" }, ph: { what: "ex. réunion avec M. Martin" }, name: "{what}", name0: "Rendez-vous" },
+    behoerde: { title: "Rendez-vous administratif", hint: "N'oubliez pas votre pièce d'identité et vos documents. Beaucoup d'administrations ne donnent rendez-vous qu'en ligne – souvent des semaines à l'avance.", labels: { what: "Quelle administration ?", date: "Date" }, ph: { what: "ex. mairie, préfecture" }, name: "Rendez-vous – {what}", name0: "Rendez-vous administratif" },
+    handwerker: { title: "Artisan / livraison", hint: "Livo vous prévient la veille – le temps de ranger ou de dégager l'accès.", labels: { what: "Qui / quoi ?", date: "Date" }, ph: { what: "ex. plombier, livraison du canapé" }, name: "{what}", name0: "Artisan / livraison" },
+    friseur: { title: "Coiffeur / beauté", labels: { what: "Où ?", date: "Date" }, ph: { what: "ex. Salon Anna" }, name: "Coiffeur – {what}", name0: "Coiffeur / beauté" },
     demo: { bill: "Électricité", phone: "Orange" }
   },
   nl: {
-    cat: { doc: "Documenten", car: "Auto", contract: "Contracten & verzekeringen", health: "Gezondheid", family: "Gezin & kinderen", travel: "Reizen & vakantie", money: "Betalingen", own: "Eigen" },
+    cat: { doc: "Documenten", car: "Auto", contract: "Contracten & verzekeringen", health: "Gezondheid", family: "Gezin & kinderen", travel: "Reizen & vakantie", money: "Betalingen", appt: "Afspraken", own: "Eigen" },
     geburtstag: { title: "Verjaardag", hint: "Livo herinnert je elk jaar een week van tevoren – genoeg tijd voor een cadeau.", labels: { who: "Wie is er jarig?", date: "Verjaardag (het jaar maakt niet uit)" }, ph: { who: "bijv. mama, Emma" }, name: "Verjaardag {what}", name0: "Verjaardag" },
     hochzeitstag: { title: "Trouwdag", hint: "Livo herinnert je elk jaar een week van tevoren.", labels: { date: "Trouwdatum (het jaar maakt niet uit)" }, name0: "Trouwdag" },
     kinderarzt: { title: "Consultatiebureau / kinderarts", hint: "Controles en vaccinaties staan in het groeiboekje of het vaccinatieoverzicht – maak op tijd een afspraak.", labels: { who: "Voor wie?", date: "Afspraak op" }, ph: { who: "bijv. Emma" }, name: "Kinderarts – {what}", name0: "Kinderarts" },
@@ -513,10 +557,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Reisvaccinaties", hint: "Sommige vaccinaties hebben meerdere afspraken nodig. Laat je het liefst 6 tot 8 weken voor vertrek adviseren door je huisarts of een reisvaccinatiebureau.", labels: { date: "Vertrek op" }, name0: "Reisvaccinaties – naar de dokter" },
     einreise: { title: "Reistoestemming / visum", hint: "Landen zoals de VS (ESTA), Canada (eTA) en het VK (ETA) vragen vóór de reis een online reistoestemming. Afhankelijk van het land is die 2 tot 5 jaar geldig, maar hij vervalt met je paspoort.", labels: { what: "Voor welk land?", date: "Geldig tot" }, ph: { what: "bijv. ESTA VS" }, name: "{what} – geldig tot", name0: "Reistoestemming / visum" },
     reiseversicherung: { title: "Reisverzekering (medisch)", hint: "In het buitenland vergoedt je zorgverzekering vaak maar een deel van de kosten of niets – bijvoorbeeld geen repatriëring. Check op tijd of je dekking nog loopt.", labels: { what: "Welke verzekering?", date: "Verloopt op" }, ph: { what: "bijv. doorlopende reisverzekering" }, name: "{what} – verloopt", name0: "Reisverzekering – verloopt" },
+    termin: { title: "Afspraak", labels: { what: "Wat / met wie?", date: "Datum" }, ph: { what: "bijv. overleg met meneer De Vries" }, name: "{what}", name0: "Afspraak" },
+    behoerde: { title: "Afspraak bij gemeente / instantie", hint: "Vergeet je ID en papieren niet. Veel instanties geven alleen online afspraken – vaak weken van tevoren.", labels: { what: "Welke instantie?", date: "Datum" }, ph: { what: "bijv. gemeente" }, name: "Afspraak – {what}", name0: "Afspraak instantie" },
+    handwerker: { title: "Monteur / levering", hint: "Livo herinnert je de dag ervoor – tijd om op te ruimen of de toegang vrij te maken.", labels: { what: "Wie / wat?", date: "Datum" }, ph: { what: "bijv. loodgieter, levering bank" }, name: "{what}", name0: "Monteur / levering" },
+    friseur: { title: "Kapper / beauty", labels: { what: "Waar?", date: "Datum" }, ph: { what: "bijv. Salon Anna" }, name: "Kapper – {what}", name0: "Kapper / beauty" },
     demo: { bill: "Energie", phone: "KPN" }
   },
   pt: {
-    cat: { doc: "Documentos", car: "Carro", contract: "Contratos e seguros", health: "Saúde", family: "Família e filhos", travel: "Viagens e férias", money: "Pagamentos", own: "Personalizado" },
+    cat: { doc: "Documentos", car: "Carro", contract: "Contratos e seguros", health: "Saúde", family: "Família e filhos", travel: "Viagens e férias", money: "Pagamentos", appt: "Marcações", own: "Personalizado" },
     geburtstag: { title: "Aniversário", hint: "O Livo envia um lembrete todos os anos, uma semana antes – há tempo para o presente.", labels: { who: "De quem é o aniversário?", date: "Aniversário (o ano não importa)" }, ph: { who: "p. ex. mãe, Ana" }, name: "Aniversário de {what}", name0: "Aniversário" },
     hochzeitstag: { title: "Aniversário de casamento", hint: "O Livo envia um lembrete todos os anos, uma semana antes.", labels: { date: "Data do casamento (o ano não importa)" }, name0: "Aniversário de casamento" },
     kinderarzt: { title: "Pediatra (consulta, vacina)", hint: "As consultas e vacinas constam do boletim de saúde da criança – marque a consulta com antecedência.", labels: { who: "Para quem?", date: "Consulta a" }, ph: { who: "p. ex. Inês" }, name: "Pediatra – {what}", name0: "Pediatra" },
@@ -560,10 +608,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Vacinas para viagem", hint: "Algumas vacinas precisam de várias consultas. O ideal é aconselhar-se com o seu médico ou numa consulta do viajante 6 a 8 semanas antes da partida.", labels: { date: "Partida a" }, name0: "Vacinas para viagem – ir ao médico" },
     einreise: { title: "Autorização de viagem / visto", hint: "Países como os EUA (ESTA), o Canadá (eTA) e o Reino Unido (ETA) exigem uma autorização online antes da viagem. Conforme o país, vale 2 a 5 anos, mas caduca com o passaporte.", labels: { what: "Para que país?", date: "Válida até" }, ph: { what: "ex. ESTA EUA" }, name: "{what} – válida até", name0: "Autorização de viagem / visto" },
     reiseversicherung: { title: "Seguro de saúde em viagem", hint: "No estrangeiro, o serviço público de saúde muitas vezes só cobre parte dos custos ou nada – por exemplo, o repatriamento. Verifique a tempo se a sua cobertura ainda está ativa.", labels: { what: "Que seguro?", date: "Termina a" }, ph: { what: "ex. seguro de viagem anual" }, name: "{what} – termina", name0: "Seguro de viagem – termina" },
+    termin: { title: "Marcação", labels: { what: "O quê / com quem?", date: "Data" }, ph: { what: "ex. reunião com o Sr. Silva" }, name: "{what}", name0: "Marcação" },
+    behoerde: { title: "Marcação num serviço público", hint: "Não se esqueça do documento de identificação e dos papéis. Muitos serviços só fazem marcações online – muitas vezes com semanas de antecedência.", labels: { what: "Que serviço?", date: "Data" }, ph: { what: "ex. Loja do Cidadão" }, name: "Marcação – {what}", name0: "Serviço público" },
+    handwerker: { title: "Técnico / entrega", hint: "O Livo avisa-o na véspera – tempo para arrumar ou libertar o acesso.", labels: { what: "Quem / o quê?", date: "Data" }, ph: { what: "ex. canalizador, entrega do sofá" }, name: "{what}", name0: "Técnico / entrega" },
+    friseur: { title: "Cabeleireiro / estética", labels: { what: "Onde?", date: "Data" }, ph: { what: "ex. Salão Ana" }, name: "Cabeleireiro – {what}", name0: "Cabeleireiro / estética" },
     demo: { bill: "Luz", phone: "MEO" }
   },
   tr: {
-    cat: { doc: "Belgeler", car: "Araç", contract: "Sözleşmeler ve sigortalar", health: "Sağlık", family: "Aile & çocuklar", travel: "Seyahat & tatil", money: "Ödemeler", own: "Kendi" },
+    cat: { doc: "Belgeler", car: "Araç", contract: "Sözleşmeler ve sigortalar", health: "Sağlık", family: "Aile & çocuklar", travel: "Seyahat & tatil", money: "Ödemeler", appt: "Randevular", own: "Kendi" },
     geburtstag: { title: "Doğum günü", hint: "Livo her yıl bir hafta önceden hatırlatır – hediye için zaman kalır.", labels: { who: "Kimin doğum günü?", date: "Doğum günü (yıl önemli değil)" }, ph: { who: "ör. annem, Ayşe" }, name: "{what} – doğum günü", name0: "Doğum günü" },
     hochzeitstag: { title: "Evlilik yıldönümü", hint: "Livo her yıl bir hafta önceden hatırlatır.", labels: { date: "Evlilik tarihi (yıl önemli değil)" }, name0: "Evlilik yıldönümü" },
     kinderarzt: { title: "Çocuk doktoru (kontrol, aşı)", hint: "Kontroller ve aşılar çocuğun aşı kartında yazar – randevuyu erken al.", labels: { who: "Kimin için?", date: "Randevu tarihi" }, ph: { who: "ör. Elif" }, name: "Çocuk doktoru – {what}", name0: "Çocuk doktoru" },
@@ -607,10 +659,14 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Seyahat aşıları", hint: "Bazı aşılar birkaç randevu gerektirir. En iyisi seyahatten 6–8 hafta önce doktoruna danış.", labels: { date: "Gidiş tarihi" }, name0: "Seyahat aşıları – doktora git" },
     einreise: { title: "Seyahat izni / vize", hint: "ABD (ESTA), Kanada (eTA) ve Birleşik Krallık (ETA) gibi ülkeler seyahatten önce online izin ister. Ülkeye göre 2 ila 5 yıl geçerlidir, ama pasaportun bitince o da biter.", labels: { what: "Hangi ülke için?", date: "Geçerlilik sonu" }, ph: { what: "örn. ESTA ABD" }, name: "{what} – geçerlilik sonu", name0: "Seyahat izni / vize" },
     reiseversicherung: { title: "Seyahat sağlık sigortası", hint: "Yurt dışında genel sağlık sigortası masrafların çoğu zaman sadece bir kısmını karşılar ya da hiçbirini – örneğin ülkeye geri nakli. Sigortanın hâlâ geçerli olduğunu zamanında kontrol et.", labels: { what: "Hangi sigorta?", date: "Bitiş tarihi" }, ph: { what: "örn. yıllık seyahat sigortası" }, name: "{what} – bitiyor", name0: "Seyahat sigortası – bitiyor" },
+    termin: { title: "Randevu", labels: { what: "Ne / kiminle?", date: "Tarih" }, ph: { what: "örn. Ahmet Bey ile toplantı" }, name: "{what}", name0: "Randevu" },
+    behoerde: { title: "Resmi daire randevusu", hint: "Kimliğini ve belgelerini unutma. Birçok daire randevuyu sadece online verir – çoğu zaman haftalar önceden.", labels: { what: "Hangi daire?", date: "Tarih" }, ph: { what: "örn. nüfus müdürlüğü" }, name: "Randevu – {what}", name0: "Resmi daire randevusu" },
+    handwerker: { title: "Usta / teslimat", hint: "Livo bir gün önce hatırlatır – ortalığı toplamak ya da yolu açmak için zamanın olur.", labels: { what: "Kim / ne?", date: "Tarih" }, ph: { what: "örn. tesisatçı, kanepe teslimatı" }, name: "{what}", name0: "Usta / teslimat" },
+    friseur: { title: "Kuaför / güzellik", labels: { what: "Nerede?", date: "Tarih" }, ph: { what: "örn. Kuaför Ayşe" }, name: "Kuaför – {what}", name0: "Kuaför / güzellik" },
     demo: { bill: "Elektrik", phone: "Turkcell" }
   },
   pl: {
-    cat: { doc: "Dokumenty", car: "Samochód", contract: "Umowy i ubezpieczenia", health: "Zdrowie", family: "Rodzina i dzieci", travel: "Podróże i urlop", money: "Płatności", own: "Własne" },
+    cat: { doc: "Dokumenty", car: "Samochód", contract: "Umowy i ubezpieczenia", health: "Zdrowie", family: "Rodzina i dzieci", travel: "Podróże i urlop", money: "Płatności", appt: "Wizyty i spotkania", own: "Własne" },
     geburtstag: { title: "Urodziny / imieniny", hint: "Livo przypomni co roku tydzień wcześniej – zdążysz z prezentem.", labels: { who: "Czyje urodziny?", date: "Data (rok nie ma znaczenia)" }, ph: { who: "np. mama, Ania" }, name: "Urodziny – {what}", name0: "Urodziny" },
     hochzeitstag: { title: "Rocznica ślubu", hint: "Livo przypomni co roku tydzień wcześniej.", labels: { date: "Data ślubu (rok nie ma znaczenia)" }, name0: "Rocznica ślubu" },
     kinderarzt: { title: "Pediatra (bilans, szczepienie)", hint: "Bilanse i szczepienia są w książeczce zdrowia dziecka – umów wizytę wcześniej.", labels: { who: "Dla kogo?", date: "Wizyta dnia" }, ph: { who: "np. Zosia" }, name: "Pediatra – {what}", name0: "Pediatra" },
@@ -654,6 +710,10 @@ var TPL_TEXT = {
     reiseimpfung: { title: "Szczepienia przed podróżą", hint: "Niektóre szczepienia wymagają kilku wizyt. Najlepiej skonsultuj się z lekarzem 6–8 tygodni przed wyjazdem.", labels: { date: "Wyjazd" }, name0: "Szczepienia przed podróżą – do lekarza" },
     einreise: { title: "Zezwolenie na podróż / wiza", hint: "Kraje takie jak USA (ESTA), Kanada (eTA) i Wielka Brytania (ETA) wymagają zezwolenia online przed podróżą. W zależności od kraju jest ważne 2–5 lat, ale wygasa razem z paszportem.", labels: { what: "Do jakiego kraju?", date: "Ważne do" }, ph: { what: "np. ESTA USA" }, name: "{what} – ważne do", name0: "Zezwolenie na podróż / wiza" },
     reiseversicherung: { title: "Ubezpieczenie podróżne (leczenie)", hint: "Za granicą publiczne ubezpieczenie często pokrywa tylko część kosztów albo nic – na przykład transportu do kraju. Sprawdź na czas, czy twoja polisa jest nadal ważna.", labels: { what: "Jakie ubezpieczenie?", date: "Kończy się" }, ph: { what: "np. roczne ubezpieczenie podróżne" }, name: "{what} – kończy się", name0: "Ubezpieczenie podróżne – kończy się" },
+    termin: { title: "Spotkanie", labels: { what: "Co / z kim?", date: "Data" }, ph: { what: "np. spotkanie z panem Nowakiem" }, name: "{what}", name0: "Spotkanie" },
+    behoerde: { title: "Wizyta w urzędzie", hint: "Nie zapomnij dowodu i dokumentów. Wiele urzędów umawia wizyty tylko online – często z wyprzedzeniem kilku tygodni.", labels: { what: "Jaki urząd?", date: "Data" }, ph: { what: "np. urząd miasta" }, name: "Urząd – {what}", name0: "Wizyta w urzędzie" },
+    handwerker: { title: "Fachowiec / dostawa", hint: "Livo przypomni ci dzień wcześniej – czas, by posprzątać albo zrobić przejście.", labels: { what: "Kto / co?", date: "Data" }, ph: { what: "np. hydraulik, dostawa sofy" }, name: "{what}", name0: "Fachowiec / dostawa" },
+    friseur: { title: "Fryzjer / kosmetyczka", labels: { what: "Gdzie?", date: "Data" }, ph: { what: "np. Salon Anna" }, name: "Fryzjer – {what}", name0: "Fryzjer / kosmetyczka" },
     demo: { bill: "Prąd", phone: "Orange" }
   }
 };

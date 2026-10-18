@@ -240,7 +240,7 @@ function render() {
   // stehen darunter als Symbole mit ausklappbarem Text und scrollen mit: fest oben belegten sie am Handy
   // mit großer Schrift mehr als den halben Bildschirm.
   controls.innerHTML = canEdit() ? voicebarHTML() : "";
-  stat.innerHTML = infoHTML();
+  stat.innerHTML = DEMO ? "" : infoHTML(); // Demo: nichts gespeichert, kein Konto, kein Plus - keine Symbole
   var html = (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
     : '<div class="allgood">' + t("allgood") + '</div>');
@@ -330,9 +330,11 @@ function showYearDay(iso) {
   if (btn) btn.classList.add("sel");
   var wd = new Intl.DateTimeFormat(LOCALE, { weekday: "long" }).format(fromISO(iso));
   box.innerHTML = '<p class="ydate"><b>' + esc(wd.charAt(0).toLocaleUpperCase(LOCALE) + wd.slice(1) + ", " + fmt(fromISO(iso))) + '</b></p>' +
-    (list.length ? list.map(card).join("")
-      : '<p class="muted">' + esc(t("year.dayFree")) + '</p>' +
-        (canEdit() && iso >= toISO(today()) ? '<button type="button" class="btn" data-act="yadd" data-id="' + iso + '">' + esc(t("year.add")) + '</button>' : "")) +
+    // Fristen des Tages nach Uhrzeit (ganztägige zuerst); "+ Frist an diesem Tag" an jedem Tag ab heute,
+    // auch an belegten - ein Termin belegt nur seine Uhrzeit, nicht den ganzen Tag
+    (list.length ? list.slice().sort(function (a, b) { return (a.time || "") < (b.time || "") ? -1 : (a.time || "") > (b.time || "") ? 1 : 0; }).map(card).join("")
+      : '<p class="muted">' + esc(t("year.dayFree")) + '</p>') +
+    (canEdit() && iso >= toISO(today()) ? '<button type="button" class="btn" data-act="yadd" data-id="' + iso + '">' + esc(t("year.add")) + '</button>' : "") +
     '<button type="button" class="btn light" data-act="close">OK</button>';
 }
 // Neue eigene Frist mit dem gewählten Tag als Datum
@@ -391,7 +393,7 @@ function showPicker() {
     '<button type="button" class="btn light" data-act="voice">' + t("picker.voice") + '</button>';
   var visible = visibleTemplates();
   CATEGORIES.forEach(function (c) {
-    var list = visible.filter(function (tp) { return tp.cat === c.id; });
+    var list = visible.filter(function (tp) { return tp.cat === c.id || tp.also === c.id; });
     if (!list.length) return;
     html += '<div class="cat">' + c.icon + " " + esc(catName(c)) + '</div><div class="tpls">' +
       list.map(function (tp) { return '<button type="button" class="tpl" data-tpl="' + tp.id + '">' + esc(tplTitle(tp)) + '</button>'; }).join("") +

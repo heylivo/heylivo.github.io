@@ -89,7 +89,8 @@ main { padding-bottom: 24px; }
 .filter [aria-pressed="true"] { background: #fff; color: var(--brand); box-shadow: 0 1px 3px rgba(15,23,42,.12); }
 /* Filter und daneben "Jahr im Blick" */
 .filterrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.yearbtn { cursor: pointer; }
+/* lila Knopf mit weißem Kalender */
+.info-ico.yearbtn { border-color: transparent; background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%); color: #fff; cursor: pointer; box-shadow: 0 6px 14px -8px rgba(98,60,240,.8); }
 /* Jahr im Blick: 12 Monatskalender, Tage mit Fristen farbig, freie Tage weiß */
 .ynav { display: flex; align-items: center; justify-content: space-between; margin: -4px 0 8px; font-size: 15px; }
 .ynav b { text-transform: capitalize; }
