@@ -351,7 +351,8 @@ function setFilter(f) {
 }
 function card(it) {
   var s = status(it);
-  var sub = s.key === "later" ? t("card.remind", { x: remindText(it) }) : t("card.due", { x: dueText(it) });
+  // Auf jeder Karte das Fälligkeitsdatum mit Uhrzeit (die Erinnerung steht in der Frist selbst)
+  var sub = t("card.due", { x: dueText(it) });
   return '<button type="button" class="card st-' + s.key + '" data-open="' + it.id + '">' +
     '<span class="ico">' + iconOf(it) + '</span>' +
     '<span class="txt"><b>' + esc(it.title) + '</b><small>' + esc(sub) + '</small></span>' +
