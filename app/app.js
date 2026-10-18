@@ -94,8 +94,8 @@ function pad(n) { return (n < 10 ? "0" : "") + n; }
 function today() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 function toISO(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
 function fromISO(s) { var p = String(s).split("-"); return new Date(+p[0], +p[1] - 1, +(p[2] || 1)); }
-var DATE_FMT = new Intl.DateTimeFormat(LOCALE, { day: "2-digit", month: "2-digit", year: "numeric" });
-function fmt(d) { return DATE_FMT.format(d); }
+// Datum in allen Sprachen gleich: TT.MM.JJJJ (Wunsch des Nutzers - keine Schrägstriche wie 11/18/2026)
+function fmt(d) { return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "." + d.getFullYear(); }
 function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
 function addMonths(d, n) {
   // 31.01. + 1 Monat = 28./29.02., nicht 03.03.
@@ -184,7 +184,7 @@ var infoTab = "";
 function infoParts() {
   var left = trialDaysLeft(), plusOn = isPlus(), push = pushHTML(), parts = [];
   parts.push({ id: "acc", svg: userEmail ? "lock" : "unlock", warn: !userEmail, html: accountLineHTML() });
-  parts.push({ id: "cal", svg: "cal", html: '<button type="button" class="linkbtn" data-act="calendar">' + esc(t("plus.cal")) + '</button>' });
+  parts.push({ id: "cal", svg: "cal", html: esc(t("info.calText")) + ' <button type="button" class="linkbtn" data-act="calendar">Google, iPhone, Outlook</button>' });
   if (push) parts.push({ id: "push", svg: pushState === "on" ? "bell" : "belloff", warn: pushState !== "on", html: push });
   // Plus: Schild "PLUS" - grün mit Haken (aktiv), blau (Testphase), rot (Testphase vorbei)
   parts.push({ id: "plus", plus: plusOn ? "on" : left !== null && left < 0 ? "over" : "trial",
@@ -200,7 +200,7 @@ function infoHTML() {
   }
   var open = tab === "none" ? null : find(parts, tab);
   return '<div class="infobar" role="tablist">' + parts.map(function (p) {
-    var ico = p.plus ? '<span class="plus-pill ' + p.plus + '">PLUS' + (p.plus === "on" ? " ✓" : "") + '</span>'
+    var ico = p.plus ? '<span class="plus-pill ' + p.plus + '">PLUS</span>'
       : '<svg viewBox="0 0 24 24">' + INFO_SVG[p.svg] + '</svg>';
     return '<button type="button" class="info-item" role="tab" data-act="info" data-id="' + p.id + '" aria-selected="' + (open === p) + '">' +
       '<span class="info-ico' + (p.warn ? " warn" : "") + '">' + ico + '</span><span class="info-lbl">' + esc(t("info." + p.id)) + '</span></button>';
