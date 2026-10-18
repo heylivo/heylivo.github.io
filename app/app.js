@@ -29,6 +29,8 @@ var TIME_ZONE = (function () { try { return Intl.DateTimeFormat().resolvedOption
 function toRow(it) {
   return {
     tpl: it.tpl || "eigene", title: it.title, due: it.due, due_time: it.time || null,
+    // Endzeit (Spalte aus 0012_time_end.sql) nur zusammen mit einer Uhrzeit
+    due_time_end: it.time && it.timeEnd ? it.timeEnd : null,
     every_months: it.every || 0, every_days: it.everyDays || 0, from_done: it.from === "done", lead_days: it.lead, renew: !!it.renew,
     remind_min: it.time && it.remindMin ? it.remindMin : null, tz: TIME_ZONE
   };
@@ -36,6 +38,7 @@ function toRow(it) {
 function fromRow(r) {
   return {
     id: r.id, tpl: r.tpl, title: r.title, due: r.due, time: r.due_time ? r.due_time.slice(0, 5) : "",
+    timeEnd: r.due_time && r.due_time_end ? r.due_time_end.slice(0, 5) : "",
     every: r.every_months, everyDays: r.every_days || 0, from: r.from_done ? "done" : "due", lead: r.lead_days, renew: r.renew,
     remindMin: r.remind_min || 0
   };
@@ -141,7 +144,7 @@ function everyText(it) {
 }
 function repeats(it) { return (it.every || 0) > 0 || (it.everyDays || 0) > 0; }
 function nextRepeat(d, it) { return it.everyDays > 0 ? addDays(d, it.everyDays) : addMonths(d, it.every); }
-function dueText(it) { return fmt(fromISO(it.due)) + (it.time ? ", " + it.time + t("time.suffix") : ""); }
+function dueText(it) { return fmt(fromISO(it.due)) + (it.time ? ", " + it.time + (it.timeEnd ? "–" + it.timeEnd : "") + t("time.suffix") : ""); }
 function remindText(it) {
   var r = addDays(fromISO(it.due), -it.lead);
   return r <= today() ? t("remind.now") : t("remind.from", { date: fmt(r) });
@@ -305,7 +308,9 @@ function showYear() {
       var iso = toISO(new Date(first.getFullYear(), first.getMonth(), day)), list = occ[iso] || [];
       count += list.length;
       if (!list.length && iso >= todayIso) free++;
-      var cls = "yd" + (list.length ? (iso < todayIso ? " late" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "");
+      // nur Termine mit Uhrzeit = teilweise belegt (hellblau), sonst ganztägig belegt (blau)
+      var partly = list.length && list.every(function (it) { return it.time; });
+      var cls = "yd" + (list.length ? (iso < todayIso ? " late" : partly ? " part" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "");
       cells += '<button type="button" class="' + cls + '" data-act="yday" data-id="' + iso + '">' + day + '</button>';
     }
     months += '<div class="ymonth"><h4>' + esc(monthFmt.format(first)) + '</h4>' +
@@ -316,15 +321,35 @@ function showYear() {
     '<div class="ynav"><button type="button" class="linkbtn plain" data-act="ynav" data-id="-12" aria-label="‹">‹</button>' +
     '<b>' + esc(shortFmt.format(start)) + ' – ' + esc(shortFmt.format(end)) + '</b>' +
     '<button type="button" class="linkbtn plain" data-act="ynav" data-id="12" aria-label="›">›</button></div>' +
-    '<p class="ylegend"><span class="yd due"></span>' + esc(t("year.legendDue")) + '<span class="yd late"></span>' + esc(t("year.legendLate")) +
+    '<p class="ylegend"><span class="yd due"></span>' + esc(t("year.legendDue")) + '<span class="yd part"></span>' + esc(t("year.legendPart")) +
+    '<span class="yd late"></span>' + esc(t("year.legendLate")) +
     '<span class="yd today"></span>' + esc(t("year.legendToday")) + '<span class="yd"></span>' + esc(t("year.legendFree")) + '</p>' +
     '<div class="ymonths">' + months + '</div>' +
     '<div class="ydetail" id="ydetail"><p class="muted">' + esc(t("year.hint")) + '</p>' +
     '<button type="button" class="btn light" data-act="close">OK</button></div>');
   showYear.occ = occ;
 }
+// Freie Zeiten eines Tages zwischen 08:00 und 20:00: Termine mit Uhrzeit belegen ihre Zeit
+// (ohne Endzeit eine Stunde), ganztägige Fristen belegen keine Uhrzeit. Lücken unter 15 Minuten zählen nicht.
+var DAY_FROM = "08:00", DAY_TO = "20:00";
+function minutes(hm) { return +hm.slice(0, 2) * 60 + +hm.slice(3, 5); }
+function hhmm(m) { return pad(Math.floor(m / 60)) + ":" + pad(m % 60); }
+function freeSlots(list) {
+  var busy = list.filter(function (it) { return it.time; }).map(function (it) {
+    var a = minutes(it.time), b = it.timeEnd ? minutes(it.timeEnd) : a + 60;
+    return [a, Math.max(b, a + 1)];
+  }).sort(function (x, y) { return x[0] - y[0]; });
+  var free = [], at = minutes(DAY_FROM), end = minutes(DAY_TO);
+  busy.forEach(function (b) {
+    if (b[0] - at >= 15 && at < end) free.push([at, Math.min(b[0], end)]);
+    at = Math.max(at, b[1]);
+  });
+  if (end - at >= 15) free.push([at, end]);
+  return free.map(function (f) { return [hhmm(f[0]), hhmm(f[1])]; });
+}
 function showYearDay(iso) {
   var box = document.getElementById("ydetail"), list = (showYear.occ || {})[iso] || [];
+  var timed = list.filter(function (it) { return it.time; }), slots = freeSlots(list);
   document.querySelectorAll(".yd.sel").forEach(function (b) { b.classList.remove("sel"); });
   var btn = document.querySelector('.yd[data-id="' + iso + '"]');
   if (btn) btn.classList.add("sel");
@@ -334,16 +359,33 @@ function showYearDay(iso) {
     // auch an belegten - ein Termin belegt nur seine Uhrzeit, nicht den ganzen Tag
     (list.length ? list.slice().sort(function (a, b) { return (a.time || "") < (b.time || "") ? -1 : (a.time || "") > (b.time || "") ? 1 : 0; }).map(card).join("")
       : '<p class="muted">' + esc(t("year.dayFree")) + '</p>') +
-    (canEdit() && iso >= toISO(today()) ? '<button type="button" class="btn" data-act="yadd" data-id="' + iso + '">' + esc(t("year.add")) + '</button>' : "") +
+    // freie Zeiten nur an Tagen mit Terminen mit Uhrzeit (sonst ist der ganze Tag frei)
+    (timed.length ? (slots.length
+      ? '<ul class="yslots">' + slots.map(function (f) { return '<li>' + esc(t("year.freeSlot", { from: f[0], to: f[1] })) + '</li>'; }).join("") + '</ul>'
+      : '<p class="muted">' + esc(t("year.noSlot", { from: DAY_FROM, to: DAY_TO })) + '</p>') : "") +
+    (canEdit() && iso >= toISO(today()) ? '<button type="button" class="btn" data-act="yadd" data-id="' + iso + '" data-time="' + (timed.length && slots.length ? slots[0][0] : "") + '">' + esc(t("year.add")) + '</button>' : "") +
     '<button type="button" class="btn light" data-act="close">OK</button>';
 }
 // Neue eigene Frist mit dem gewählten Tag als Datum
-function addOnDay(iso) {
-  showNew("eigene");
-  var form = document.getElementById("frm");
-  if (!form || !form.elements.date) return;
-  form.elements.date.value = iso;
-  ["input", "change"].forEach(function (ev) { form.elements.date.dispatchEvent(new Event(ev, { bubbles: true })); });
+// "+ Frist an diesem Tag": erst die ganze Auswahl, die gewählte Vorlage bekommt dann den Tag (und an einem
+// Tag mit Terminen die erste freie Uhrzeit). Gilt, bis das Fenster geschlossen wird.
+var dayPick = null;
+function addOnDay(iso, time) {
+  showPicker();
+  dayPick = { iso: iso, time: time || "" };
+}
+// Den gewählten Tag nur eintragen, wo das Datumsfeld wirklich der Fälligkeitstag ist
+// (nicht bei Vertragsbeginn, letzter Kontrolle, Abreise …) - geprüft mit der Rechnung der Vorlage selbst
+function prefillDay(tp, form) {
+  var p = dayPick, v = {};
+  tp.fields.forEach(function (f) { v[f.key] = f.type === "date" ? p.iso : f.value != null ? String(f.value) : ""; });
+  var dateField = tp.fields.filter(function (f) { return f.type === "date"; })[0], r = null;
+  try { r = dateField && tp.compute(v); } catch (e) { r = null; }
+  if (r && r.due && toISO(r.due) === p.iso) form.elements[dateField.key].value = p.iso;
+  if (p.time) form.elements.time.value = p.time;
+  Array.prototype.forEach.call(form.elements, function (el) {
+    if (el.name) ["input", "change"].forEach(function (ev) { el.dispatchEvent(new Event(ev, { bubbles: true })); });
+  });
 }
 
 function setFilter(f) {
@@ -383,6 +425,7 @@ function openSheet(html) {
 }
 function closeSheet() {
   stopListening();
+  dayPick = null;
   sheet.hidden = true;
   sheetBg.hidden = true;
   document.body.classList.remove("lock");
@@ -548,9 +591,11 @@ function soonText(min) {
 }
 // Eigenes Textfeld statt type="time": Die Android-Uhrzeitauswahl versteckt bei Samsung im
 // Tastatur-Modus den Knopf "Set". Man tippt "2030" auf der Zahlentastatur, daraus wird 20:30.
-function timeHTML(time, remindMin) {
+function timeHTML(time, remindMin, timeEnd) {
   var selected = remindMin == null ? SOON_DEFAULT : remindMin;
   return '<label class="field"><span>' + t("form.time") + opt() + '</span><input name="time" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="' + esc(t("form.timePh")) + '" value="' + esc(time || "") + '"></label>' +
+    // Endzeit ("bis"), erscheint erst mit einer Uhrzeit
+    '<label class="field" id="timeEndField"' + (time ? "" : " hidden") + '><span>' + t("form.timeEnd") + opt() + '</span><input name="timeEnd" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="' + esc(t("form.timeEndPh")) + '" value="' + esc(timeEnd || "") + '"></label>' +
     '<label class="field" id="soonField"' + (time ? "" : " hidden") + '><span>' + t("form.soon") + '</span><select name="soon">' +
     SOON_VALUES.map(function (v) {
       return '<option value="' + v + '"' + (v === selected ? " selected" : "") + '>' + esc(soonText(v)) + '</option>';
@@ -569,15 +614,29 @@ function parseTime(value) {
 }
 function wireTime(form) {
   var input = form.elements.time;
-  input.addEventListener("input", function () {
-    // Nach vier Ziffern gleich den Doppelpunkt setzen
-    if (/^\d{4}$/.test(input.value) && parseTime(input.value)) input.value = parseTime(input.value);
-    document.getElementById("soonField").hidden = !input.value.trim();
+  [input, form.elements.timeEnd].forEach(function (el) {
+    if (!el) return;
+    el.addEventListener("input", function () {
+      // Nach vier Ziffern gleich den Doppelpunkt setzen
+      if (/^\d{4}$/.test(el.value) && parseTime(el.value)) el.value = parseTime(el.value);
+      document.getElementById("soonField").hidden = !input.value.trim();
+      document.getElementById("timeEndField").hidden = !input.value.trim();
+    });
+    el.addEventListener("blur", function () {
+      var v = parseTime(el.value);
+      if (v) el.value = v;
+    });
   });
-  input.addEventListener("blur", function () {
-    var v = parseTime(input.value);
-    if (v) input.value = v;
-  });
+}
+// Endzeit aus dem Formular: "" (keine), "HH:MM" oder null (mit Fehlermeldung) - muss nach der Uhrzeit liegen
+function readTimeEnd(form) {
+  var start = parseTime(form.elements.time.value), el = form.elements.timeEnd;
+  if (!start || !el) return "";
+  var v = parseTime(el.value);
+  if (v === "") return "";
+  if (v === null) { document.getElementById("err").textContent = t("form.errTime"); return null; }
+  if (v <= start) { document.getElementById("err").textContent = t("form.errTimeEnd"); return null; }
+  return v;
 }
 // Uhrzeit aus dem Formular; null (mit Fehlermeldung), wenn sie nicht stimmt
 function readTime(form) {
@@ -642,7 +701,7 @@ function itemFormHTML(it, opts) {
   return '<form id="frm" novalidate>' + (opts.intro || "") +
     '<label class="field"><span>' + t("form.what") + '</span><input name="title" type="text" value="' + esc(it.title) + '"></label>' +
     '<label class="field"><span>' + (opts.dateLabel || t("form.due")) + '</span><input name="due" type="date" value="' + esc(it.due) + '"></label>' +
-    timeHTML(it.time, it.remindMin) +
+    timeHTML(it.time, it.remindMin, it.timeEnd) +
     repeatHTML(it) +
     leadHTML(it.lead) +
     '<p class="err" id="err"></p><button class="btn" type="submit">' + t("save") + '</button>' + (opts.back || "") + '</form>';
@@ -656,11 +715,14 @@ function readItemForm(form, it) {
   }
   var time = readTime(form);
   if (time === null) return false;
+  var timeEnd = readTimeEnd(form);
+  if (timeEnd === null) return false;
   var rep = readRepeat(form);
   if (!rep) return false;
   it.title = title;
   it.due = due;
   it.time = time;
+  it.timeEnd = time ? timeEnd : "";
   it.remindMin = readSoon(form);
   it.every = rep.every;
   it.everyDays = rep.everyDays;
@@ -764,6 +826,8 @@ function showNew(tid) {
     var it = build(tp, readValues(form, tp), readLead(form, tp.lead));
     if (it) {
       it.time = parseTime(form.elements.time.value) || "";
+      var end = parseTime(form.elements.timeEnd.value);
+      it.timeEnd = it.time && end && end > it.time ? end : "";
       it.remindMin = readSoon(form);
     }
     return it;
@@ -780,9 +844,10 @@ function showNew(tid) {
     if (form.elements.everyN && !readRepeat(form)) return;
     var it = current();
     if (!it) { document.getElementById("err").textContent = t("form.errFields"); return; }
-    if (readTime(form) === null) return;
+    if (readTime(form) === null || readTimeEnd(form) === null) return;
     saving(form, addItem(it), t("saved", { x: remindText(it) }));
   });
+  if (dayPick) prefillDay(tp, form);
   update();
 }
 
@@ -1018,7 +1083,7 @@ document.addEventListener("click", function (e) {
   else if (act === "year") { yearShift = 0; showYear(); }
   else if (act === "ynav") { yearShift += +id; showYear(); }
   else if (act === "yday") showYearDay(id);
-  else if (act === "yadd") addOnDay(id);
+  else if (act === "yadd") addOnDay(id, el.getAttribute("data-time"));
   else if (act === "account" || act === "signin") {
     // data-then="plus": nach dem Sichern bzw. Anmelden geht das Kauf-Fenster wieder auf
     var then = el.getAttribute("data-then") || (accFlow && el.closest("#sheet") ? accFlow.then : "");

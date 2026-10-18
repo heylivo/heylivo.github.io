@@ -106,6 +106,8 @@ main { padding-bottom: 24px; }
 .yd { display: grid; place-items: center; min-width: 0; aspect-ratio: 1; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: 11px; cursor: pointer; }
 .yd.past { border-color: transparent; background: none; color: #b6bdcb; }
 .yd.due { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 800; }
+/* nur Termine mit Uhrzeit: teilweise belegt (hellblau) */
+.yd.part { border-color: #9db6fb; background: #dbe6ff; color: var(--brand-dark); font-weight: 800; }
 .yd.late { border-color: var(--late); background: var(--late); color: #fff; font-weight: 800; }
 .yd.today { box-shadow: inset 0 0 0 2px var(--violet); }
 /* Rahmen nach innen, damit der gewählte Tag nicht über die Nachbarn ragt */
@@ -114,6 +116,8 @@ main { padding-bottom: 24px; }
 .ydetail { position: sticky; bottom: -28px; max-height: 48vh; overflow: auto; margin: 16px -18px -28px; padding: 12px 18px 22px; border-top: 1px solid var(--line); background: #fff; box-shadow: 0 -8px 16px -12px rgba(15,23,42,.25); }
 .ydetail .ydate { margin: 0 0 8px; }
 .ydetail .card { margin-bottom: 6px; }
+.yslots { margin: 4px 0 10px; padding: 0; list-style: none; }
+.yslots li { margin: 0 0 4px; padding: 8px 12px; border: 1px dashed #86efac; border-radius: 10px; background: #ecfdf5; color: #065f46; font-size: 14px; font-weight: 700; }
 .filter-none { margin: 4px 4px 12px; color: var(--muted); font-size: 14px; }
 .sec span { background: var(--now); color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; letter-spacing: 0; }
 .card {
@@ -172,7 +176,7 @@ main { padding-bottom: 24px; }
 .sheet h3 { margin: 4px 0 12px; font-size: 20px; }
 .cat { margin: 14px 0 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .tpls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.tpl { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; text-align: left; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.tpl { hyphens: manual; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; text-align: left; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
 .field { display: grid; gap: 6px; margin: 0 0 12px; font-size: 14px; font-weight: 700; }
 .field i { font-style: normal; font-weight: 400; color: var(--muted); }
 .field input, .field select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px; background: #fff; font: inherit; font-weight: 400; color: inherit; }
@@ -299,5 +303,6 @@ a.brand { color: inherit; text-decoration: none; }
   .ygrid { gap: 3px; }
   .yd { border-color: transparent; background: var(--later-bg); font-size: 10px; letter-spacing: -.02em; }
   .yd.past { background: none; }
+  .yd.part { background: #dbe6ff; }
   .ywd span { font-size: 9px; }
 }

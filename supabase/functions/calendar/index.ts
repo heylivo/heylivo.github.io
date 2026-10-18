@@ -158,13 +158,15 @@ function zonedUtc(date, time, tz) {
   return guess - (shownThere - guess);
 }
 
-// Ein Termin. item: { id, title, due, due_time, tz, lead_days, remind_min }
+// Ein Termin. item: { id, title, due, due_time, due_time_end, tz, lead_days, remind_min }
 function icsEvent(item, lang, stamp, nowMs) {
   const lines = ['BEGIN:VEVENT', 'UID:heylivo-' + item.id + '@heylivo.com', 'DTSTAMP:' + stamp];
   const tz = item.tz || 'Europe/Berlin';
   if (item.due_time) {
     const start = zonedUtc(item.due, item.due_time.slice(0, 5), tz);
-    lines.push('DTSTART:' + icsUtc(start), 'DTEND:' + icsUtc(start + 3600000));
+    // Mit Endzeit (seit 0012_time_end.sql) bis dahin, sonst eine Stunde
+    const end = item.due_time_end ? zonedUtc(item.due, item.due_time_end.slice(0, 5), tz) : 0;
+    lines.push('DTSTART:' + icsUtc(start), 'DTEND:' + icsUtc(end > start ? end : start + 3600000));
   } else {
     lines.push('DTSTART;VALUE=DATE:' + icsDate(item.due), 'DTEND;VALUE=DATE:' + icsDate(addDaysIso(item.due, 1)));
     lines.push('TRANSP:TRANSPARENT');
@@ -262,7 +264,7 @@ Deno.serve(async (request) => {
   }
 
   const { data: rows, error: rowsError } = await supabase.from('deadlines')
-    .select('id, title, due, due_time, tz, lead_days, remind_min')
+    .select('id, title, due, due_time, due_time_end, tz, lead_days, remind_min')
     .eq('user_id', feed.user_id).order('due').limit(500);
   if (rowsError) return new Response('Try again later', { status: 503 });
   return calendarResponse(buildCalendar(feed.lang, rows ?? [], '', now), head);
