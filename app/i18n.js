@@ -144,7 +144,11 @@ var TXT = {
     "how.4t": "Konto sichern", "how.4": "Sichere deine Fristen mit deiner E-Mail-Adresse. Dann sind sie auf jedem Gerät da – du meldest dich mit einem Code an, ohne Passwort.",
     "how.signin": "Schon ein gesichertes Konto? Dann melde dich hier an.",
     "filter.all": "Alle", "filter.week": "7 Tage", "filter.month": "30 Tage", "filter.none": "In den nächsten {n} Tagen ist sonst nichts fällig.", "filter.label": "Filtern",
-    "info.acc": "Konto", "info.cal": "Kalender", "info.push": "Erinnern", "info.plus": "Plus"
+    "info.acc": "Konto", "info.cal": "Kalender", "info.push": "Erinnern", "info.plus": "Plus",
+    "year.btn": "Jahr im Blick", "year.title": "Jahr im Blick", "year.count": "{n} Fristen", "year.count.one": "1 Frist",
+    "year.free": "{n} Tage frei", "year.free.one": "1 Tag frei", "year.dayFree": "Keine Frist – dieser Tag ist frei.", "year.add": "+ Frist an diesem Tag eintragen",
+    "year.legendDue": "Frist", "year.legendLate": "überfällig", "year.legendToday": "heute", "year.legendFree": "frei",
+    "year.hint": "Tippe auf einen Tag."
   },
   en: {
     "q.open": "“", "q.close": "”",
@@ -254,7 +258,11 @@ var TXT = {
     "how.4t": "Secure your account", "how.4": "Secure your deadlines with your email address. Then they're on every device – you sign in with a code, no password.",
     "how.signin": "Already have a secured account? Sign in here.",
     "filter.all": "All", "filter.week": "7 days", "filter.month": "30 days", "filter.none": "Nothing else is due in the next {n} days.", "filter.label": "Filter",
-    "info.acc": "Account", "info.cal": "Calendar", "info.push": "Reminders", "info.plus": "Plus"
+    "info.acc": "Account", "info.cal": "Calendar", "info.push": "Reminders", "info.plus": "Plus",
+    "year.btn": "Year at a glance", "year.title": "Year at a glance", "year.count": "{n} deadlines", "year.count.one": "1 deadline",
+    "year.free": "{n} days free", "year.free.one": "1 day free", "year.dayFree": "No deadlines – this day is free.", "year.add": "+ Add a deadline on this day",
+    "year.legendDue": "Deadline", "year.legendLate": "Overdue", "year.legendToday": "Today", "year.legendFree": "Free",
+    "year.hint": "Tap a day."
   },
   it: {
     "q.open": "“", "q.close": "”",
@@ -364,7 +372,11 @@ var TXT = {
     "how.4t": "Proteggi l'account", "how.4": "Proteggi le tue scadenze con il tuo indirizzo email. Così le ritrovi su ogni dispositivo: accedi con un codice, senza password.",
     "how.signin": "Hai già un account protetto? Accedi qui.",
     "filter.all": "Tutte", "filter.week": "7 giorni", "filter.month": "30 giorni", "filter.none": "Nient'altro in scadenza nei prossimi {n} giorni.", "filter.label": "Filtra",
-    "info.acc": "Account", "info.cal": "Calendario", "info.push": "Promemoria", "info.plus": "Plus"
+    "info.acc": "Account", "info.cal": "Calendario", "info.push": "Promemoria", "info.plus": "Plus",
+    "year.btn": "L'anno in breve", "year.title": "L'anno in breve", "year.count": "{n} scadenze", "year.count.one": "1 scadenza",
+    "year.free": "{n} giorni liberi", "year.free.one": "1 giorno libero", "year.dayFree": "Nessuna scadenza – questo giorno è libero.", "year.add": "+ Aggiungi una scadenza in questo giorno",
+    "year.legendDue": "Scadenza", "year.legendLate": "Scaduta", "year.legendToday": "Oggi", "year.legendFree": "Libero",
+    "year.hint": "Tocca un giorno."
   },
   el: {
     "q.open": "«", "q.close": "»",
@@ -474,7 +486,11 @@ var TXT = {
     "how.4t": "Δημιουργία λογαριασμού", "how.4": "Αποθήκευσε τις προθεσμίες σου με τη διεύθυνση email σου. Έτσι τις έχεις σε κάθε συσκευή – συνδέεσαι με έναν κωδικό, χωρίς συνθηματικό.",
     "how.signin": "Έχεις ήδη λογαριασμό; Συνδέσου εδώ.",
     "filter.all": "Όλες", "filter.week": "7 μέρες", "filter.month": "30 μέρες", "filter.none": "Τίποτα άλλο δεν λήγει τις επόμενες {n} μέρες.", "filter.label": "Φίλτρο",
-    "info.acc": "Λογαριασμός", "info.cal": "Ημερολόγιο", "info.push": "Υπενθύμιση", "info.plus": "Plus"
+    "info.acc": "Λογαριασμός", "info.cal": "Ημερολόγιο", "info.push": "Υπενθύμιση", "info.plus": "Plus",
+    "year.btn": "Η χρονιά", "year.title": "Η χρονιά με μια ματιά", "year.count": "{n} προθεσμίες", "year.count.one": "1 προθεσμία",
+    "year.free": "{n} ελεύθερες μέρες", "year.free.one": "1 ελεύθερη μέρα", "year.dayFree": "Καμία προθεσμία – αυτή η μέρα είναι ελεύθερη.", "year.add": "+ Νέα προθεσμία αυτή τη μέρα",
+    "year.legendDue": "Προθεσμία", "year.legendLate": "Εκπρόθεσμη", "year.legendToday": "Σήμερα", "year.legendFree": "Ελεύθερη",
+    "year.hint": "Πάτησε μια μέρα."
   },
   es: {
     "q.open": "“", "q.close": "”",
@@ -584,7 +600,11 @@ var TXT = {
     "how.4t": "Asegura tu cuenta", "how.4": "Asegura tus plazos con tu correo electrónico. Así los tienes en todos tus dispositivos: inicias sesión con un código, sin contraseña.",
     "how.signin": "¿Ya tienes una cuenta asegurada? Inicia sesión aquí.",
     "filter.all": "Todos", "filter.week": "7 días", "filter.month": "30 días", "filter.none": "No vence nada más en los próximos {n} días.", "filter.label": "Filtrar",
-    "info.acc": "Cuenta", "info.cal": "Calendario", "info.push": "Avisos", "info.plus": "Plus"
+    "info.acc": "Cuenta", "info.cal": "Calendario", "info.push": "Avisos", "info.plus": "Plus",
+    "year.btn": "El año", "year.title": "El año de un vistazo", "year.count": "{n} plazos", "year.count.one": "1 plazo",
+    "year.free": "{n} días libres", "year.free.one": "1 día libre", "year.dayFree": "Sin plazos – este día está libre.", "year.add": "+ Añadir un plazo este día",
+    "year.legendDue": "Plazo", "year.legendLate": "Vencido", "year.legendToday": "Hoy", "year.legendFree": "Libre",
+    "year.hint": "Toca un día."
   },
   fr: {
     "q.open": "« ", "q.close": " »",
@@ -694,7 +714,11 @@ var TXT = {
     "how.4t": "Sécurisez votre compte", "how.4": "Sécurisez vos échéances avec votre adresse e-mail. Vous les retrouvez alors sur tous vos appareils – connexion avec un code, sans mot de passe.",
     "how.signin": "Vous avez déjà un compte sécurisé ? Connectez-vous ici.",
     "filter.all": "Toutes", "filter.week": "7 jours", "filter.month": "30 jours", "filter.none": "Rien d'autre n'arrive à échéance dans les {n} prochains jours.", "filter.label": "Filtrer",
-    "info.acc": "Compte", "info.cal": "Calendrier", "info.push": "Rappels", "info.plus": "Plus"
+    "info.acc": "Compte", "info.cal": "Calendrier", "info.push": "Rappels", "info.plus": "Plus",
+    "year.btn": "L'année", "year.title": "L'année en un coup d'œil", "year.count": "{n} échéances", "year.count.one": "1 échéance",
+    "year.free": "{n} jours libres", "year.free.one": "1 jour libre", "year.dayFree": "Aucune échéance – ce jour est libre.", "year.add": "+ Ajouter une échéance ce jour-là",
+    "year.legendDue": "Échéance", "year.legendLate": "En retard", "year.legendToday": "Aujourd'hui", "year.legendFree": "Libre",
+    "year.hint": "Touchez un jour."
   },
   nl: {
     "q.open": "“", "q.close": "”",
@@ -804,7 +828,11 @@ var TXT = {
     "how.4t": "Account beveiligen", "how.4": "Beveilig je deadlines met je e-mailadres. Dan heb je ze op elk apparaat – je logt in met een code, zonder wachtwoord.",
     "how.signin": "Heb je al een beveiligd account? Log hier in.",
     "filter.all": "Alle", "filter.week": "7 dagen", "filter.month": "30 dagen", "filter.none": "Verder verloopt er niets in de komende {n} dagen.", "filter.label": "Filteren",
-    "info.acc": "Account", "info.cal": "Agenda", "info.push": "Herinneren", "info.plus": "Plus"
+    "info.acc": "Account", "info.cal": "Agenda", "info.push": "Herinneren", "info.plus": "Plus",
+    "year.btn": "Jaaroverzicht", "year.title": "Jaaroverzicht", "year.count": "{n} deadlines", "year.count.one": "1 deadline",
+    "year.free": "{n} dagen vrij", "year.free.one": "1 dag vrij", "year.dayFree": "Geen deadlines – deze dag is vrij.", "year.add": "+ Deadline op deze dag toevoegen",
+    "year.legendDue": "Deadline", "year.legendLate": "Verlopen", "year.legendToday": "Vandaag", "year.legendFree": "Vrij",
+    "year.hint": "Tik op een dag."
   },
   pt: {
     "q.open": "“", "q.close": "”",
@@ -914,7 +942,11 @@ var TXT = {
     "how.4t": "Proteja a sua conta", "how.4": "Proteja os seus prazos com o seu e-mail. Assim tem-nos em todos os dispositivos – inicia sessão com um código, sem palavra-passe.",
     "how.signin": "Já tem uma conta protegida? Inicie sessão aqui.",
     "filter.all": "Todos", "filter.week": "7 dias", "filter.month": "30 dias", "filter.none": "Nada mais vence nos próximos {n} dias.", "filter.label": "Filtrar",
-    "info.acc": "Conta", "info.cal": "Calendário", "info.push": "Lembretes", "info.plus": "Plus"
+    "info.acc": "Conta", "info.cal": "Calendário", "info.push": "Lembretes", "info.plus": "Plus",
+    "year.btn": "O ano", "year.title": "O ano num relance", "year.count": "{n} prazos", "year.count.one": "1 prazo",
+    "year.free": "{n} dias livres", "year.free.one": "1 dia livre", "year.dayFree": "Sem prazos – este dia está livre.", "year.add": "+ Adicionar um prazo neste dia",
+    "year.legendDue": "Prazo", "year.legendLate": "Em atraso", "year.legendToday": "Hoje", "year.legendFree": "Livre",
+    "year.hint": "Toque num dia."
   },
   tr: {
     "q.open": "“", "q.close": "”",
@@ -1024,7 +1056,11 @@ var TXT = {
     "how.4t": "Hesabı güvenceye al", "how.4": "Tarihlerini e-posta adresinle güvenceye al. Böylece her cihazda yanında olurlar – şifre olmadan, bir kodla giriş yaparsın.",
     "how.signin": "Güvenceye alınmış bir hesabın var mı? Buradan giriş yap.",
     "filter.all": "Tümü", "filter.week": "7 gün", "filter.month": "30 gün", "filter.none": "Önümüzdeki {n} günde başka bir şey yok.", "filter.label": "Filtrele",
-    "info.acc": "Hesap", "info.cal": "Takvim", "info.push": "Hatırlatma", "info.plus": "Plus"
+    "info.acc": "Hesap", "info.cal": "Takvim", "info.push": "Hatırlatma", "info.plus": "Plus",
+    "year.btn": "Yıl", "year.title": "Yıla genel bakış", "year.count": "{n} tarih", "year.count.one": "1 tarih",
+    "year.free": "{n} gün boş", "year.free.one": "1 gün boş", "year.dayFree": "Bu günde tarih yok – gün boş.", "year.add": "+ Bu güne tarih ekle",
+    "year.legendDue": "Tarih", "year.legendLate": "Gecikmiş", "year.legendToday": "Bugün", "year.legendFree": "Boş",
+    "year.hint": "Bir güne dokun."
   },
   pl: {
     "q.open": "„", "q.close": "”",
@@ -1136,7 +1172,11 @@ var TXT = {
     "how.4t": "Zabezpiecz konto", "how.4": "Zabezpiecz swoje terminy adresem e-mail. Wtedy masz je na każdym urządzeniu – logujesz się kodem, bez hasła.",
     "how.signin": "Masz już zabezpieczone konto? Zaloguj się tutaj.",
     "filter.all": "Wszystkie", "filter.week": "7 dni", "filter.month": "30 dni", "filter.none": "W ciągu najbliższych {n} dni nic więcej nie mija.", "filter.label": "Filtruj",
-    "info.acc": "Konto", "info.cal": "Kalendarz", "info.push": "Przypomnienia", "info.plus": "Plus"
+    "info.acc": "Konto", "info.cal": "Kalendarz", "info.push": "Przypomnienia", "info.plus": "Plus",
+    "year.btn": "Rok", "year.title": "Rok w skrócie", "year.count": "{n} terminów", "year.count.one": "1 termin",
+    "year.free": "{n} dni wolnych", "year.free.one": "1 dzień wolny", "year.dayFree": "Brak terminów – ten dzień jest wolny.", "year.add": "+ Dodaj termin na ten dzień",
+    "year.legendDue": "Termin", "year.legendLate": "Po terminie", "year.legendToday": "Dziś", "year.legendFree": "Wolny",
+    "year.hint": "Dotknij dnia.", "year.count.few": "{n} terminy", "year.free.few": "{n} dni wolne"
   }
 };
 

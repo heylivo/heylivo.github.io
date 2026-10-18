@@ -244,7 +244,8 @@ function render() {
   var html = (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
     : '<div class="allgood">' + t("allgood") + '</div>');
-  if (later.length) html += laterHTML(later);
+  // Ohne "Alles im Blick" trotzdem der Knopf "Jahr im Blick"
+  html += later.length ? laterHTML(later) : '<div class="sec-row"><div class="filterrow">' + yearBtnHTML() + '</div></div>';
   list.innerHTML = html;
 }
 
@@ -261,9 +262,88 @@ function laterHTML(later) {
     Object.keys(FILTER_DAYS).map(function (f) {
       return '<button type="button" data-act="filter" data-id="' + f + '" aria-pressed="' + (f === listFilter) + '">' + t("filter." + f) + '</button>';
     }).join("") + '</div>';
-  return '<div class="sec-row"><h2 class="sec">' + t("sec.later") + '</h2>' + filter + '</div>' +
+  return '<div class="sec-row"><h2 class="sec">' + t("sec.later") + '</h2><div class="filterrow">' + filter + yearBtnHTML() + '</div></div>' +
     (shown.length ? shown.map(card).join("") : '<p class="filter-none">' + t("filter.none", { n: days }) + '</p>');
 }
+function yearBtnHTML() {
+  // Nur das Kalender-Symbol, im selben Kasten wie die Symbole oben (Konto, Kalender …)
+  return '<button type="button" class="yearbtn info-ico" data-act="year" aria-label="' + esc(t("year.title")) + '" title="' + esc(t("year.title")) + '">' +
+    '<svg viewBox="0 0 24 24">' + INFO_SVG.cal + '</svg></button>';
+}
+
+/* ---------- Jahr im Blick ---------- */
+// 12 Monate ab diesem Monat (mit ‹ › um je 12 Monate weiter). Tage mit Fristen sind farbig, freie Tage weiß;
+// wiederkehrende Fristen erscheinen an jedem Termin. Ein Tipp auf einen Tag zeigt unten seine Fristen
+// bzw. bei einem freien Tag "+ Frist an diesem Tag eintragen".
+var yearShift = 0;
+function occurrences(from, to) {
+  var map = {};
+  items.forEach(function (it) {
+    for (var d = fromISO(it.due), n = 0; d <= to && n < 400; n++) {
+      if (d >= from) (map[toISO(d)] = map[toISO(d)] || []).push(it);
+      if (!repeats(it)) break;
+      d = nextRepeat(d, it);
+    }
+  });
+  return map;
+}
+function showYear() {
+  var t0 = today(), todayIso = toISO(t0);
+  var start = addMonths(new Date(t0.getFullYear(), t0.getMonth(), 1), yearShift), end = addDays(addMonths(start, 12), -1);
+  var occ = occurrences(start, end);
+  var monthFmt = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric" });
+  var shortFmt = new Intl.DateTimeFormat(LOCALE, { month: "short", year: "numeric" });
+  var wdFmt = new Intl.DateTimeFormat(LOCALE, { weekday: "narrow" });
+  // Wochentage ab Montag (5.1.2026 ist ein Montag)
+  var wds = [0, 1, 2, 3, 4, 5, 6].map(function (i) { return '<span>' + esc(wdFmt.format(new Date(2026, 0, 5 + i))) + '</span>'; }).join("");
+  var months = "";
+  for (var m = 0; m < 12; m++) {
+    var first = addMonths(start, m), days = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+    var cells = "", count = 0, free = 0;
+    for (var e = 0; e < (first.getDay() + 6) % 7; e++) cells += '<span></span>';
+    for (var day = 1; day <= days; day++) {
+      var iso = toISO(new Date(first.getFullYear(), first.getMonth(), day)), list = occ[iso] || [];
+      count += list.length;
+      if (!list.length && iso >= todayIso) free++;
+      var cls = "yd" + (list.length ? (iso < todayIso ? " late" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "");
+      cells += '<button type="button" class="' + cls + '" data-act="yday" data-id="' + iso + '">' + day + '</button>';
+    }
+    months += '<div class="ymonth"><h4>' + esc(monthFmt.format(first)) + '</h4>' +
+      '<p class="ysum">' + (count ? t("year.count", { n: count }) + " · " : "") + t("year.free", { n: free }) + '</p>' +
+      '<div class="ygrid ywd">' + wds + '</div><div class="ygrid">' + cells + '</div></div>';
+  }
+  openSheet('<h3>' + esc(t("year.title")) + '</h3>' +
+    '<div class="ynav"><button type="button" class="linkbtn plain" data-act="ynav" data-id="-12" aria-label="‹">‹</button>' +
+    '<b>' + esc(shortFmt.format(start)) + ' – ' + esc(shortFmt.format(end)) + '</b>' +
+    '<button type="button" class="linkbtn plain" data-act="ynav" data-id="12" aria-label="›">›</button></div>' +
+    '<p class="ylegend"><span class="yd due"></span>' + esc(t("year.legendDue")) + '<span class="yd late"></span>' + esc(t("year.legendLate")) +
+    '<span class="yd today"></span>' + esc(t("year.legendToday")) + '<span class="yd"></span>' + esc(t("year.legendFree")) + '</p>' +
+    '<div class="ymonths">' + months + '</div>' +
+    '<div class="ydetail" id="ydetail"><p class="muted">' + esc(t("year.hint")) + '</p>' +
+    '<button type="button" class="btn light" data-act="close">OK</button></div>');
+  showYear.occ = occ;
+}
+function showYearDay(iso) {
+  var box = document.getElementById("ydetail"), list = (showYear.occ || {})[iso] || [];
+  document.querySelectorAll(".yd.sel").forEach(function (b) { b.classList.remove("sel"); });
+  var btn = document.querySelector('.yd[data-id="' + iso + '"]');
+  if (btn) btn.classList.add("sel");
+  var wd = new Intl.DateTimeFormat(LOCALE, { weekday: "long" }).format(fromISO(iso));
+  box.innerHTML = '<p class="ydate"><b>' + esc(wd.charAt(0).toLocaleUpperCase(LOCALE) + wd.slice(1) + ", " + fmt(fromISO(iso))) + '</b></p>' +
+    (list.length ? list.map(card).join("")
+      : '<p class="muted">' + esc(t("year.dayFree")) + '</p>' +
+        (canEdit() && iso >= toISO(today()) ? '<button type="button" class="btn" data-act="yadd" data-id="' + iso + '">' + esc(t("year.add")) + '</button>' : "")) +
+    '<button type="button" class="btn light" data-act="close">OK</button>';
+}
+// Neue eigene Frist mit dem gewählten Tag als Datum
+function addOnDay(iso) {
+  showNew("eigene");
+  var form = document.getElementById("frm");
+  if (!form || !form.elements.date) return;
+  form.elements.date.value = iso;
+  ["input", "change"].forEach(function (ev) { form.elements.date.dispatchEvent(new Event(ev, { bubbles: true })); });
+}
+
 function setFilter(f) {
   listFilter = FILTER_DAYS[f] != null ? f : "all";
   try { localStorage.setItem("livo.filter", listFilter); } catch (e) {}
@@ -932,6 +1012,10 @@ document.addEventListener("click", function (e) {
   else if (act === "howto") showHowto();
   else if (act === "filter") setFilter(id);
   else if (act === "info") setInfoTab(id);
+  else if (act === "year") { yearShift = 0; showYear(); }
+  else if (act === "ynav") { yearShift += +id; showYear(); }
+  else if (act === "yday") showYearDay(id);
+  else if (act === "yadd") addOnDay(id);
   else if (act === "account" || act === "signin") {
     // data-then="plus": nach dem Sichern bzw. Anmelden geht das Kauf-Fenster wieder auf
     var then = el.getAttribute("data-then") || (accFlow && el.closest("#sheet") ? accFlow.then : "");
@@ -1040,6 +1124,7 @@ async function start() {
   else if (show === "account") showAccount();
   else if (show === "signin") showAccount("signin");
   else if (show === "howto") showHowto();
+  else if (show === "year") showYear();
   else if (show === "plus") showPlus(); // "Jetzt starten" bei Livo Plus auf der Website
 }
 start();

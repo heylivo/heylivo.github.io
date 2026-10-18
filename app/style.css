@@ -87,6 +87,31 @@ main { padding-bottom: 24px; }
 .filter { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--later-bg); }
 .filter button { padding: 5px 10px; border: 0; border-radius: 8px; background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
 .filter [aria-pressed="true"] { background: #fff; color: var(--brand); box-shadow: 0 1px 3px rgba(15,23,42,.12); }
+/* Filter und daneben "Jahr im Blick" */
+.filterrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.yearbtn { cursor: pointer; }
+/* Jahr im Blick: 12 Monatskalender, Tage mit Fristen farbig, freie Tage weiß */
+.ynav { display: flex; align-items: center; justify-content: space-between; margin: -4px 0 8px; font-size: 15px; }
+.ynav b { text-transform: capitalize; }
+.ynav .linkbtn { padding: 4px 12px; font-size: 22px; line-height: 1; }
+.ylegend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+.ylegend .yd { width: 14px; height: 14px; margin-left: 6px; }
+.ylegend .yd:first-child { margin-left: 0; }
+.ymonths { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px 12px; }
+.ymonth h4 { margin: 0; font-size: 14px; text-transform: capitalize; }
+.ysum { margin: 1px 0 6px; color: var(--muted); font-size: 11.5px; }
+.ygrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.ywd span { color: var(--muted); font-size: 10px; font-weight: 700; text-align: center; }
+.yd { display: grid; place-items: center; min-width: 0; aspect-ratio: 1; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: 11px; cursor: pointer; }
+.yd.past { border-color: transparent; background: none; color: #b6bdcb; }
+.yd.due { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 800; }
+.yd.late { border-color: var(--late); background: var(--late); color: #fff; font-weight: 800; }
+.yd.today { box-shadow: 0 0 0 2px var(--violet); }
+.yd.sel { box-shadow: 0 0 0 2px var(--ink); }
+/* unten im Fenster fest: der gewählte Tag */
+.ydetail { position: sticky; bottom: -28px; max-height: 48vh; overflow: auto; margin: 16px -18px -28px; padding: 12px 18px 22px; border-top: 1px solid var(--line); background: #fff; box-shadow: 0 -8px 16px -12px rgba(15,23,42,.25); }
+.ydetail .ydate { margin: 0 0 8px; }
+.ydetail .card { margin-bottom: 6px; }
 .filter-none { margin: 4px 4px 12px; color: var(--muted); font-size: 14px; }
 .sec span { background: var(--now); color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; letter-spacing: 0; }
 .card {
@@ -264,4 +289,13 @@ a.brand { color: inherit; text-decoration: none; }
   .card .ico { grid-row: span 2; width: 38px; height: 38px; font-size: 19px; }
   .card .txt b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .card .pill { grid-column: 2; justify-self: start; padding: 3px 9px; }
+}
+
+/* Jahr im Blick am Handy: Tage ohne Rahmen und kleinere Zahlen, damit zwei Monate nebeneinander passen */
+@media (max-width: 420px) {
+  .ymonths { gap: 14px 10px; }
+  .ygrid { gap: 1px; }
+  .yd { border-color: transparent; background: var(--later-bg); font-size: 10px; letter-spacing: -.02em; }
+  .yd.past { background: none; }
+  .ywd span { font-size: 9px; }
 }
