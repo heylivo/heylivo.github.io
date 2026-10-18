@@ -1071,9 +1071,11 @@ document.addEventListener("click", function (e) {
     });
     return;
   }
-  // Ausschalten nur über den Link unter der Glocke, mit Rückfrage
-  if (act === "pushoff") {
-    if (!confirm(t("push.offConfirm"))) return;
+  // Ausschalten über die Glocke (wenn sie an sind) oder den Link darunter - immer mit Rückfrage
+  if (act === "pushoff" || (act === "info" && id === "push" && pushState === "on")) {
+    if (act === "info") infoTab = "push";
+    // Abbrechen: an bleibt an, unter der Glocke steht dann "Erinnerungen sind an"
+    if (!confirm(t("push.offConfirm"))) { if (act === "info") document.getElementById("status").innerHTML = infoHTML(); return; }
     el.disabled = true;
     disablePush().then(function (ok) {
       render();
