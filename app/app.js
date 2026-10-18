@@ -1058,7 +1058,9 @@ document.addEventListener("click", function (e) {
   if (act === "calendar") return showPlus("calendar");
   if (act === "plus" || (changes && !canEdit())) return showPlus();
   if (el.hasAttribute("data-tpl")) return showNew(el.getAttribute("data-tpl"));
-  if (act === "push") {
+  // Erinnerungen einschalten: über die Karte oder direkt über das Glockensymbol, wenn sie aus sind
+  if (act === "push" || (act === "info" && id === "push" && pushState === "off")) {
+    if (act === "info") infoTab = "push";
     el.disabled = true;
     enablePush().then(function (ok) {
       render();
@@ -1066,6 +1068,16 @@ document.addEventListener("click", function (e) {
     }, function () {
       render();
       toast(t("toast.retry"));
+    });
+    return;
+  }
+  // Ausschalten nur über den Link unter der Glocke, mit Rückfrage
+  if (act === "pushoff") {
+    if (!confirm(t("push.offConfirm"))) return;
+    el.disabled = true;
+    disablePush().then(function (ok) {
+      render();
+      toast(ok ? t("toast.pushOffDone") : t("toast.retry"));
     });
     return;
   }

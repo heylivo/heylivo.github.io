@@ -92,6 +92,21 @@ async function enablePush() {
   return true;
 }
 
+// Erinnerungen auf diesem Gerät aus: Abo aus der Datenbank löschen (eigene Zeile, RLS) und im Browser kündigen
+async function disablePush() {
+  try {
+    var reg = swReg || (await navigator.serviceWorker.getRegistration());
+    var sub = reg && (await reg.pushManager.getSubscription());
+    if (sub) {
+      var r = await sb.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+      if (r.error) return false;
+      await sub.unsubscribe();
+    }
+  } catch (e) { return false; }
+  pushState = "off";
+  return true;
+}
+
 // Eine erste Nachricht sofort, damit man sieht, dass es klappt
 async function sendTestPush() {
   try {
@@ -116,6 +131,6 @@ function pushHTML() {
   if (pushState === "ios-install") return '<div class="pushinfo">' + t("push.ios") + '</div>';
   if (pushState === "blocked") return '<div class="pushinfo">' + t("push.blocked") + '</div>';
   if (pushState === "unsupported") return '<div class="pushinfo">' + t("push.unsupported") + '</div>';
-  if (pushState === "on") return '<p class="quota">' + t("push.on") + '</p>';
+  if (pushState === "on") return '<p class="quota">' + t("push.on") + ' · <button type="button" class="linkbtn" data-act="pushoff">' + t("push.turnOff") + '</button></p>';
   return "";
 }
