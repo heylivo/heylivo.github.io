@@ -2,8 +2,10 @@
 // Google, Apple und Outlook holen https://<projekt>.supabase.co/functions/v1/calendar/<token>.ics
 // regelmäßig ab. Der Token ist geheim (Tabelle calendar_feeds, 0010_calendar.sql); die App
 // holt ihn über calendar_feed() und zeigt die Abo-Knöpfe nur mit Livo Plus.
-// - Pro Frist ein Termin am nächsten Fälligkeitstag, ohne Wiederholungsregel: Kopiert jemand
-//   einen Termin in einen anderen Kalender, wiederholt er sich dort nicht für immer.
+// - Pro Frist ein Termin am nächsten Fälligkeitstag; wiederkehrende Fristen zusätzlich an jeder
+//   Wiederholung der nächsten 2 Jahre, gerechnet wie "Jahr im Blick" in der App (withRepeats).
+//   Einzelne Termine statt Wiederholungsregel: Kopiert jemand einen Termin in einen anderen
+//   Kalender, wiederholt er sich dort nicht für immer.
 // - Ohne aktives Livo Plus kommt ein gültiger, leerer Kalender (Google behält bei Fehlern die
 //   alten Termine), nach einem Kauf ein einzelner Hinweis "Livo Plus ist abgelaufen".
 // - /calendar/demo-de.ics (de, en, …) liefert Beispiel-Fristen ohne Datenbank, zum Ausprobieren.
@@ -143,6 +145,36 @@ function addDaysIso(iso, days) {
   return t.getUTCFullYear() + '-' + pad2(t.getUTCMonth() + 1) + '-' + pad2(t.getUTCDate());
 }
 
+// Monate wie addMonths in app.js: 31.01. + 1 Monat = 28.02. (nicht 03.03.)
+function addMonthsIso(iso, months) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const first = new Date(Date.UTC(y, m - 1 + months, 1));
+  const last = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate();
+  return first.getUTCFullYear() + '-' + pad2(first.getUTCMonth() + 1) + '-' + pad2(Math.min(d, last));
+}
+
+// Wiederholungen wie occurrences()/nextRepeat() in app.js ("Jahr im Blick"): ab dem Fälligkeitstag
+// jede weitere bis 2 Jahre nach heute, höchstens 400 Termine je Frist (wie in der App) und
+// 3000 zusätzliche insgesamt. Jede Wiederholung bekommt eine eigene UID (repeat = true).
+const REPEAT_DAYS = 730, REPEAT_MAX = 400, REPEAT_TOTAL = 3000;
+function withRepeats(rows, todayIso) {
+  const until = addDaysIso(todayIso, REPEAT_DAYS);
+  const out = rows.slice();
+  let total = 0;
+  rows.forEach((item) => {
+    const everyDays = Number(item.every_days) || 0, everyMonths = Number(item.every_months) || 0;
+    if (everyDays <= 0 && everyMonths <= 0) return;
+    let due = item.due;
+    for (let n = 1; n < REPEAT_MAX && total < REPEAT_TOTAL; n++) {
+      due = everyDays > 0 ? addDaysIso(due, everyDays) : addMonthsIso(due, everyMonths);
+      if (due > until) break;
+      out.push(Object.assign({}, item, { due: due, repeat: true }));
+      total++;
+    }
+  });
+  return out;
+}
+
 // Datum + Uhrzeit in einer Zeitzone als UTC-Millisekunden (wie zonedToUtc in send-reminders)
 function zonedUtc(date, time, tz) {
   const [y, m, d] = date.split('-').map(Number);
@@ -158,9 +190,10 @@ function zonedUtc(date, time, tz) {
   return guess - (shownThere - guess);
 }
 
-// Ein Termin. item: { id, title, due, due_time, due_time_end, tz, lead_days, remind_min }
+// Ein Termin. item: { id, title, due, due_time, due_time_end, tz, lead_days, remind_min, repeat }
 function icsEvent(item, lang, stamp, nowMs) {
-  const lines = ['BEGIN:VEVENT', 'UID:heylivo-' + item.id + '@heylivo.com', 'DTSTAMP:' + stamp];
+  const uid = 'heylivo-' + item.id + (item.repeat ? '-' + icsDate(item.due) : '') + '@heylivo.com';
+  const lines = ['BEGIN:VEVENT', 'UID:' + uid, 'DTSTAMP:' + stamp];
   const tz = item.tz || 'Europe/Berlin';
   if (item.due_time) {
     const start = zonedUtc(item.due, item.due_time.slice(0, 5), tz);
@@ -206,7 +239,8 @@ function buildCalendar(lang, events, expiredOn, nowMs) {
   return lines.map(icsFold).join('\r\n') + '\r\n';
 }
 
-// Beispiel-Kalender ab heute: Ausweis in 58 Tagen, TÜV Monatsende in 7 Monaten, Zahnarzt in 31 Tagen um 10:00, Handyvertrag in 40 Tagen
+// Beispiel-Kalender ab heute: Ausweis in 58 Tagen, TÜV Monatsende in 7 Monaten, Zahnarzt in 31 Tagen um 10:00
+// (alle 6 Monate, zeigt die Wiederholungen), Handyvertrag in 40 Tagen
 function demoEvents(lang, todayIso) {
   const titles = ICS_TEXT[icsLang(lang)].demo;
   const tuev = addDaysIso(todayIso, 210).slice(0, 8) + '01';
@@ -214,7 +248,7 @@ function demoEvents(lang, todayIso) {
   return [
     { id: 'demo-ausweis', title: titles[0], due: addDaysIso(todayIso, 58), due_time: null, tz: 'Europe/Berlin', lead_days: 90 },
     { id: 'demo-tuev', title: titles[1], due: tuevEnd, due_time: null, tz: 'Europe/Berlin', lead_days: 30 },
-    { id: 'demo-zahnarzt', title: titles[2], due: addDaysIso(todayIso, 31), due_time: '10:00', tz: 'Europe/Berlin', lead_days: 14, remind_min: 60 },
+    { id: 'demo-zahnarzt', title: titles[2], due: addDaysIso(todayIso, 31), due_time: '10:00', tz: 'Europe/Berlin', lead_days: 14, remind_min: 60, every_months: 6 },
     { id: 'demo-handy', title: titles[3], due: addDaysIso(todayIso, 40), due_time: null, tz: 'Europe/Berlin', lead_days: 45 }
   ];
 }
@@ -247,7 +281,7 @@ Deno.serve(async (request) => {
   const demo = /^demo(?:-([a-z]{2}))?$/.exec(name);
   if (demo) {
     const lang = demo[1] || 'de';
-    return calendarResponse(buildCalendar(lang, demoEvents(lang, today), '', now), head);
+    return calendarResponse(buildCalendar(lang, withRepeats(demoEvents(lang, today), today), '', now), head);
   }
   if (!TOKEN.test(name)) return new Response('Unknown calendar', { status: 404 });
 
@@ -264,8 +298,8 @@ Deno.serve(async (request) => {
   }
 
   const { data: rows, error: rowsError } = await supabase.from('deadlines')
-    .select('id, title, due, due_time, due_time_end, tz, lead_days, remind_min')
+    .select('id, title, due, due_time, due_time_end, tz, lead_days, remind_min, every_months, every_days')
     .eq('user_id', feed.user_id).order('due').limit(500);
   if (rowsError) return new Response('Try again later', { status: 503 });
-  return calendarResponse(buildCalendar(feed.lang, rows ?? [], '', now), head);
+  return calendarResponse(buildCalendar(feed.lang, withRepeats(rows ?? [], today), '', now), head);
 });
