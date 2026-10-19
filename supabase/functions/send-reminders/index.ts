@@ -421,7 +421,7 @@ async function runReminders() {
 // nach einem ausgefallenen Lauf nur die aktuelle. Wer Livo Plus hat, bekommt nichts. Erreicht
 // weder Push noch E-Mail jemanden, wird nichts abgehakt - der Hinweis kommt, sobald Push an ist.
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
-const MAIL_FROM = 'Livo <hallo@heylivo.com>';
+const MAIL_FROM = 'heylivo <hallo@heylivo.com>';
 const MAIL_REPLY_TO = 'hallo@heylivo.com';
 const PLUS_URL = `${APP_URL}?show=plus`;
 const NOTICE_DAYS_BEFORE = 7;
