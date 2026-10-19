@@ -154,6 +154,11 @@
 
   .soft { background: var(--soft); }
 
+  /* Video in Handy-Größe (stumm, in Schleife) */
+  .vid { width: min(300px, 78vw); aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 28px; overflow: hidden; background: var(--lav); box-shadow: 0 30px 60px -28px rgba(48,98,249,.45); }
+  .vid video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .vidnote { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+
   /* Preise */
   .center { text-align: center; }
   .center .sub { margin-left: auto; margin-right: auto; }
@@ -350,6 +355,16 @@
       </div>
     </div>
   </div>
+
+  <section class="center" id="video">
+    <div class="wrap">
+      <p class="eyebrow">In 10 Sekunden</p>
+      <h2>Du sagst: später. <em class="grad-text">heylivo erinnert dich.</em></h2>
+      <p class="sub">Ausweis, TÜV, Zahnarzt, Handyvertrag – Livo meldet sich rechtzeitig auf deinem Handy.</p>
+      <div class="vid"><video src="media/heylivo-erklaert.mp4" poster="media/heylivo-erklaert.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Kurzes Video: heylivo zeigt deine Fristen und erinnert dich rechtzeitig"></video></div>
+      <p class="vidnote">KI-generiertes Video</p>
+    </div>
+  </section>
 
   <section class="center soft" id="preise">
     <div class="wrap">
