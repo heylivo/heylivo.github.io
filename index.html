@@ -55,6 +55,11 @@
   .logo img { width: 36px; height: 36px; }
   .wm { font-size: 24px; font-weight: 800; letter-spacing: -.03em; }
   .wm span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  /* "heylivo" im Text wie das Logo: hey dunkel, livo im Verlauf, aufrecht */
+  .wm-inline { font-style: normal; letter-spacing: -.03em; white-space: nowrap; }
+  .wm-inline span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: .14em; }
+  /* schräger Verlaufstext: letzten Buchstaben nicht abschneiden */
+  #video .grad-text { padding-right: .12em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
   .right { display: flex; align-items: center; gap: 12px; }
   /* Sprache: am Computer zwei getrennte Knöpfe, am Handy ein Aufklappmenü */
   .langs { display: flex; gap: 6px; }
@@ -157,7 +162,8 @@
   /* Video in Handy-Größe (stumm, in Schleife) */
   .vid { width: min(300px, 78vw); aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 28px; overflow: hidden; background: var(--lav); box-shadow: 0 30px 60px -28px rgba(48,98,249,.45); }
   .vid video { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .vidnote { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+  /* KI-Hinweis dezent unter dem Video (Kennzeichnung nach KI-Verordnung, Art. 50) */
+  .vidnote { margin: 8px 0 0; color: #a3abbb; font-size: 11px; letter-spacing: .02em; }
 
   /* Preise */
   .center { text-align: center; }
@@ -359,10 +365,10 @@
   <section class="center" id="video">
     <div class="wrap">
       <p class="eyebrow">In 10 Sekunden</p>
-      <h2>Du sagst: später. <em class="grad-text">heylivo erinnert dich.</em></h2>
+      <h2>Du sagst: später. <span class="wm-inline">hey<span>livo</span></span> <em class="grad-text">erinnert dich.</em></h2>
       <p class="sub">Ausweis, TÜV, Zahnarzt, Handyvertrag – Livo meldet sich rechtzeitig auf deinem Handy.</p>
       <div class="vid"><video src="media/heylivo-erklaert.mp4" poster="media/heylivo-erklaert.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Kurzes Video: heylivo zeigt deine Fristen und erinnert dich rechtzeitig"></video></div>
-      <p class="vidnote">KI-generiertes Video</p>
+      <p class="vidnote">KI-generiert</p>
     </div>
   </section>
 
