@@ -1,0 +1,53 @@
+name: Promo Reels
+
+# Posts the promo videos from automation/promo/promo.csv to the heylivo Instagram account,
+# one per run on its date (python automation/post_promo.py), with the AI label where KI = ja.
+# The daily calendar post (daily-post.yml) is not affected; both share one concurrency group,
+# so they never post at the same time.
+
+on:
+  schedule:
+    # 10:00 UTC = 12:00 in Germany, 13:00 in Greece (GitHub may start it later)
+    - cron: "0 10 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "automation/promo/promo.csv"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests==2.32.3
+
+      - name: Post the Reel that is due
+        working-directory: automation
+        env:
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: python post_promo.py
+
+      - name: Remember what was posted
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add automation/promo/promo.csv
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: promo Reel posted"
+          git pull --rebase
+          git push
