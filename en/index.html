@@ -152,6 +152,11 @@
 
   .soft { background: var(--soft); }
 
+  /* Video in phone size (muted, looping) */
+  .vid { width: min(300px, 78vw); aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 28px; overflow: hidden; background: var(--lav); box-shadow: 0 30px 60px -28px rgba(48,98,249,.45); }
+  .vid video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .vidnote { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+
   /* Preise */
   .center { text-align: center; }
   .center .sub { margin-left: auto; margin-right: auto; }
@@ -348,6 +353,16 @@
       </div>
     </div>
   </div>
+
+  <section class="center" id="video">
+    <div class="wrap">
+      <p class="eyebrow">In 10 seconds</p>
+      <h2>You say: later. <em class="grad-text">heylivo reminds you.</em></h2>
+      <p class="sub">ID card, car inspection, dentist, phone contract – Livo reminds you on your phone in time.</p>
+      <div class="vid"><video src="../media/heylivo-explained.mp4" poster="../media/heylivo-explained.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Short video: heylivo shows your deadlines and reminds you in time"></video></div>
+      <p class="vidnote">AI-generated video</p>
+    </div>
+  </section>
 
   <section class="center soft" id="pricing">
     <div class="wrap">
