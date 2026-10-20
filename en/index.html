@@ -157,9 +157,11 @@
 
   .soft { background: var(--soft); }
 
-  /* Video in phone size (muted, looping) */
-  .vid { width: min(300px, 78vw); aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 28px; overflow: hidden; background: var(--lav); box-shadow: 0 30px 60px -28px rgba(48,98,249,.45); }
+  /* Video in phone size (starts muted and looping, sound via button - browsers only autoplay muted) */
+  .vid { position: relative; width: min(300px, 78vw); aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 28px; overflow: hidden; background: var(--lav); box-shadow: 0 30px 60px -28px rgba(48,98,249,.45); }
   .vid video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .vidsound { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 9px 16px; border: 0; border-radius: 999px; background: rgba(11,20,32,.62); color: #fff; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .vidsound:hover { background: rgba(11,20,32,.78); }
   /* KI-Hinweis dezent unter dem Video (Kennzeichnung nach KI-Verordnung, Art. 50) */
   .vidnote { margin: 8px 0 0; color: #a3abbb; font-size: 11px; letter-spacing: .02em; }
 
@@ -365,8 +367,8 @@
       <p class="eyebrow">In 10 seconds</p>
       <h2>You say: later. <span class="wm-inline">hey<span>livo</span></span> <em class="grad-text">reminds you.</em></h2>
       <p class="sub">ID card, car inspection, dentist, phone contract – Livo reminds you on your phone in time.</p>
-      <div class="vid"><video src="../media/heylivo-explained.mp4" poster="../media/heylivo-explained.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Short video: heylivo shows your deadlines and reminds you in time"></video></div>
-      <p class="vidnote">AI-generated</p>
+      <div class="vid"><video src="../media/heylivo-explained.mp4" poster="../media/heylivo-explained.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Short video: heylivo shows your deadlines and reminds you in time"></video><button type="button" class="vidsound" aria-pressed="false" data-on="🔇 Sound off" data-off="🔊 Sound on">🔊 Sound on</button></div>
+      <p class="vidnote">AI-generated · Music: “Wallpaper” by Kevin MacLeod (incompetech.com), CC BY 4.0</p>
     </div>
   </section>
 
@@ -464,6 +466,18 @@
     var dd = document.querySelector(".langdd");
     document.addEventListener("click", function (e) { if (dd.open && !dd.contains(e.target)) dd.open = false; });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") dd.open = false; });
+  })();
+  // Video: sound on/off via button; switching it on restarts the video so you hear the beginning
+  (function () {
+    var v = document.querySelector(".vid video"), b = document.querySelector(".vidsound");
+    if (!v || !b) return;
+    b.addEventListener("click", function () {
+      var on = v.muted;
+      v.muted = !on;
+      if (on) { v.currentTime = 0; v.play(); }
+      b.textContent = b.getAttribute(on ? "data-on" : "data-off");
+      b.setAttribute("aria-pressed", on);
+    });
   })();
 </script>
 </body>

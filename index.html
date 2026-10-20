@@ -159,9 +159,11 @@
 
   .soft { background: var(--soft); }
 
-  /* Video in Handy-Größe (stumm, in Schleife) */
-  .vid { width: min(300px, 78vw); aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 28px; overflow: hidden; background: var(--lav); box-shadow: 0 30px 60px -28px rgba(48,98,249,.45); }
+  /* Video in Handy-Größe (startet stumm in Schleife, Ton per Knopf - Browser spielen nur stumm automatisch ab) */
+  .vid { position: relative; width: min(300px, 78vw); aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 28px; overflow: hidden; background: var(--lav); box-shadow: 0 30px 60px -28px rgba(48,98,249,.45); }
   .vid video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .vidsound { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 9px 16px; border: 0; border-radius: 999px; background: rgba(11,20,32,.62); color: #fff; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .vidsound:hover { background: rgba(11,20,32,.78); }
   /* KI-Hinweis dezent unter dem Video (Kennzeichnung nach KI-Verordnung, Art. 50) */
   .vidnote { margin: 8px 0 0; color: #a3abbb; font-size: 11px; letter-spacing: .02em; }
 
@@ -367,8 +369,8 @@
       <p class="eyebrow">In 10 Sekunden</p>
       <h2>Du sagst: später. <span class="wm-inline">hey<span>livo</span></span> <em class="grad-text">erinnert dich.</em></h2>
       <p class="sub">Ausweis, TÜV, Zahnarzt, Handyvertrag – Livo meldet sich rechtzeitig auf deinem Handy.</p>
-      <div class="vid"><video src="media/heylivo-erklaert.mp4" poster="media/heylivo-erklaert.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Kurzes Video: heylivo zeigt deine Fristen und erinnert dich rechtzeitig"></video></div>
-      <p class="vidnote">KI-generiert</p>
+      <div class="vid"><video src="media/heylivo-erklaert.mp4" poster="media/heylivo-erklaert.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Kurzes Video: heylivo zeigt deine Fristen und erinnert dich rechtzeitig"></video><button type="button" class="vidsound" aria-pressed="false" data-on="🔇 Ton aus" data-off="🔊 Ton an">🔊 Ton an</button></div>
+      <p class="vidnote">KI-generiert · Musik: „Wallpaper“ von Kevin MacLeod (incompetech.com), CC BY 4.0</p>
     </div>
   </section>
 
@@ -467,6 +469,18 @@
     var dd = document.querySelector(".langdd");
     document.addEventListener("click", function (e) { if (dd.open && !dd.contains(e.target)) dd.open = false; });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") dd.open = false; });
+  })();
+  // Video: Ton an/aus per Knopf; beim Einschalten von vorn, damit man den Anfang hört
+  (function () {
+    var v = document.querySelector(".vid video"), b = document.querySelector(".vidsound");
+    if (!v || !b) return;
+    b.addEventListener("click", function () {
+      var on = v.muted;
+      v.muted = !on;
+      if (on) { v.currentTime = 0; v.play(); }
+      b.textContent = b.getAttribute(on ? "data-on" : "data-off");
+      b.setAttribute("aria-pressed", on);
+    });
   })();
 </script>
 </body>
