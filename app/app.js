@@ -292,6 +292,10 @@ function occurrences(from, to) {
 }
 function showYear() {
   var t0 = today(), todayIso = toISO(t0);
+  // Testphase vorbei, kein Plus: Kalender nur verschwommen, darüber die Zahl der kommenden Fristen und das
+  // Plus-Angebot. Die Fristen selbst stehen weiter lesbar in der Liste (so versprochen in App und Mails).
+  var locked = !canEdit(), upcoming = 0;
+  if (locked) yearShift = 0;
   var start = addMonths(new Date(t0.getFullYear(), t0.getMonth(), 1), yearShift), end = addDays(addMonths(start, 12), -1);
   var occ = occurrences(start, end);
   var monthFmt = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric" });
@@ -307,6 +311,7 @@ function showYear() {
     for (var day = 1; day <= days; day++) {
       var iso = toISO(new Date(first.getFullYear(), first.getMonth(), day)), list = occ[iso] || [];
       count += list.length;
+      if (iso >= todayIso) upcoming += list.length;
       if (!list.length && iso >= todayIso) free++;
       // nur Termine mit Uhrzeit = teilweise belegt (hellblau), sonst ganztägig belegt (blau)
       var partly = list.length && list.every(function (it) { return it.time; });
@@ -317,17 +322,24 @@ function showYear() {
       '<p class="ysum">' + (count ? t("year.count", { n: count }) + " · " : "") + t("year.free", { n: free }) + '</p>' +
       '<div class="ygrid ywd">' + wds + '</div><div class="ygrid">' + cells + '</div></div>';
   }
+  var range = '<b>' + esc(shortFmt.format(start)) + ' – ' + esc(shortFmt.format(end)) + '</b>';
   openSheet('<h3>' + esc(t("year.title")) + '</h3>' +
-    '<div class="ynav"><button type="button" class="linkbtn plain" data-act="ynav" data-id="-12" aria-label="‹">‹</button>' +
-    '<b>' + esc(shortFmt.format(start)) + ' – ' + esc(shortFmt.format(end)) + '</b>' +
-    '<button type="button" class="linkbtn plain" data-act="ynav" data-id="12" aria-label="›">›</button></div>' +
+    (locked ? '<div class="ynav"><span></span>' + range + '<span></span></div>'
+      : '<div class="ynav"><button type="button" class="linkbtn plain" data-act="ynav" data-id="-12" aria-label="‹">‹</button>' + range +
+        '<button type="button" class="linkbtn plain" data-act="ynav" data-id="12" aria-label="›">›</button></div>') +
     // Punkt und Wort bleiben zusammen (sonst rutscht beim Umbruch z. B. der Ring von "heute" in die Zeile davor)
     '<p class="ylegend">' + [["due", "year.legendDue"], ["part", "year.legendPart"], ["late", "year.legendLate"], ["today", "year.legendToday"], ["", "year.legendFree"]].map(function (l) {
       return '<span class="ylg"><span class="yd ' + l[0] + '"></span>' + esc(t(l[1])) + '</span>';
     }).join("") + '</p>' +
-    '<div class="ymonths">' + months + '</div>' +
-    '<div class="ydetail" id="ydetail"><p class="muted">' + esc(t("year.hint")) + '</p>' +
-    '<button type="button" class="btn light" data-act="close">OK</button></div>');
+    (locked
+      ? '<div class="ylock"><div class="ymonths" inert aria-hidden="true">' + months + '</div>' +
+        '<div class="ylockbox"><h4>🔒 ' + esc(t("year.lockTitle")) + '</h4>' +
+        '<p>' + (upcoming ? t("year.lockText", { c: t("year.count", { n: upcoming }) }) : esc(t("year.lockEmpty"))) + '</p>' +
+        '<button type="button" class="btn" data-act="plus">' + esc(t("year.lockBtn")) + '</button></div></div>' +
+        '<div class="ydetail" id="ydetail"><button type="button" class="btn light" data-act="close">OK</button></div>'
+      : '<div class="ymonths">' + months + '</div>' +
+        '<div class="ydetail" id="ydetail"><p class="muted">' + esc(t("year.hint")) + '</p>' +
+        '<button type="button" class="btn light" data-act="close">OK</button></div>'));
   showYear.occ = occ;
 }
 // Freie Zeiten eines Tages zwischen 08:00 und 20:00: Termine mit Uhrzeit belegen ihre Zeit

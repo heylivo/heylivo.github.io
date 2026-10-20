@@ -150,7 +150,9 @@ var TXT = {
     "year.btn": "Jahr im Blick", "year.title": "Jahr im Blick", "year.count": "{n} Fristen", "year.count.one": "1 Frist",
     "year.free": "{n} Tage frei", "year.free.one": "1 Tag frei", "year.dayFree": "Keine Frist – dieser Tag ist frei.", "year.add": "+ Frist an diesem Tag eintragen",
     "year.legendDue": "Frist", "year.legendLate": "überfällig", "year.legendToday": "heute", "year.legendFree": "frei",
-    "year.hint": "Tippe auf einen Tag."
+    "year.hint": "Tippe auf einen Tag.",
+    "year.lockTitle": "Jahr im Blick – mit Livo Plus", "year.lockText": "Deine nächsten 12 Monate: <b>{c}</b>. Mit Livo Plus siehst du hier wieder, was wann fällig ist – und Livo erinnert dich rechtzeitig.",
+    "year.lockEmpty": "Mit Livo Plus siehst du hier dein ganzes Jahr auf einen Blick – und Livo erinnert dich rechtzeitig an jede Frist.", "year.lockBtn": "Livo Plus aktivieren"
   },
   en: {
     "q.open": "“", "q.close": "”",
@@ -266,7 +268,9 @@ var TXT = {
     "year.btn": "Year at a glance", "year.title": "Year at a glance", "year.count": "{n} deadlines", "year.count.one": "1 deadline",
     "year.free": "{n} days free", "year.free.one": "1 day free", "year.dayFree": "No deadlines – this day is free.", "year.add": "+ Add a deadline on this day",
     "year.legendDue": "Deadline", "year.legendLate": "Overdue", "year.legendToday": "Today", "year.legendFree": "Free",
-    "year.hint": "Tap a day."
+    "year.hint": "Tap a day.",
+    "year.lockTitle": "Year at a glance – with Livo Plus", "year.lockText": "Your next 12 months: <b>{c}</b>. With Livo Plus you can see here again what's due when – and Livo reminds you in time.",
+    "year.lockEmpty": "With Livo Plus you can see your whole year at a glance here – and Livo reminds you of every deadline in time.", "year.lockBtn": "Get Livo Plus"
   },
   it: {
     "q.open": "“", "q.close": "”",
@@ -382,7 +386,9 @@ var TXT = {
     "year.btn": "L'anno in breve", "year.title": "L'anno in breve", "year.count": "{n} scadenze", "year.count.one": "1 scadenza",
     "year.free": "{n} giorni liberi", "year.free.one": "1 giorno libero", "year.dayFree": "Nessuna scadenza – questo giorno è libero.", "year.add": "+ Aggiungi una scadenza in questo giorno",
     "year.legendDue": "Scadenza", "year.legendLate": "Scaduta", "year.legendToday": "Oggi", "year.legendFree": "Libero",
-    "year.hint": "Tocca un giorno."
+    "year.hint": "Tocca un giorno.",
+    "year.lockTitle": "L'anno in breve – con Livo Plus", "year.lockText": "I tuoi prossimi 12 mesi: <b>{c}</b>. Con Livo Plus qui rivedi cosa scade e quando – e Livo ti avvisa in tempo.",
+    "year.lockEmpty": "Con Livo Plus qui vedi tutto il tuo anno in breve – e Livo ti avvisa in tempo di ogni scadenza.", "year.lockBtn": "Attiva Livo Plus"
   },
   el: {
     "q.open": "«", "q.close": "»",
@@ -498,7 +504,9 @@ var TXT = {
     "year.btn": "Η χρονιά", "year.title": "Η χρονιά με μια ματιά", "year.count": "{n} προθεσμίες", "year.count.one": "1 προθεσμία",
     "year.free": "{n} ελεύθερες μέρες", "year.free.one": "1 ελεύθερη μέρα", "year.dayFree": "Καμία προθεσμία – αυτή η μέρα είναι ελεύθερη.", "year.add": "+ Νέα προθεσμία αυτή τη μέρα",
     "year.legendDue": "Προθεσμία", "year.legendLate": "Εκπρόθεσμη", "year.legendToday": "Σήμερα", "year.legendFree": "Ελεύθερη",
-    "year.hint": "Πάτησε μια μέρα."
+    "year.hint": "Πάτησε μια μέρα.",
+    "year.lockTitle": "Η χρονιά με μια ματιά – με το Livo Plus", "year.lockText": "Οι επόμενοι 12 μήνες σου: <b>{c}</b>. Με το Livo Plus βλέπεις ξανά εδώ τι λήγει και πότε – και το Livo σού το θυμίζει έγκαιρα.",
+    "year.lockEmpty": "Με το Livo Plus βλέπεις εδώ όλη τη χρονιά σου με μια ματιά – και το Livo σού θυμίζει έγκαιρα κάθε προθεσμία.", "year.lockBtn": "Ενεργοποίησε το Livo Plus"
   },
   es: {
     "q.open": "“", "q.close": "”",
@@ -614,7 +622,9 @@ var TXT = {
     "year.btn": "El año", "year.title": "El año de un vistazo", "year.count": "{n} plazos", "year.count.one": "1 plazo",
     "year.free": "{n} días libres", "year.free.one": "1 día libre", "year.dayFree": "Sin plazos – este día está libre.", "year.add": "+ Añadir un plazo este día",
     "year.legendDue": "Plazo", "year.legendLate": "Vencido", "year.legendToday": "Hoy", "year.legendFree": "Libre",
-    "year.hint": "Toca un día."
+    "year.hint": "Toca un día.",
+    "year.lockTitle": "El año de un vistazo – con Livo Plus", "year.lockText": "Tus próximos 12 meses: <b>{c}</b>. Con Livo Plus vuelves a ver aquí qué vence y cuándo, y Livo te avisa a tiempo.",
+    "year.lockEmpty": "Con Livo Plus ves aquí todo tu año de un vistazo, y Livo te avisa a tiempo de cada plazo.", "year.lockBtn": "Activa Livo Plus"
   },
   fr: {
     "q.open": "« ", "q.close": " »",
@@ -730,7 +740,9 @@ var TXT = {
     "year.btn": "L'année", "year.title": "L'année en un coup d'œil", "year.count": "{n} échéances", "year.count.one": "1 échéance",
     "year.free": "{n} jours libres", "year.free.one": "1 jour libre", "year.dayFree": "Aucune échéance – ce jour est libre.", "year.add": "+ Ajouter une échéance ce jour-là",
     "year.legendDue": "Échéance", "year.legendLate": "En retard", "year.legendToday": "Aujourd'hui", "year.legendFree": "Libre",
-    "year.hint": "Touchez un jour."
+    "year.hint": "Touchez un jour.",
+    "year.lockTitle": "L'année en un coup d'œil – avec Livo Plus", "year.lockText": "Vos 12 prochains mois : <b>{c}</b>. Avec Livo Plus, vous revoyez ici ce qui arrive à échéance et quand – et Livo vous le rappelle à temps.",
+    "year.lockEmpty": "Avec Livo Plus, vous voyez ici toute votre année en un coup d'œil – et Livo vous rappelle chaque échéance à temps.", "year.lockBtn": "Activer Livo Plus"
   },
   nl: {
     "q.open": "“", "q.close": "”",
@@ -846,7 +858,9 @@ var TXT = {
     "year.btn": "Jaaroverzicht", "year.title": "Jaaroverzicht", "year.count": "{n} deadlines", "year.count.one": "1 deadline",
     "year.free": "{n} dagen vrij", "year.free.one": "1 dag vrij", "year.dayFree": "Geen deadlines – deze dag is vrij.", "year.add": "+ Deadline op deze dag toevoegen",
     "year.legendDue": "Deadline", "year.legendLate": "Verlopen", "year.legendToday": "Vandaag", "year.legendFree": "Vrij",
-    "year.hint": "Tik op een dag."
+    "year.hint": "Tik op een dag.",
+    "year.lockTitle": "Jaaroverzicht – met Livo Plus", "year.lockText": "Je komende 12 maanden: <b>{c}</b>. Met Livo Plus zie je hier weer wat wanneer afloopt – en Livo herinnert je op tijd.",
+    "year.lockEmpty": "Met Livo Plus zie je hier je hele jaar in één oogopslag – en Livo herinnert je op tijd aan elke deadline.", "year.lockBtn": "Livo Plus activeren"
   },
   pt: {
     "q.open": "“", "q.close": "”",
@@ -962,7 +976,9 @@ var TXT = {
     "year.btn": "O ano", "year.title": "O ano num relance", "year.count": "{n} prazos", "year.count.one": "1 prazo",
     "year.free": "{n} dias livres", "year.free.one": "1 dia livre", "year.dayFree": "Sem prazos – este dia está livre.", "year.add": "+ Adicionar um prazo neste dia",
     "year.legendDue": "Prazo", "year.legendLate": "Em atraso", "year.legendToday": "Hoje", "year.legendFree": "Livre",
-    "year.hint": "Toque num dia."
+    "year.hint": "Toque num dia.",
+    "year.lockTitle": "O ano num relance – com o Livo Plus", "year.lockText": "Os seus próximos 12 meses: <b>{c}</b>. Com o Livo Plus volta a ver aqui o que vence e quando – e o Livo lembra-o a tempo.",
+    "year.lockEmpty": "Com o Livo Plus vê aqui todo o seu ano num relance – e o Livo lembra-o a tempo de cada prazo.", "year.lockBtn": "Ativar o Livo Plus"
   },
   tr: {
     "q.open": "“", "q.close": "”",
@@ -1078,7 +1094,9 @@ var TXT = {
     "year.btn": "Yıl", "year.title": "Yıla genel bakış", "year.count": "{n} tarih", "year.count.one": "1 tarih",
     "year.free": "{n} gün boş", "year.free.one": "1 gün boş", "year.dayFree": "Bu günde tarih yok – gün boş.", "year.add": "+ Bu güne tarih ekle",
     "year.legendDue": "Tarih", "year.legendLate": "Gecikmiş", "year.legendToday": "Bugün", "year.legendFree": "Boş",
-    "year.hint": "Bir güne dokun."
+    "year.hint": "Bir güne dokun.",
+    "year.lockTitle": "Yıla genel bakış – Livo Plus ile", "year.lockText": "Önümüzdeki 12 ayda: <b>{c}</b>. Livo Plus ile neyin ne zaman dolduğunu burada yeniden görürsün – Livo da sana zamanında hatırlatır.",
+    "year.lockEmpty": "Livo Plus ile tüm yılını burada tek bakışta görürsün – Livo da her tarihi sana zamanında hatırlatır.", "year.lockBtn": "Livo Plus'ı etkinleştir"
   },
   pl: {
     "q.open": "„", "q.close": "”",
@@ -1196,7 +1214,9 @@ var TXT = {
     "year.btn": "Rok", "year.title": "Rok w skrócie", "year.count": "{n} terminów", "year.count.one": "1 termin",
     "year.free": "{n} dni wolnych", "year.free.one": "1 dzień wolny", "year.dayFree": "Brak terminów – ten dzień jest wolny.", "year.add": "+ Dodaj termin na ten dzień",
     "year.legendDue": "Termin", "year.legendLate": "Po terminie", "year.legendToday": "Dziś", "year.legendFree": "Wolny",
-    "year.hint": "Dotknij dnia.", "year.count.few": "{n} terminy", "year.free.few": "{n} dni wolne"
+    "year.hint": "Dotknij dnia.",
+    "year.lockTitle": "Rok w skrócie – z Livo Plus", "year.lockText": "Twoje najbliższe 12 miesięcy: <b>{c}</b>. Z Livo Plus znów zobaczysz tu, co i kiedy mija – a Livo przypomni ci o tym na czas.",
+    "year.lockEmpty": "Z Livo Plus zobaczysz tu cały swój rok w skrócie – a Livo na czas przypomni ci o każdym terminie.", "year.lockBtn": "Włącz Livo Plus", "year.count.few": "{n} terminy", "year.free.few": "{n} dni wolne"
   }
 };
 
