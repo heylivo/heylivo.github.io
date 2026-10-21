@@ -1,8 +1,10 @@
 """
 Posts the promo videos listed in promo/promo.csv to the heylivo Instagram account as Reels:
-per run the first row whose date has come (Europe/Berlin) and that has no media id yet in
+per run the newest row whose date has come (Europe/Berlin) and that has no media id yet in
 "Gepostet". The media id is written back into the CSV, so the workflow commits it and
-nothing is posted twice.
+nothing is posted twice. Older rows that were left over (e.g. a scheduled run GitHub skipped)
+are marked "ausgelassen <date>" instead of being posted late - the plan runs for months, and a
+backlog would push every following day back by one.
 
 KI = ja sets Instagram's "AI info" label (is_ai_generated, Content Publishing API since
 June 2026, all API versions). Cover_ms is the Reel cover frame in milliseconds.
@@ -67,7 +69,10 @@ if __name__ == "__main__":
         print(f"Nothing due on {today}.")
         sys.exit(0)
 
-    row = due[0]
+    due.sort(key=lambda r: r["Datum"])
+    row = due[-1]
+    for old in due[:-1]:
+        old["Gepostet"] = f"ausgelassen {today}"
     ig_user_id = os.environ["INSTAGRAM_USER_ID"]
     token = os.environ["INSTAGRAM_ACCESS_TOKEN"]
     wait_for_url(VIDEO_BASE + row["Datei"])
