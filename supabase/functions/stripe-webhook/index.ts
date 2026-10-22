@@ -6,11 +6,16 @@
 // diese Funktion plans.plus_until um ein Jahr - ab heute oder ab dem alten Ende, falls
 // Plus noch läuft - und schickt dem Inhaber eine kurze Mail über den Kauf (Resend,
 // Absender hallo@heylivo.com). Klappt die Mail nicht, ist Plus trotzdem freigeschaltet.
+// Der Käufer bekommt eine eigene Kaufbestätigung (Deutsch, wenn seine App auf Deutsch steht,
+// sonst Englisch - die Vertragssprachen) mit Vertragsdaten und dem vollständigen Text der AGB
+// samt Widerrufsbelehrung, frisch von heylivo.com geholt (Bestätigung auf dauerhaftem Datenträger).
+// Test ohne Kauf und ohne Datenbank: POST {"test":"confirmation","lang":"de"|"en"} mit Header
+// x-cron-secret schickt eine Probe-Bestätigung an OWNER_EMAIL.
 //
 // Signaturprüfung wie in der Stripe-Doku (HMAC-SHA256 über "t.payload") mit Web Crypto,
 // ohne npm-Paket. Secrets: STRIPE_WEBHOOK_SECRET (whsec_...), RESEND_API_KEY (re_...),
-// OWNER_EMAIL (Empfänger der Kaufmail) und optional LIVO_PAYMENT_LINK_ID (plink_...) -
-// dann zählt nur genau dieser Zahlungslink.
+// OWNER_EMAIL (Empfänger der Kaufmail), CRON_SECRET (nur für den Test) und optional
+// LIVO_PAYMENT_LINK_ID (plink_...) - dann zählt nur genau dieser Zahlungslink.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -19,7 +24,10 @@ const WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
 const PAYMENT_LINK = Deno.env.get('LIVO_PAYMENT_LINK_ID') ?? '';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
 const OWNER_EMAIL = Deno.env.get('OWNER_EMAIL') ?? '';
+const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? '';
 const FROM_EMAIL = 'heylivo <hallo@heylivo.com>';
+const REPLY_TO = 'hallo@heylivo.com';
+const SITE = 'https://heylivo.com';
 const PRICE_CENTS = 1199;
 const TOLERANCE_SECONDS = 300;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -104,9 +112,130 @@ async function notifyOwner(session: Session, userId: string, plusUntil: string):
   }
 }
 
+// --- Kaufbestätigung an den Käufer --------------------------------------------------------------
+const ENTITIES: Record<string, string> = {
+  '&shy;': '', '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'",
+  '&bdquo;': '„', '&ldquo;': '“', '&rdquo;': '”', '&ndash;': '–', '&euro;': '€'
+};
+
+// Die gültige AGB-Seite als Text (Überschriften, Absätze, Aufzählungen) - ohne den Verweis auf frühere Fassungen.
+// null, wenn sie nicht geladen werden kann; dann steht in der Mail nur der Link.
+async function termsText(lang: 'de' | 'en'): Promise<{ version: string; text: string } | null> {
+  try {
+    const response = await fetch(`${SITE}/${lang === 'de' ? 'agb.html' : 'en/terms.html'}`, { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const main = (await response.text()).match(/<main[^>]*>([\s\S]*?)<\/main>/i)?.[1] ?? '';
+    const text = main
+      .replace(/<(h1|h2|h3)[^>]*>/gi, '\n\n').replace(/<\/(h1|h2|h3)>/gi, '\n')
+      .replace(/<li[^>]*>/gi, '\n• ').replace(/<(p|div)[^>]*>/gi, '\n').replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&[#a-z0-9]+;/gi, (entity) => ENTITIES[entity] ?? entity)
+      .split('\n').map((line) => line.replace(/\s+/g, ' ').trim())
+      .filter((line) => !/^(Frühere Fassung|Earlier version)/.test(line))
+      .join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    if (!text.includes(lang === 'de' ? 'Widerrufsbelehrung' : 'Withdrawal instructions')) throw new Error('withdrawal text missing');
+    const version = text.match(/(Gültig ab|Effective): ([^\n]+)/)?.[2]?.trim() ?? '';
+    return { version, text };
+  } catch (error) {
+    console.error('Terms could not be loaded for the purchase confirmation', lang, error);
+    return null;
+  }
+}
+
+function dateText(iso: string, lang: 'de' | 'en'): string {
+  const [y, m, d] = iso.split('-');
+  if (lang === 'de') return `${d}.${m}.${y}`;
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`));
+}
+
+const FONT = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+async function confirmBuyer(to: string, lang: 'de' | 'en', plusUntil: string, paidOn: string, cents: number): Promise<boolean> {
+  if (!RESEND_API_KEY || !to) {
+    console.error('RESEND_API_KEY or buyer email missing - no purchase confirmation');
+    return false;
+  }
+  const de = lang === 'de';
+  const price = de ? `${(cents / 100).toFixed(2).replace('.', ',')} €` : `€${(cents / 100).toFixed(2)}`;
+  const until = dateText(plusUntil, lang);
+  const terms = await termsText(lang);
+  const termsUrl = `${SITE}/${de ? 'agb.html' : 'en/terms.html'}`;
+  const rows: [string, string][] = de ? [
+    ['Produkt', 'Livo Plus für 1 Jahr'],
+    ['Preis', `${price} inkl. MwSt., Einmalzahlung, keine automatische Verlängerung`],
+    ['Gekauft am', dateText(paidOn, lang)],
+    ['Livo Plus gilt bis', until],
+    ['Anbieter', 'heylivo, George Tsiafitsas, Dimokritou 22, 85101 Rhodos, Griechenland, hallo@heylivo.com']
+  ] : [
+    ['Product', 'Livo Plus for 1 year'],
+    ['Price', `${price} incl. VAT, one-off payment, no automatic renewal`],
+    ['Bought on', dateText(paidOn, lang)],
+    ['Livo Plus valid until', until],
+    ['Provider', 'heylivo, George Tsiafitsas, Dimokritou 22, 85101 Rhodes, Greece, hallo@heylivo.com']
+  ];
+  const subject = de ? `Kaufbestätigung: Livo Plus bis ${until}` : `Purchase confirmation: Livo Plus until ${until}`;
+  const title = de ? 'Livo Plus ist aktiv ✓' : 'Livo Plus is active ✓';
+  const hello = de ? 'Hallo!' : 'Hello!';
+  const intro = de
+    ? 'Danke für deinen Kauf! Livo Plus ist für dein Konto freigeschaltet. Die Zahlungsquittung schickt dir unser Zahlungsdienstleister Stripe separat.'
+    : 'Thank you for your purchase! Livo Plus is now active for your account. Our payment provider Stripe sends you the payment receipt separately.';
+  const termsIntro = terms
+    ? (de ? `Für diesen Kauf gelten unsere Allgemeinen Geschäftsbedingungen mit Widerrufsbelehrung in der Fassung gültig ab ${terms.version}. Hier ist der vollständige Text – bitte bewahre diese E-Mail auf.`
+          : `This purchase is governed by our terms of use and sale, including the withdrawal instructions, effective ${terms.version}. Here is the full text – please keep this email.`)
+    : (de ? `Für diesen Kauf gelten unsere Allgemeinen Geschäftsbedingungen mit Widerrufsbelehrung: ${termsUrl}`
+          : `This purchase is governed by our terms of use and sale, including the withdrawal instructions: ${termsUrl}`);
+  const text = [hello, intro, rows.map(([label, value]) => `${label}: ${value}`).join('\n'), termsIntro, terms?.text ?? '', '-- \nheylivo · heylivo.com']
+    .filter(Boolean).join('\n\n');
+  const html = `<!doctype html>
+<html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(subject)}</title></head>
+<body style="margin:0;padding:0;background:#f5f7fb;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f7fb;"><tr><td align="center" style="padding:28px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#ffffff;border:1px solid #e3e8f2;border-radius:18px;">
+<tr><td style="padding:26px 28px 4px;font-family:${FONT};"><img src="${SITE}/icon.png" width="36" height="36" alt="" style="vertical-align:middle;border:0;"> <span style="vertical-align:middle;font-size:23px;font-weight:800;letter-spacing:-0.5px;color:#0b1420;">hey<span style="color:#3062f9;">livo</span></span></td></tr>
+<tr><td style="padding:18px 28px 0;font-family:${FONT};font-size:20px;font-weight:800;line-height:1.3;color:#0b1420;">${escapeHtml(title)}</td></tr>
+<tr><td style="padding:12px 28px 0;font-family:${FONT};font-size:16px;line-height:1.5;color:#0b1420;"><p style="margin:0 0 10px;">${hello}</p><p style="margin:0;">${escapeHtml(intro)}</p></td></tr>
+<tr><td style="padding:14px 28px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${rows.map(([label, value]) =>
+    `<tr><td valign="top" style="padding:6px 12px 6px 0;font-family:${FONT};font-size:14px;color:#5b6475;white-space:nowrap;">${escapeHtml(label)}</td><td style="padding:6px 0;font-family:${FONT};font-size:14px;color:#0b1420;">${escapeHtml(value)}</td></tr>`).join('')}</table></td></tr>
+<tr><td style="padding:16px 28px ${terms ? '0' : '26px'};font-family:${FONT};font-size:14px;line-height:1.5;color:#0b1420;">${terms ? escapeHtml(termsIntro) : `${escapeHtml(termsIntro.replace(termsUrl, ''))}<a href="${termsUrl}" style="color:#3062f9;">${termsUrl}</a>`}</td></tr>
+${terms ? `<tr><td style="padding:12px 28px 26px;"><div style="padding:14px 16px;border-radius:12px;background:#f5f7fb;font-family:${FONT};font-size:12.5px;line-height:1.5;color:#2a3342;white-space:pre-wrap;">${escapeHtml(terms.text)}</div></td></tr>` : ''}
+</table>
+<p style="margin:16px 0 0;font-family:${FONT};font-size:12px;color:#8a93a6;"><a href="${SITE}" style="color:#8a93a6;text-decoration:none;">heylivo.com</a></p>
+</td></tr></table>
+</body></html>`;
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM_EMAIL, to: [to], reply_to: REPLY_TO, subject, html, text })
+    });
+    if (!response.ok) console.error('Purchase confirmation failed', response.status, await response.text());
+    return response.ok;
+  } catch (error) {
+    console.error('Purchase confirmation failed', error);
+    return false;
+  }
+}
+
 Deno.serve(async (request) => {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   const payload = await request.text();
+
+  // Probe-Kaufbestätigung an den Inhaber - kein Kauf, keine Datenbank, nur mit dem Cron-Geheimnis
+  const testSecret = request.headers.get('x-cron-secret');
+  if (testSecret !== null) {
+    if (!CRON_SECRET || !sameText(testSecret, CRON_SECRET)) return json({ error: 'Not allowed.' }, 401);
+    let test: { test?: string; lang?: string } = {};
+    try {
+      test = JSON.parse(payload);
+    } catch {
+      // unten als unbekannter Test abgelehnt
+    }
+    if (test.test !== 'confirmation') return json({ error: 'Unknown test.' }, 400);
+    const lang = test.lang === 'de' ? 'de' : 'en';
+    const today = berlinToday();
+    return json({ test: true, lang, sent: await confirmBuyer(OWNER_EMAIL, lang, addYear(today), today, PRICE_CENTS) });
+  }
+
   if (!(await validSignature(payload, request.headers.get('stripe-signature') ?? ''))) return json({ error: 'Invalid signature' }, 400);
 
   let event: { type?: string; data?: { object?: Session } };
@@ -148,5 +277,15 @@ Deno.serve(async (request) => {
   }
   console.log('Livo Plus activated', userId, plusUntil, session.id);
   await notifyOwner(session, userId, plusUntil);
-  return json({ received: true, plusUntil });
+  // Kaufbestätigung an den Käufer - Plus ist schon freigeschaltet, ein Fehler hier darf den Kauf nicht scheitern lassen
+  let confirmed = false;
+  try {
+    const { data: buyer } = await supabase.auth.admin.getUserById(userId);
+    const lang = buyer?.user?.user_metadata?.lang === 'de' ? 'de' : 'en';
+    const to = session.customer_details?.email || buyer?.user?.email || '';
+    confirmed = await confirmBuyer(to, lang, plusUntil, today, session.amount_total ?? PRICE_CENTS);
+  } catch (error) {
+    console.error('Purchase confirmation failed', session.id, error);
+  }
+  return json({ received: true, plusUntil, confirmed });
 });
