@@ -79,6 +79,9 @@ main { padding-bottom: 24px; }
 /* Impressum · Datenschutz · AGB ganz unten; der Abstand darunter hält den Plus-Knopf frei */
 .applinks { padding: 4px 4px 110px; color: var(--muted); font-size: 12px; }
 .applinks a { margin-right: 14px; color: var(--muted); }
+.applinks .social { display: inline-flex; gap: 12px; vertical-align: middle; }
+.applinks .social a { display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); }
+.applinks .social svg { width: 15px; height: 15px; }
 .sec { display: flex; align-items: center; gap: 8px; margin: 22px 4px 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .sec-now { color: var(--now); }
 /* "Alles im Blick" und eine Reihe darunter der Filter Alle | 7 Tage | 30 Tage - in allen Sprachen gleich */

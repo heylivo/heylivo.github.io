@@ -52,3 +52,8 @@ footer { padding: 26px 0 36px; border-top: 1px solid var(--line); color: var(--m
 footer .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 footer nav a { margin-right: 14px; color: var(--muted); text-decoration: none; }
 footer nav a:hover, footer nav a[aria-current] { color: var(--violet); }
+/* Instagram und TikTok in der Fußzeile */
+footer .social { display: flex; gap: 10px; }
+footer .social a { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); }
+footer .social a:hover { color: var(--violet); border-color: var(--violet); }
+footer .social svg { width: 17px; height: 17px; }
