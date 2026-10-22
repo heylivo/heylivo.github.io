@@ -142,6 +142,15 @@ async function termsText(lang: 'de' | 'en'): Promise<{ version: string; text: st
   }
 }
 
+// AGB-Text für den HTML-Teil: echte Zeilenumbrüche (Outlook ignoriert white-space:pre-wrap) und fette Überschriften
+const HEADING = /^(\d+\.\d*\s|Widerrufsbelehrung$|Widerrufsrecht$|Folgen des Widerrufs$|Muster-Widerrufsformular$|Withdrawal instructions$|Right of withdrawal$|Effects of withdrawal$|Model withdrawal form$|Allgemeine Gesch|Terms of use)/;
+function termsHtml(text: string): string {
+  return text.split('\n').map((line) => {
+    const safe = escapeHtml(line);
+    return line.length < 70 && HEADING.test(line) ? `<b>${safe}</b>` : safe;
+  }).join('<br>');
+}
+
 function dateText(iso: string, lang: 'de' | 'en'): string {
   const [y, m, d] = iso.split('-');
   if (lang === 'de') return `${d}.${m}.${y}`;
@@ -197,7 +206,8 @@ async function confirmBuyer(to: string, lang: 'de' | 'en', plusUntil: string, pa
 <tr><td style="padding:14px 28px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${rows.map(([label, value]) =>
     `<tr><td valign="top" style="padding:6px 12px 6px 0;font-family:${FONT};font-size:14px;color:#5b6475;white-space:nowrap;">${escapeHtml(label)}</td><td style="padding:6px 0;font-family:${FONT};font-size:14px;color:#0b1420;">${escapeHtml(value)}</td></tr>`).join('')}</table></td></tr>
 <tr><td style="padding:16px 28px ${terms ? '0' : '26px'};font-family:${FONT};font-size:14px;line-height:1.5;color:#0b1420;">${terms ? escapeHtml(termsIntro) : `${escapeHtml(termsIntro.replace(termsUrl, ''))}<a href="${termsUrl}" style="color:#3062f9;">${termsUrl}</a>`}</td></tr>
-${terms ? `<tr><td style="padding:12px 28px 26px;"><div style="padding:14px 16px;border-radius:12px;background:#f5f7fb;font-family:${FONT};font-size:12.5px;line-height:1.5;color:#2a3342;white-space:pre-wrap;">${escapeHtml(terms.text)}</div></td></tr>` : ''}
+${terms ? `<tr><td style="padding:6px 28px 0;font-family:${FONT};font-size:12px;color:#8a93a6;">${de ? 'Zum Lesen im grauen Feld scrollen.' : 'Scroll inside the grey box to read.'}</td></tr>
+<tr><td style="padding:6px 28px 26px;"><div style="max-height:155px;overflow-y:auto;padding:12px 16px;border:1px solid #e3e8f2;border-radius:12px;background:#f5f7fb;font-family:${FONT};font-size:12.5px;line-height:1.5;color:#2a3342;">${termsHtml(terms.text)}</div></td></tr>` : ''}
 </table>
 <p style="margin:16px 0 0;font-family:${FONT};font-size:12px;color:#8a93a6;"><a href="${SITE}" style="color:#8a93a6;text-decoration:none;">heylivo.com</a></p>
 </td></tr></table>
