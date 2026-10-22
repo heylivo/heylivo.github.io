@@ -166,6 +166,26 @@
   .vidsound:hover { background: rgba(11,20,32,.78); }
   /* KI-Hinweis dezent unter dem Video (Kennzeichnung nach KI-Verordnung, Art. 50) */
   .vidnote { margin: 8px 0 0; color: #a3abbb; font-size: 11px; letter-spacing: .02em; }
+  /* Video-Karussell: flache, abgerundete Dreiecke im Lila der Webseite neben dem Video (auf dem Handy im Video, dazu Wischen) */
+  .vidcar { position: relative; width: min(300px, 78vw); margin: 0 auto; }
+  .vidcar .vid { touch-action: pan-y; }
+  .vidnav { position: absolute; top: 50%; z-index: 2; width: 52px; height: 52px; margin-top: -26px; padding: 0; border: 0; border-radius: 14px; background: none; cursor: pointer; transition: transform .2s, opacity .2s; }
+  .vidnav:hover { transform: scale(1.08); }
+  .vidnav:active { transform: scale(.94); }
+  .vidnav:focus-visible { outline: 3px solid rgba(48,98,249,.45); outline-offset: 2px; }
+  .vidnav svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .vidnav.prev svg { transform: scaleX(-1); }
+  .vidnav .tri { fill: var(--violet); stroke: var(--violet); stroke-width: 16; stroke-linejoin: round; }
+  .vidnav.prev { left: -88px; }
+  .vidnav.next { right: -88px; }
+  .vidcount { margin: 14px 0 0; color: var(--muted); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .vidcount + .vidnote { margin-top: 2px; }
+  @media (max-width: 520px) {
+    .vidnav { width: 38px; height: 38px; margin-top: -19px; filter: drop-shadow(0 0 1.5px rgba(255,255,255,.9)); }
+    .vidnav:hover { transform: none; }
+    .vidnav.prev { left: 6px; }
+    .vidnav.next { right: 6px; }
+  }
 
   /* Preise */
   .center { text-align: center; }
@@ -369,7 +389,12 @@
       <p class="eyebrow">In 10 Sekunden</p>
       <h2>Du sagst: später. <span class="wm-inline">hey<span>livo</span></span> <em class="grad-text">erinnert dich.</em></h2>
       <p class="sub">Ausweis, TÜV, Zahnarzt, Handyvertrag – Livo meldet sich rechtzeitig auf deinem Handy.</p>
-      <div class="vid"><video src="media/heylivo-erklaert.mp4" poster="media/heylivo-erklaert.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Kurzes Video: heylivo zeigt deine Fristen und erinnert dich rechtzeitig"></video><button type="button" class="vidsound" aria-pressed="false" data-on="🔇 Ton aus" data-off="🔊 Ton an">🔊 Ton an</button></div>
+      <div class="vidcar" data-videos="automation/promo/serie-de" data-posters="media/serie/serie-de" data-count="15" data-label="Video {n} von {all}">
+        <button type="button" class="vidnav prev" aria-label="Vorheriges Video"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="tri" d="M22 14 46 32 22 50z"/></svg></button>
+        <div class="vid"><video src="media/heylivo-erklaert.mp4" poster="media/heylivo-erklaert.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Kurzes Video: heylivo zeigt deine Fristen und erinnert dich rechtzeitig"></video><button type="button" class="vidsound" aria-pressed="false" data-on="🔇 Ton aus" data-off="🔊 Ton an">🔊 Ton an</button></div>
+        <button type="button" class="vidnav next" aria-label="Nächstes Video"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="tri" d="M22 14 46 32 22 50z"/></svg></button>
+      </div>
+      <p class="vidcount" aria-live="polite"><span>1</span> / 16</p>
       <p class="vidnote">KI-generiert</p>
     </div>
   </section>
@@ -470,17 +495,66 @@
     document.addEventListener("click", function (e) { if (dd.open && !dd.contains(e.target)) dd.open = false; });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") dd.open = false; });
   })();
-  // Video: Ton an/aus per Knopf; beim Einschalten von vorn, damit man den Anfang hört
+  // Video-Karussell: erst das Erklärvideo (stumm in Schleife), dahinter die Videos der Serie (dieselben Dateien wie für Instagram).
+  // Ein Video lädt erst, wenn man dorthin blättert. Wer einmal geblättert hat, bekommt am Ende automatisch das nächste;
+  // nach dem letzten geht es zurück zum ersten, das sich dann wieder wiederholt. Der Ton bleibt beim Blättern an oder aus.
   (function () {
-    var v = document.querySelector(".vid video"), b = document.querySelector(".vidsound");
+    var car = document.querySelector(".vidcar"), v = car && car.querySelector("video"), b = car && car.querySelector(".vidsound");
     if (!v || !b) return;
-    b.addEventListener("click", function () {
-      var on = v.muted;
-      v.muted = !on;
-      if (on) { v.currentTime = 0; v.play(); }
-      b.textContent = b.getAttribute(on ? "data-on" : "data-off");
-      b.setAttribute("aria-pressed", on);
+    var list = [{ v: v.getAttribute("src"), p: v.getAttribute("poster"), l: v.getAttribute("aria-label") }],
+        n = +car.getAttribute("data-count"), vb = car.getAttribute("data-videos"), pb = car.getAttribute("data-posters"), cur = 0,
+        count = document.querySelector(".vidcount span");
+    for (var i = 1; i <= n; i++) {
+      var k = ("0" + i).slice(-2);
+      list.push({ v: vb + k + ".mp4", p: pb + k + ".jpg", l: car.getAttribute("data-label").replace("{n}", i + 1).replace("{all}", n + 1) });
+    }
+    function sound() {
+      b.textContent = b.getAttribute(v.muted ? "data-off" : "data-on");
+      b.setAttribute("aria-pressed", !v.muted);
+    }
+    // Abspielen; verweigert der Browser den Ton, stumm weiter
+    function play() {
+      var p = v.play();
+      if (p && p.catch) p.catch(function () { if (!v.muted) { v.muted = true; sound(); v.play().catch(function () {}); } });
+    }
+    function show(i) {
+      cur = (i + list.length) % list.length;
+      v.poster = list[cur].p;
+      v.src = list[cur].v;
+      v.setAttribute("aria-label", list[cur].l);
+      count.textContent = cur + 1;
+      new Image().src = list[(cur + 1) % list.length].p;
+      play();
+    }
+    function step(d) { v.loop = false; show(cur + d); }
+    car.querySelector(".prev").addEventListener("click", function () { step(-1); });
+    car.querySelector(".next").addEventListener("click", function () { step(1); });
+    car.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); step(e.key === "ArrowLeft" ? -1 : 1); }
     });
+    v.addEventListener("ended", function () {
+      if (cur === list.length - 1) v.loop = true;
+      show(cur + 1);
+    });
+    // Wischen auf dem Handy
+    var x0 = null, y0 = 0;
+    car.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    car.addEventListener("touchend", function (e) {
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+      x0 = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    // Ton an/aus per Knopf; beim Einschalten von vorn, damit man den Anfang hört
+    b.addEventListener("click", function () {
+      v.muted = !v.muted;
+      if (!v.muted) { v.currentTime = 0; play(); }
+      sound();
+    });
+    // Außerhalb des Bildschirms anhalten (spart Daten, kein Ton aus dem Nichts)
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) { if (es[0].isIntersecting) play(); else v.pause(); }).observe(car);
+    }
   })();
 </script>
 </body>
