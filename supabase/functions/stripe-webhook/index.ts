@@ -9,8 +9,10 @@
 // Der Käufer bekommt eine eigene Kaufbestätigung (Deutsch, wenn seine App auf Deutsch steht,
 // sonst Englisch - die Vertragssprachen) mit Vertragsdaten und dem vollständigen Text der AGB
 // samt Widerrufsbelehrung, frisch von heylivo.com geholt (Bestätigung auf dauerhaftem Datenträger).
-// Test ohne Kauf und ohne Datenbank: POST {"test":"confirmation","lang":"de"|"en"} mit Header
-// x-cron-secret schickt eine Probe-Bestätigung an OWNER_EMAIL.
+// Aktionscodes (Stripe-Gutschein mit 100 % Rabatt, z. B. für Social-Media-Aktionen): Stripe meldet
+// dann 0 € und payment_status "no_payment_required" - das zählt wie ein Kauf, die Mails sagen "gratis".
+// Test ohne Kauf und ohne Datenbank: POST {"test":"confirmation","lang":"de"|"en"[,"free":true]} mit Header
+// x-cron-secret schickt eine Probe-Bestätigung an OWNER_EMAIL (mit "free" die Fassung für einen Gratis-Code).
 //
 // Signaturprüfung wie in der Stripe-Doku (HMAC-SHA256 über "t.payload") mit Web Crypto,
 // ohne npm-Paket. Secrets: STRIPE_WEBHOOK_SECRET (whsec_...), RESEND_API_KEY (re_...),
@@ -73,8 +75,13 @@ function addYear(iso: string): string {
 
 type Session = {
   id: string; mode?: string; payment_link?: string | null; payment_status?: string; currency?: string;
-  amount_total?: number; client_reference_id?: string | null; customer_details?: { email?: string | null } | null;
+  amount_total?: number; amount_subtotal?: number; total_details?: { amount_discount?: number } | null;
+  client_reference_id?: string | null; customer_details?: { email?: string | null } | null;
 };
+
+function euroDe(cents: number): string {
+  return `${(cents / 100).toFixed(2).replace('.', ',')} €`;
+}
 
 const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 function escapeHtml(value: string): string {
@@ -89,22 +96,25 @@ async function notifyOwner(session: Session, userId: string, plusUntil: string):
     return;
   }
   const [y, m, d] = plusUntil.split('-');
-  const amount = `${((session.amount_total ?? 0) / 100).toFixed(2).replace('.', ',')} €`;
+  const amount = euroDe(session.amount_total ?? 0);
+  const discount = session.total_details?.amount_discount ?? 0;
+  const free = (session.amount_total ?? 0) === 0 && discount > 0;
   const rows: [string, string][] = [
     ['Käufer', session.customer_details?.email ?? '-'],
-    ['Betrag', amount],
-    ['Livo Plus gilt bis', `${d}.${m}.${y}`],
-    ['Konto-ID', userId],
-    ['Stripe-Sitzung', session.id]
+    ['Betrag', amount]
   ];
-  const html = '<p>Neuer Kauf von Livo Plus – Plus ist automatisch freigeschaltet.</p><table cellpadding="4">' +
+  if (discount > 0) rows.push(['Rabatt (Aktionscode)', euroDe(discount)]);
+  rows.push(['Livo Plus gilt bis', `${d}.${m}.${y}`], ['Konto-ID', userId], ['Stripe-Sitzung', session.id]);
+  const lead = free ? 'Livo Plus per Gratis-Code eingelöst – Plus ist automatisch freigeschaltet.' : 'Neuer Kauf von Livo Plus – Plus ist automatisch freigeschaltet.';
+  const subject = free ? 'Livo Plus per Gratis-Code eingelöst' : `Neuer Livo-Plus-Kauf – ${amount}`;
+  const html = `<p>${escapeHtml(lead)}</p><table cellpadding="4">` +
     rows.map(([label, value]) => `<tr><td><b>${escapeHtml(label)}</b></td><td>${escapeHtml(value)}</td></tr>`).join('') + '</table>';
-  const text = 'Neuer Kauf von Livo Plus – Plus ist automatisch freigeschaltet.\n\n' + rows.map(([label, value]) => `${label}: ${value}`).join('\n');
+  const text = `${lead}\n\n` + rows.map(([label, value]) => `${label}: ${value}`).join('\n');
   try {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM_EMAIL, to: [OWNER_EMAIL], subject: `Neuer Livo-Plus-Kauf – ${amount}`, html, text })
+      body: JSON.stringify({ from: FROM_EMAIL, to: [OWNER_EMAIL], subject, html, text })
     });
     if (!response.ok) console.error('Owner mail failed', session.id, response.status, await response.text());
   } catch (error) {
@@ -165,34 +175,41 @@ async function confirmBuyer(to: string, lang: 'de' | 'en', plusUntil: string, pa
     return false;
   }
   const de = lang === 'de';
+  // 0 € = mit einem Aktionscode eingelöst (100 % Rabatt) - dann ohne "Kauf" und ohne Stripe-Quittung
+  const free = cents === 0;
   const price = de ? `${(cents / 100).toFixed(2).replace('.', ',')} €` : `€${(cents / 100).toFixed(2)}`;
   const until = dateText(plusUntil, lang);
   const terms = await termsText(lang);
   const termsUrl = `${SITE}/${de ? 'agb.html' : 'en/terms.html'}`;
   const rows: [string, string][] = de ? [
     ['Produkt', 'Livo Plus für 1 Jahr'],
-    ['Preis', `${price} inkl. MwSt., Einmalzahlung, keine automatische Verlängerung`],
-    ['Gekauft am', dateText(paidOn, lang)],
+    ['Preis', free ? 'gratis mit Aktionscode (regulär 11,99 € inkl. MwSt.), keine automatische Verlängerung'
+      : `${price} inkl. MwSt., Einmalzahlung, keine automatische Verlängerung`],
+    [free ? 'Eingelöst am' : 'Gekauft am', dateText(paidOn, lang)],
     ['Livo Plus gilt bis', until],
     ['Anbieter', 'heylivo, George Tsiafitsas, Dimokritou 22, 85101 Rhodos, Griechenland, hallo@heylivo.com']
   ] : [
     ['Product', 'Livo Plus for 1 year'],
-    ['Price', `${price} incl. VAT, one-off payment, no automatic renewal`],
-    ['Bought on', dateText(paidOn, lang)],
+    ['Price', free ? 'free with a promo code (regular price €11.99 incl. VAT), no automatic renewal'
+      : `${price} incl. VAT, one-off payment, no automatic renewal`],
+    [free ? 'Redeemed on' : 'Bought on', dateText(paidOn, lang)],
     ['Livo Plus valid until', until],
     ['Provider', 'heylivo, George Tsiafitsas, Dimokritou 22, 85101 Rhodes, Greece, hallo@heylivo.com']
   ];
-  const subject = de ? `Kaufbestätigung: Livo Plus bis ${until}` : `Purchase confirmation: Livo Plus until ${until}`;
+  const subject = de ? `${free ? 'Bestätigung' : 'Kaufbestätigung'}: Livo Plus bis ${until}` : `${free ? 'Confirmation' : 'Purchase confirmation'}: Livo Plus until ${until}`;
   const title = de ? 'Livo Plus ist aktiv ✓' : 'Livo Plus is active ✓';
   const hello = de ? 'Hallo!' : 'Hello!';
-  const intro = de
-    ? 'Danke für deinen Kauf! Livo Plus ist für dein Konto freigeschaltet. Die Zahlungsquittung schickt dir unser Zahlungsdienstleister Stripe separat.'
-    : 'Thank you for your purchase! Livo Plus is now active for your account. Our payment provider Stripe sends you the payment receipt separately.';
+  const intro = free
+    ? (de ? 'Dein Aktionscode ist eingelöst! Livo Plus ist für dein Konto freigeschaltet – ein Jahr lang, ohne Kosten. Danach endet es automatisch, du musst nichts kündigen.'
+          : 'Your promo code has been redeemed! Livo Plus is now active for your account – for one year, free of charge. It ends automatically afterwards, there is nothing to cancel.')
+    : (de ? 'Danke für deinen Kauf! Livo Plus ist für dein Konto freigeschaltet. Die Zahlungsquittung schickt dir unser Zahlungsdienstleister Stripe separat.'
+          : 'Thank you for your purchase! Livo Plus is now active for your account. Our payment provider Stripe sends you the payment receipt separately.');
+  const governed = de ? (free ? 'Für Livo Plus gelten' : 'Für diesen Kauf gelten') : (free ? 'Livo Plus is governed by' : 'This purchase is governed by');
   const termsIntro = terms
-    ? (de ? `Für diesen Kauf gelten unsere Allgemeinen Geschäftsbedingungen mit Widerrufsbelehrung in der Fassung gültig ab ${terms.version}. Hier ist der vollständige Text – bitte bewahre diese E-Mail auf.`
-          : `This purchase is governed by our terms of use and sale, including the withdrawal instructions, effective ${terms.version}. Here is the full text – please keep this email.`)
-    : (de ? `Für diesen Kauf gelten unsere Allgemeinen Geschäftsbedingungen mit Widerrufsbelehrung: ${termsUrl}`
-          : `This purchase is governed by our terms of use and sale, including the withdrawal instructions: ${termsUrl}`);
+    ? (de ? `${governed} unsere Allgemeinen Geschäftsbedingungen mit Widerrufsbelehrung in der Fassung gültig ab ${terms.version}. Hier ist der vollständige Text – bitte bewahre diese E-Mail auf.`
+          : `${governed} our terms of use and sale, including the withdrawal instructions, effective ${terms.version}. Here is the full text – please keep this email.`)
+    : (de ? `${governed} unsere Allgemeinen Geschäftsbedingungen mit Widerrufsbelehrung: ${termsUrl}`
+          : `${governed} our terms of use and sale, including the withdrawal instructions: ${termsUrl}`);
   const text = [hello, intro, rows.map(([label, value]) => `${label}: ${value}`).join('\n'), termsIntro, terms?.text ?? '', '-- \nheylivo · heylivo.com']
     .filter(Boolean).join('\n\n');
   const html = `<!doctype html>
@@ -234,7 +251,7 @@ Deno.serve(async (request) => {
   const testSecret = request.headers.get('x-cron-secret');
   if (testSecret !== null) {
     if (!CRON_SECRET || !sameText(testSecret, CRON_SECRET)) return json({ error: 'Not allowed.' }, 401);
-    let test: { test?: string; lang?: string } = {};
+    let test: { test?: string; lang?: string; free?: boolean } = {};
     try {
       test = JSON.parse(payload);
     } catch {
@@ -243,7 +260,8 @@ Deno.serve(async (request) => {
     if (test.test !== 'confirmation') return json({ error: 'Unknown test.' }, 400);
     const lang = test.lang === 'de' ? 'de' : 'en';
     const today = berlinToday();
-    return json({ test: true, lang, sent: await confirmBuyer(OWNER_EMAIL, lang, addYear(today), today, PRICE_CENTS) });
+    const free = test.free === true;
+    return json({ test: true, lang, free, sent: await confirmBuyer(OWNER_EMAIL, lang, addYear(today), today, free ? 0 : PRICE_CENTS) });
   }
 
   if (!(await validSignature(payload, request.headers.get('stripe-signature') ?? ''))) return json({ error: 'Invalid signature' }, 400);
@@ -260,10 +278,14 @@ Deno.serve(async (request) => {
 
   const session = event.data.object;
   const userId = String(session.client_reference_id ?? '');
-  // Nur Livo-Plus-Käufe: über einen Zahlungslink, in Euro, mit einer heylivo-Nutzer-ID
-  const fromOurLink = PAYMENT_LINK ? session.payment_link === PAYMENT_LINK : !!session.payment_link && session.amount_total === PRICE_CENTS;
+  // Nur Livo-Plus-Käufe: über einen Zahlungslink, in Euro, mit einer heylivo-Nutzer-ID.
+  // Der Listenpreis (vor Rabatt) muss 11,99 € sein - ein Aktionscode ändert nur den Endbetrag.
+  const listPrice = session.amount_subtotal ?? session.amount_total;
+  const fromOurLink = PAYMENT_LINK ? session.payment_link === PAYMENT_LINK : !!session.payment_link && listPrice === PRICE_CENTS;
   if (session.mode !== 'payment' || !fromOurLink || session.currency !== 'eur' || !UUID.test(userId)) return json({ received: true, ignored: true });
-  if (session.payment_status !== 'paid') return json({ received: true, ignored: 'unpaid' });
+  // Gratis-Code (100 % Rabatt): Stripe meldet 0 € und "no_payment_required" statt "paid"
+  const freeCode = session.amount_total === 0 && (session.total_details?.amount_discount ?? 0) > 0 && session.payment_status === 'no_payment_required';
+  if (session.payment_status !== 'paid' && !freeCode) return json({ received: true, ignored: 'unpaid' });
 
   const { data: plan } = await supabase.from('plans').select('plus_until, stripe_session_id').eq('user_id', userId).maybeSingle();
   // Stripe stellt Ereignisse manchmal doppelt zu - dieselbe Zahlung nur einmal verbuchen
