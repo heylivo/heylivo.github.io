@@ -82,7 +82,7 @@ main { padding-bottom: 24px; }
 .applinks .social { display: flex; gap: 12px; margin-top: 14px; }
 .applinks .social a { display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); }
 .applinks .social svg { width: 15px; height: 15px; }
-.sec { display: flex; align-items: center; gap: 8px; margin: 22px 4px 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.sec { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 22px 4px 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .sec-now { color: var(--now); }
 /* "Alles im Blick" und eine Reihe darunter der Filter Alle | 7 Tage | 30 Tage - in allen Sprachen gleich */
 .sec-row { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 22px 4px 8px; }
@@ -130,6 +130,8 @@ main { padding-bottom: 24px; }
 .yslots li { margin: 0 0 4px; padding: 8px 12px; border: 1px dashed #86efac; border-radius: 10px; background: #ecfdf5; color: #065f46; font-size: 14px; font-weight: 700; }
 .filter-none { margin: 4px 4px 12px; color: var(--muted); font-size: 14px; }
 .sec span { background: var(--now); color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; letter-spacing: 0; }
+/* Heutiges Datum neben "Alles im Blick" */
+.sec .sec-date { padding: 1px 10px; background: var(--brand-soft); color: var(--brand-dark); font-weight: 700; text-transform: none; white-space: nowrap; }
 .card {
   display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 8px; padding: 12px 14px;
   text-align: left; font: inherit; color: inherit; cursor: pointer;

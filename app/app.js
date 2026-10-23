@@ -232,7 +232,13 @@ function statusHTML() {
   return '<button type="button" class="expired" data-act="plus">' + t("status.expired") + '</button>';
 }
 
+// Bleibt die App über Mitternacht offen, stimmen das Datum neben "Alles im Blick" und "morgen fällig" beim nächsten Hinsehen wieder
+var renderedDay = "";
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden && renderedDay && renderedDay !== fmt(new Date())) render();
+});
 function render() {
+  renderedDay = fmt(new Date());
   var list = document.getElementById("list"), controls = document.getElementById("controls"), stat = document.getElementById("status");
   renderNote();
   if (!items.length) { controls.innerHTML = stat.innerHTML = ""; list.innerHTML = emptyHTML(); return; }
@@ -265,7 +271,7 @@ function laterHTML(later) {
     Object.keys(FILTER_DAYS).map(function (f) {
       return '<button type="button" data-act="filter" data-id="' + f + '" aria-pressed="' + (f === listFilter) + '">' + t("filter." + f) + '</button>';
     }).join("") + '</div>';
-  return '<div class="sec-row"><h2 class="sec">' + t("sec.later") + '</h2><div class="filterrow">' + filter + yearBtnHTML() + '</div></div>' +
+  return '<div class="sec-row"><h2 class="sec">' + t("sec.later") + ' <span class="sec-date">' + fmt(new Date()) + '</span></h2><div class="filterrow">' + filter + yearBtnHTML() + '</div></div>' +
     (shown.length ? shown.map(card).join("") : '<p class="filter-none">' + t("filter.none", { n: days }) + '</p>');
 }
 function yearBtnHTML() {
