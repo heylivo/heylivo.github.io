@@ -1,0 +1,56 @@
+name: Aktion Livo Plus
+
+# Posts the giveaway "25 x 1 Jahr Livo Plus" from automation/aktion/aktion.csv to the heylivo
+# Instagram account (python automation/post_aktion.py): the English carousel once, then a
+# story every second day until 30.11.2026, alternating German and English.
+# Shares the concurrency group with daily-post.yml and promo-post.yml, so they never post at
+# the same time.
+
+on:
+  schedule:
+    # 13:00 UTC = 14:00 in Germany, 15:00 in Greece (GitHub may start it hours later)
+    - cron: "0 13 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "automation/aktion/aktion.csv"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests==2.32.3
+
+      - name: Post what is due
+        working-directory: automation
+        env:
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: python post_aktion.py
+
+      - name: Remember what was posted
+        # also after a failure: a story that is already up must not be posted twice
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add automation/aktion/aktion.csv
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: Aktion Livo Plus posted"
+          git pull --rebase
+          git push
