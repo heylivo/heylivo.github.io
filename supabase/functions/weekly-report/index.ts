@@ -6,7 +6,8 @@
 // Gleiche Regeln wie die App (livo_guard in 0002_trial.sql) und send-reminders: Testphase =
 // 30 Tage ab der ersten gespeicherten Frist (usage.trial_started), Livo Plus = plans.plus_until
 // ab heute. Jedes neue Browserfenster (auch InPrivate) ist ein neuer anonymer Nutzer - eigene
-// Tests zählen also mit.
+// Tests zählen also mit. Bots (Programme, die die App automatisch öffnen) schätzt der Bericht über
+// das Gerät der ersten Sitzung (report_devices() aus 0014_report_devices.sql) und weist sie extra aus.
 // Secrets wie bei send-reminders und stripe-webhook: CRON_SECRET, RESEND_API_KEY, OWNER_EMAIL.
 
 import { createClient, type User } from 'npm:@supabase/supabase-js@2';
@@ -59,8 +60,56 @@ type Report = {
   newUsers: number; // letzte Woche zum ersten Mal geöffnet
   newTrials: number; // letzte Woche die erste Frist gespeichert
   newPlus: number; // letzte Woche Livo Plus gekauft oder verlängert
+  bots: number | null; // davon "nur geöffnet" wahrscheinlich Bots - null = Geräte nicht lesbar, Zeilen fehlen dann
+  newBots: number | null; // davon letzte Woche neu
+  newDevices: [string, number][]; // Geräte der übrigen Neuen der letzten Woche, häufigstes zuerst
 };
 type PlanRow = { user_id: string; plus_until: string | null; email: string | null; updated_at: string };
+
+// <device-check>
+// Jeder Aufruf der App legt ein anonymes Konto an - auch Programme, die Seiten automatisch öffnen
+// (Suchmaschinen, SEO-Tools, Vorschau-Dienste). In der Woche nach Product Hunt (25.10.2026) war das
+// rund die Hälfte der Neuen. Geschätzt, und nur für Konten ohne Frist und ohne Plus:
+// - Kennung eines Programms oder ein Linux-Desktop ("X11; Linux" - als echte Besucher sehr selten)
+// - drei oder mehr solche Konten innerhalb von 2 Minuten (Programme rufen die Seite mehrfach auf)
+const BOT_AGENT = /bot|crawl|spider|slurp|headless|lighthouse|python|curl|wget|okhttp|go-http|java\/|node-fetch|axios|puppeteer|playwright|phantom|facebookexternalhit|x11; linux/i;
+const BURST_MS = 2 * 60 * 1000;
+const BURST_MIN = 3;
+
+type Visit = { id: string; created: number; agent: string | null };
+
+function botIds(visits: Visit[]): Set<string> {
+  const bots = new Set<string>();
+  for (const v of visits) if (v.agent && BOT_AGENT.test(v.agent)) bots.add(v.id);
+  const sorted = [...visits].sort((a, b) => a.created - b.created);
+  // j = erstes Konto, das nicht mehr ins 2-Minuten-Fenster ab sorted[i] fällt
+  for (let i = 0, j = 0; i < sorted.length; i++) {
+    while (j < sorted.length && sorted[j].created - sorted[i].created <= BURST_MS) j++;
+    if (j - i >= BURST_MIN) for (let k = i; k < j; k++) bots.add(sorted[k].id);
+  }
+  return bots;
+}
+
+// "Android", "iPhone über Instagram", "Android (in einer App)" ... - zeigt auch, ob der Link aus Instagram kam
+function deviceOf(agent: string | null): string {
+  if (!agent) return 'unbekannt';
+  const device = /iPhone/.test(agent) ? 'iPhone' : /iPad/.test(agent) ? 'iPad' : /Android/.test(agent) ? 'Android'
+    : /Windows/.test(agent) ? 'Windows-PC' : /Macintosh/.test(agent) ? 'Mac' : /CrOS/.test(agent) ? 'Chromebook' : 'anderes';
+  const app = /Instagram/.test(agent) ? 'Instagram' : /musical_ly|TikTok|BytedanceWebview/i.test(agent) ? 'TikTok'
+    : /FBAN|FBAV|FB_IAB/.test(agent) ? 'Facebook' : '';
+  if (app) return `${device} über ${app}`;
+  return /; wv\)/.test(agent) ? `${device} (in einer App)` : device;
+}
+
+function countDevices(agents: (string | null)[]): [string, number][] {
+  const counts = new Map<string, number>();
+  for (const agent of agents) {
+    const device = deviceOf(agent);
+    counts.set(device, (counts.get(device) ?? 0) + 1);
+  }
+  return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+// </device-check>
 
 async function collect(today: string): Promise<Report> {
   const users: User[] = [];
@@ -77,6 +126,16 @@ async function collect(today: string): Promise<Report> {
   const plans = new Map((await fetchAll<PlanRow>((a, b) =>
     supabase.from('plans').select('user_id, plus_until, email, updated_at').order('user_id').range(a, b)))
     .map((row) => [row.user_id, row] as const));
+  // Gerät der ersten Sitzung. Schlägt das fehl (z. B. 0014 noch nicht eingespielt), kommt der Bericht
+  // wie bisher, nur ohne die Bot-Zeilen.
+  let agents: Map<string, string | null> | null = null;
+  try {
+    agents = new Map((await fetchAll<{ user_id: string; user_agent: string | null }>((a, b) =>
+      supabase.rpc('report_devices').order('user_id').range(a, b)))
+      .map((row) => [row.user_id, row.user_agent] as const));
+  } catch (error) {
+    console.error('report_devices failed - report without bot estimate', error);
+  }
 
   // Letzte Woche = die 7 Tage vor heute (Montag bis Sonntag, wenn der Bericht montags kommt)
   const weekFrom = addDays(today, -7);
@@ -84,23 +143,31 @@ async function collect(today: string): Promise<Report> {
   const lastWeek = (iso: string | null | undefined) => !!iso && iso >= weekFrom && iso <= weekTo;
   const report: Report = {
     today, weekFrom, weekTo, trialAnon: 0, trialMail: [], plus: [], overAnon: 0, overMail: [],
-    openedOnly: 0, total: users.length, endingSoon: 0, newUsers: 0, newTrials: 0, newPlus: 0
+    openedOnly: 0, total: users.length, endingSoon: 0, newUsers: 0, newTrials: 0, newPlus: 0,
+    bots: null, newBots: null, newDevices: []
   };
+  const openedOnly: (Visit & { isNew: boolean })[] = [];
+  const newHumanAgents: (string | null)[] = []; // Neue mit Frist oder Plus - sicher keine Bots
   for (const user of users) {
     const email = !user.is_anonymous && user.email ? user.email : '';
     const started = usage.get(user.id) ?? null;
     const plan = plans.get(user.id);
-    if (lastWeek(berlinDate(new Date(user.created_at)))) report.newUsers++;
+    const isNew = lastWeek(berlinDate(new Date(user.created_at)));
+    const agent = agents?.get(user.id) ?? null;
+    if (isNew) report.newUsers++;
     if (lastWeek(started)) report.newTrials++;
     if (plan?.plus_until && plan.plus_until >= today) {
       report.plus.push({ email: email || plan.email || '-', date: plan.plus_until });
       if (lastWeek(berlinDate(new Date(plan.updated_at)))) report.newPlus++;
+      if (isNew) newHumanAgents.push(agent);
       continue;
     }
     if (!started) {
       report.openedOnly++;
+      openedOnly.push({ id: user.id, created: Date.parse(user.created_at), agent, isNew });
       continue;
     }
+    if (isNew) newHumanAgents.push(agent);
     const lastDay = addDays(started, TRIAL_DAYS);
     if (lastDay >= today) {
       if (lastDay <= addDays(today, 6)) report.endingSoon++;
@@ -112,6 +179,12 @@ async function collect(today: string): Promise<Report> {
   report.trialMail.sort((a, b) => a.date.localeCompare(b.date));
   report.plus.sort((a, b) => a.date.localeCompare(b.date));
   report.overMail.sort((a, b) => b.date.localeCompare(a.date));
+  if (agents) {
+    const bots = botIds(openedOnly);
+    report.bots = bots.size;
+    report.newBots = openedOnly.filter((v) => v.isNew && bots.has(v.id)).length;
+    report.newDevices = countDevices(newHumanAgents.concat(openedOnly.filter((v) => v.isNew && !bots.has(v.id)).map((v) => v.agent)));
+  }
   return report;
 }
 
@@ -147,9 +220,17 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
     ['Livo Plus', r.plus.length]
   ];
   const over = r.overAnon + r.overMail.length;
-  const sections: [string, [string, string][]][] = [
+  // Zeile = [Text, Zahl, eingerückt?] - eingerückt sind die "davon"-Zeilen unter der Zeile darüber
+  type Row = [string, string, boolean?];
+  const others = r.newBots === null ? 0 : r.newUsers - r.newBots;
+  const newBotRows: Row[] = r.newBots === null ? [] : [
+    ['davon wahrscheinlich Bots', String(r.newBots), true],
+    ...(others ? [[`Geräte der übrigen ${others}: ` + r.newDevices.map(([device, n]) => `${n}× ${device}`).join(' · '), '', true] as Row] : [])
+  ];
+  const sections: [string, Row[]][] = [
     [`Letzte Woche (${week})`, [
       ['App zum ersten Mal geöffnet', String(r.newUsers)],
+      ...newBotRows,
       ['Erste Frist gespeichert (Testphase gestartet)', String(r.newTrials)],
       ['Livo Plus gekauft', String(r.newPlus)]
     ]],
@@ -157,9 +238,13 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
       ['Testphase endet in den nächsten 7 Tagen', String(r.endingSoon)],
       ['Testphase vorbei, ohne Plus', r.overMail.length ? `${over} (davon ${r.overMail.length} mit E-Mail)` : String(over)],
       ['App nur geöffnet, noch keine Frist', String(r.openedOnly)],
+      ...(r.bots === null ? [] : [['davon wahrscheinlich Bots', String(r.bots), true] as Row]),
       ['Alle Nutzer zusammen', String(r.total)]
     ]]
   ];
+  const footer = (r.bots === null ? '' : 'Bots sind geschätzt: Programme, die die App automatisch öffnen (Suchmaschinen, SEO-Tools, Linux-Rechner) oder 3 und mehr neue Konten innerhalb von 2 Minuten. ') +
+    'Eigene Tests zählen mit: Jedes neue Browserfenster ist ein neuer anonymer Nutzer' +
+    (r.bots === null ? '' : ' (bei den Geräten meist „Windows-PC“)') + '. Dieser Bericht kommt jeden Montag automatisch.';
   const lists: [string, Person[], string][] = [
     ['Livo Plus', r.plus, 'bis'],
     ['In der Testphase mit E-Mail', r.trialMail, 'Testphase bis'],
@@ -186,10 +271,10 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
     `<tr><td style="padding:22px 24px 0;font-family:${FONT};">` +
     `<div style="font-size:12px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#5b6475;">${escapeHtml(title)}</div>` +
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">${rows.join('')}</table></td></tr>`;
-  // Zahlen: Text links, Zahl rechts
-  const numberRow = ([label, value]: [string, string]) =>
-    `<tr><td style="${cell}font-size:15px;color:#0b1420;">${escapeHtml(label)}</td>` +
-    `<td align="right" valign="top" style="${cell}padding-left:12px;font-size:15px;font-weight:800;color:#0b1420;white-space:nowrap;">${escapeHtml(value)}</td></tr>`;
+  // Zahlen: Text links, Zahl rechts; "davon"-Zeilen eingerückt und grau
+  const numberRow = ([label, value, sub]: Row) =>
+    `<tr><td style="${cell}${sub ? 'padding-left:16px;font-size:14px;color:#5b6475;' : 'font-size:15px;color:#0b1420;'}">${escapeHtml(label)}</td>` +
+    `<td align="right" valign="top" style="${cell}padding-left:12px;font-size:${sub ? 14 : 15}px;font-weight:800;color:${sub ? '#5b6475' : '#0b1420'};white-space:nowrap;">${escapeHtml(value)}</td></tr>`;
   // Listen: Adresse oben, Datum darunter - so bleibt die Adresse auch auf dem Handy ganz
   const personRow = ([email, when]: [string, string]) =>
     `<tr><td style="${cell}"><div style="font-size:14px;color:#0b1420;word-break:break-word;">${escapeHtml(email)}</div>` +
@@ -219,7 +304,7 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
 </td></tr>
 ${sections.map(([title, rows]) => sectionHtml(title, rows.map(numberRow))).join('\n')}
 ${filled.map(([title, rows]) => sectionHtml(title, rows.map(personRow))).join('\n')}
-<tr><td style="padding:22px 24px 26px;font-family:${FONT};font-size:13px;line-height:1.5;color:#5b6475;">Eigene Tests zählen mit: Jedes neue Browserfenster ist ein neuer anonymer Nutzer. Dieser Bericht kommt jeden Montag automatisch.</td></tr>
+<tr><td style="padding:22px 24px 26px;font-family:${FONT};font-size:13px;line-height:1.5;color:#5b6475;">${escapeHtml(footer)}</td></tr>
 </table>
 <p style="margin:16px 0 0;font-family:${FONT};font-size:12px;color:#8a93a6;"><a href="https://heylivo.com" style="color:#8a93a6;text-decoration:none;">heylivo.com</a></p>
 </td></tr>
@@ -227,14 +312,14 @@ ${filled.map(([title, rows]) => sectionHtml(title, rows.map(personRow))).join('\
 </body>
 </html>`;
 
-  const textBlock = (title: string, rows: [string, string][]) =>
-    `${title.toUpperCase()}\n` + rows.map(([label, value]) => (value ? `${label}: ${value}` : label)).join('\n');
+  const textBlock = (title: string, rows: Row[]) =>
+    `${title.toUpperCase()}\n` + rows.map(([label, value, sub]) => (sub ? '  - ' : '') + (value ? `${label}: ${value}` : label)).join('\n');
   const text = [
     `heylivo – Wochenbericht\n${stand}`,
     tiles.map(([label, n]) => `${label}: ${n}`).join('\n'),
     ...sections.map(([title, rows]) => textBlock(title, rows)),
     ...filled.map(([title, rows]) => textBlock(title, rows)),
-    '-- \nEigene Tests zählen mit: Jedes neue Browserfenster ist ein neuer anonymer Nutzer. Dieser Bericht kommt jeden Montag automatisch.\nheylivo.com'
+    `-- \n${footer}\nheylivo.com`
   ].join('\n\n');
   return { subject, html, text };
 }
@@ -269,7 +354,8 @@ Deno.serve(async (request) => {
     // Nur Zahlen zurückgeben - die Adressen stehen ausschließlich in der Mail
     return json({
       sent: true, today: report.today, trialAnon: report.trialAnon, trialMail: report.trialMail.length,
-      plus: report.plus.length, openedOnly: report.openedOnly, total: report.total
+      plus: report.plus.length, openedOnly: report.openedOnly, total: report.total,
+      newUsers: report.newUsers, newBots: report.newBots, bots: report.bots
     });
   } catch (error) {
     console.error('Weekly report failed', error);
