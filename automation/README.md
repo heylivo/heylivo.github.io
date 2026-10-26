@@ -7,6 +7,10 @@ Jeden Tag um 15:00 UTC (`.github/workflows/daily-post.yml`):
 3. `to_jpeg.py` wandelt es in JPEG um, das Bild wird nach `output/` committet (Instagram braucht eine öffentliche Adresse).
 4. `post_instagram.py` veröffentlicht es mit Text aus Hook, Caption, Link-Hinweis und Hashtags.
 
+## Sonderposts mit festem Datum
+
+`specials.csv` (Spalten wie der Plan, dazu `Datum`, `Sprache` und `Link`; Tag-Nummern ab 101) ersetzt an seinem Datum den Post des Plans – Instagram und den Pinterest-Pin derselben Sprache; der Pin der anderen Sprache und der Plan ab dem nächsten Tag laufen normal weiter. `Link` ist das Ziel des Pins. Erster Einsatz: Kfz-Countdown zum 30.11.2026 (Tage 101–105, 02./09./16./23./29.11.), Kurzlink in den Texten: `heylivo.com/kfz` (`/kfz/index.html` leitet auf den Ratgeber weiter). Vorschau: `__preview-reel.html?day=101&t=7.5`, `__preview-cards.html?day=101&pin=1`.
+
 Zweimal im Monat verlängert `refresh-instagram-token.yml` den Instagram-Schlüssel (er gilt nur 60 Tage).
 
 ## Secrets im Repo (Settings → Secrets and variables → Actions)

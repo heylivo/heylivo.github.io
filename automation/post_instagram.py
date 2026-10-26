@@ -2,7 +2,7 @@
 Publishes one image post to the heylivo Instagram account via the Instagram API with
 Instagram Login (graph.instagram.com) - like post_instagram.py of Smart Menu Solutions,
 but the caption is built here from the day's row in content_calendar.csv (German) or
-content_calendar_en.csv (English).
+content_calendar_en.csv (English), or from specials.csv on the date of a special post.
 
 Instagram needs a publicly reachable image_url (no direct upload), so the workflow pushes
 the JPEG to the repo first and passes its raw.githubusercontent.com URL.
@@ -13,20 +13,17 @@ Usage:
     python post_instagram.py <public_image_or_mp4_url> <day_number> [de|en]
 """
 
-import csv
 import os
 import sys
 import time
-from pathlib import Path
 
 import requests
 
 from music import credit_line
+from render_card import load_day_row
 
 API_VERSION = "v21.0"
 BASE = f"https://graph.instagram.com/{API_VERSION}"
-AUTOMATION_DIR = Path(__file__).resolve().parent
-CALENDARS = {"de": "content_calendar.csv", "en": "content_calendar_en.csv"}
 CTA = {
     "de": "👉 30 Tage kostenlos testen – Link in der Bio: heylivo.com",
     "en": "👉 Try it free for 30 days – link in bio: heylivo.com/en",
@@ -35,13 +32,9 @@ CTA = {
 
 # Reels also name their background music (the CC BY licence asks for a credit, see music.py)
 def caption_for(day_number: int, lang: str, reel: bool = False) -> str:
-    path = AUTOMATION_DIR / CALENDARS[lang]
+    row = load_day_row(day_number, lang)
     credit = f"\n{credit_line(day_number, lang)}" if reel else ""
-    with open(path, newline="", encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            if int(row["Tag"]) == day_number:
-                return f"{row['Hook']}\n\n{row['Caption']}\n\n{CTA[lang]}{credit}\n\n{row['Hashtags']}"
-    raise ValueError(f"Day {day_number} not found in {path}")
+    return f"{row['Hook']}\n\n{row['Caption']}\n\n{CTA[lang]}{credit}\n\n{row['Hashtags']}"
 
 
 # An .mp4 becomes a Reel (also shown in the profile grid), anything else an image post.

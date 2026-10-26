@@ -24,13 +24,17 @@ CALENDARS = {"de": "content_calendar.csv", "en": "content_calendar_en.csv"}
 CARD_CTA = {"de": "30 Tage kostenlos", "en": "30 days free"}
 
 
+# The calendar first, then the special posts with a fixed date (specials.csv, day numbers from 101)
 def load_day_row(day_number: int, lang: str) -> dict:
-    path = AUTOMATION_DIR / CALENDARS[lang]
-    with open(path, newline="", encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            if int(row["Tag"]) == day_number:
-                return row
-    raise ValueError(f"Day {day_number} not found in {path}")
+    sources = ((AUTOMATION_DIR / CALENDARS[lang], None), (AUTOMATION_DIR / "specials.csv", lang))
+    for path, special_lang in sources:
+        if not path.exists():
+            continue
+        with open(path, newline="", encoding="utf-8-sig") as f:
+            for row in csv.DictReader(f):
+                if int(row["Tag"]) == day_number and special_lang in (None, row.get("Sprache")):
+                    return row
+    raise ValueError(f"Day {day_number} ({lang}) not found in {CALENDARS[lang]} or specials.csv")
 
 
 # Same steps as hookSize() in the local preview, so both look alike

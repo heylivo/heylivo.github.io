@@ -6,8 +6,9 @@ Usage:
     python make_pins.py [day_number] [--force]
 
 Without a day number it takes today's day from get_day_number.py. Both languages get the
-same day of their calendar (content_calendar.csv / content_calendar_en.csv). One pin per
-language and date: if today's pin is already in the feed, nothing changes (--force replaces it).
+same day of their calendar (content_calendar.csv / content_calendar_en.csv) - except on the date
+of a special post (specials.csv, e.g. the Kfz countdown), which replaces its own language only.
+One pin per language and date: if today's pin is already in the feed, nothing changes (--force replaces it).
 
 The pin is the Instagram card (templates/card.html) in Pinterest's 2:3 format: render_card.py
 fills the template, templates/pin.css stretches it to 1080 x 1620. Files:
@@ -24,7 +25,7 @@ import re
 import sys
 from pathlib import Path
 
-from get_day_number import today_post
+from get_day_number import pins_today
 from render_card import build_html, load_day_row
 
 AUTOMATION_DIR = Path(__file__).resolve().parent
@@ -92,6 +93,8 @@ GENERAL = {"Hallo!", "So geht's", "Hi!", "How it works"}
 
 
 def pin_link(row: dict, lang: str) -> str:
+    if row.get("Link", "").strip():  # special posts name their page themselves
+        return row["Link"].strip()
     if row.get("Kategorie", "").strip() in GENERAL:
         return FEED[lang]["link"]
     text = row.get("Hook", "").lower()
@@ -170,9 +173,10 @@ def write_feed(lang: str, items: list) -> Path:
     return path
 
 
-def make(day_number: int, date_text: str, force: bool = False) -> None:
+def make(days: dict[str, int], date_text: str, force: bool = False) -> None:
     PIN_DIR.mkdir(exist_ok=True)
     for lang in ("de", "en"):
+        day_number = days[lang]
         name = f"pin-{date_text}-{lang}.jpg"
         # A second run on the same day (schedule after a push, manual test) leaves the feed alone -
         # a changed item could make Pinterest pin it again.
@@ -190,5 +194,5 @@ if __name__ == "__main__":
     if len(args) > 1:
         print("Usage: python make_pins.py [day_number] [--force]")
         sys.exit(1)
-    day = int(args[0]) if args and args[0].strip() else today_post()[0]
-    make(day, datetime.date.today().isoformat(), "--force" in sys.argv)
+    days = {"de": int(args[0]), "en": int(args[0])} if args and args[0].strip() else pins_today()
+    make(days, datetime.date.today().isoformat(), "--force" in sys.argv)
