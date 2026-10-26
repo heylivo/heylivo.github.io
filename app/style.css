@@ -80,7 +80,7 @@ main { padding-bottom: 24px; }
 .applinks { padding: 4px 4px 110px; color: var(--muted); font-size: 12px; }
 .applinks a { margin-right: 14px; color: var(--muted); }
 .applinks .social { display: flex; gap: 12px; margin-top: 14px; }
-.applinks .social a { display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); }
+.applinks .social a { display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; border: 0; border-radius: 50%; background: var(--grad); color: #fff; box-shadow: 0 6px 14px -8px rgba(91,50,230,.7); }
 .applinks .social svg { width: 15px; height: 15px; }
 .sec { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 22px 4px 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .sec-now { color: var(--now); }

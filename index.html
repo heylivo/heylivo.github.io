@@ -233,8 +233,8 @@
   /* Instagram und TikTok: runde Symbole rechts unten, links neben Deutsch/English */
   footer .fright { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
   footer .social { display: flex; gap: 10px; }
-  footer .social a { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); transition: color .2s, border-color .2s; }
-  footer .social a:hover { color: var(--violet); border-color: var(--violet); }
+  footer .social a { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--grad); color: #fff; box-shadow: 0 8px 18px -10px rgba(91,50,230,.7); transition: filter .2s, transform .2s; }
+  footer .social a:hover { color: #fff; filter: brightness(1.08); transform: translateY(-1px); }
   footer .social svg { width: 17px; height: 17px; }
 
   @media (max-width: 920px) {
