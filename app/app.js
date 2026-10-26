@@ -46,7 +46,10 @@ function fromRow(r) {
 async function signIn() {
   var s = await sb.auth.getSession();
   if (s.data.session) { setUser(s.data.session.user); return; }
-  var r = await sb.auth.signInAnonymously();
+  // Neues Konto: Herkunft des Besuchs (ref.js: Website-Link ?von=…, verweisende Seite, In-App-Browser)
+  // nur als Stichwort, z. B. "instagram" - für den Wochenbericht; "direkt" = unbekannt
+  var src = (window.heylivoSource && window.heylivoSource()) || "direkt";
+  var r = await sb.auth.signInAnonymously({ options: { data: { src: src } } });
   if (r.error) throw r.error;
   setUser(r.data.user);
 }

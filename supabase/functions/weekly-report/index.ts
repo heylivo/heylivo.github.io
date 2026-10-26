@@ -8,6 +8,7 @@
 // ab heute. Jedes neue Browserfenster (auch InPrivate) ist ein neuer anonymer Nutzer - eigene
 // Tests zählen also mit. Bots (Programme, die die App automatisch öffnen) schätzt der Bericht über
 // das Gerät der ersten Sitzung (report_devices() aus 0014_report_devices.sql) und weist sie extra aus.
+// Die Herkunft (user_metadata.src) schreibt die App beim ersten Öffnen mit (ref.js), siehe Zeilen „Herkunft“.
 // Secrets wie bei send-reminders und stripe-webhook: CRON_SECRET, RESEND_API_KEY, OWNER_EMAIL.
 
 import { createClient, type User } from 'npm:@supabase/supabase-js@2';
@@ -63,6 +64,8 @@ type Report = {
   bots: number | null; // davon "nur geöffnet" wahrscheinlich Bots - null = Geräte nicht lesbar, Zeilen fehlen dann
   newBots: number | null; // davon letzte Woche neu
   newDevices: [string, number][]; // Geräte der übrigen Neuen der letzten Woche, häufigstes zuerst
+  newSources: [string, number][]; // Herkunft der übrigen Neuen (user_metadata.src, ref.js), häufigste zuerst
+  trialSources: [string, number][]; // Herkunft derer, die letzte Woche die erste Frist gespeichert haben
 };
 type PlanRow = { user_id: string; plus_until: string | null; email: string | null; updated_at: string };
 
@@ -99,6 +102,21 @@ function deviceOf(agent: string | null): string {
     : /FBAN|FBAV|FB_IAB/.test(agent) ? 'Facebook' : '';
   if (app) return `${device} über ${app}`;
   return /; wv\)/.test(agent) ? `${device} (in einer App)` : device;
+}
+
+// Herkunft: Stichwort aus der App (ref.js) -> Name im Bericht; Konten von vor dem 26.10.2026 haben keins
+const SOURCE_NAMES: Record<string, string> = {
+  instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', pinterest: 'Pinterest', google: 'Google', bing: 'Bing',
+  duckduckgo: 'DuckDuckGo', ecosia: 'Ecosia', yahoo: 'Yahoo', facebook: 'Facebook', producthunt: 'Product Hunt',
+  reddit: 'Reddit', x: 'X', linkedin: 'LinkedIn', whatsapp: 'WhatsApp', direkt: 'direkt', '': 'unbekannt'
+};
+function countSources(sources: string[]): [string, number][] {
+  const counts = new Map<string, number>();
+  for (const src of sources) {
+    const name = SOURCE_NAMES[src] ?? src;
+    counts.set(name, (counts.get(name) ?? 0) + 1);
+  }
+  return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 }
 
 function countDevices(agents: (string | null)[]): [string, number][] {
@@ -144,30 +162,42 @@ async function collect(today: string): Promise<Report> {
   const report: Report = {
     today, weekFrom, weekTo, trialAnon: 0, trialMail: [], plus: [], overAnon: 0, overMail: [],
     openedOnly: 0, total: users.length, endingSoon: 0, newUsers: 0, newTrials: 0, newPlus: 0,
-    bots: null, newBots: null, newDevices: []
+    bots: null, newBots: null, newDevices: [], newSources: [], trialSources: []
   };
-  const openedOnly: (Visit & { isNew: boolean })[] = [];
+  const openedOnly: (Visit & { isNew: boolean; src: string })[] = [];
   const newHumanAgents: (string | null)[] = []; // Neue mit Frist oder Plus - sicher keine Bots
+  const newHumanSources: string[] = [];
+  const trialSources: string[] = [];
   for (const user of users) {
     const email = !user.is_anonymous && user.email ? user.email : '';
     const started = usage.get(user.id) ?? null;
     const plan = plans.get(user.id);
     const isNew = lastWeek(berlinDate(new Date(user.created_at)));
     const agent = agents?.get(user.id) ?? null;
+    const src = typeof user.user_metadata?.src === 'string' ? user.user_metadata.src : '';
     if (isNew) report.newUsers++;
-    if (lastWeek(started)) report.newTrials++;
+    if (lastWeek(started)) {
+      report.newTrials++;
+      trialSources.push(src);
+    }
     if (plan?.plus_until && plan.plus_until >= today) {
       report.plus.push({ email: email || plan.email || '-', date: plan.plus_until });
       if (lastWeek(berlinDate(new Date(plan.updated_at)))) report.newPlus++;
-      if (isNew) newHumanAgents.push(agent);
+      if (isNew) {
+        newHumanAgents.push(agent);
+        newHumanSources.push(src);
+      }
       continue;
     }
     if (!started) {
       report.openedOnly++;
-      openedOnly.push({ id: user.id, created: Date.parse(user.created_at), agent, isNew });
+      openedOnly.push({ id: user.id, created: Date.parse(user.created_at), agent, isNew, src });
       continue;
     }
-    if (isNew) newHumanAgents.push(agent);
+    if (isNew) {
+      newHumanAgents.push(agent);
+      newHumanSources.push(src);
+    }
     const lastDay = addDays(started, TRIAL_DAYS);
     if (lastDay >= today) {
       if (lastDay <= addDays(today, 6)) report.endingSoon++;
@@ -179,12 +209,16 @@ async function collect(today: string): Promise<Report> {
   report.trialMail.sort((a, b) => a.date.localeCompare(b.date));
   report.plus.sort((a, b) => a.date.localeCompare(b.date));
   report.overMail.sort((a, b) => b.date.localeCompare(a.date));
+  // Ohne Gerätedaten gibt es keine Bot-Schätzung - dann zählt die Herkunft aller Neuen
+  const bots = agents ? botIds(openedOnly) : new Set<string>();
+  const newOthers = openedOnly.filter((v) => v.isNew && !bots.has(v.id));
   if (agents) {
-    const bots = botIds(openedOnly);
     report.bots = bots.size;
     report.newBots = openedOnly.filter((v) => v.isNew && bots.has(v.id)).length;
-    report.newDevices = countDevices(newHumanAgents.concat(openedOnly.filter((v) => v.isNew && !bots.has(v.id)).map((v) => v.agent)));
+    report.newDevices = countDevices(newHumanAgents.concat(newOthers.map((v) => v.agent)));
   }
+  report.newSources = countSources(newHumanSources.concat(newOthers.map((v) => v.src)));
+  report.trialSources = countSources(trialSources);
   return report;
 }
 
@@ -222,16 +256,20 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
   const over = r.overAnon + r.overMail.length;
   // Zeile = [Text, Zahl, eingerückt?] - eingerückt sind die "davon"-Zeilen unter der Zeile darüber
   type Row = [string, string, boolean?];
-  const others = r.newBots === null ? 0 : r.newUsers - r.newBots;
-  const newBotRows: Row[] = r.newBots === null ? [] : [
-    ['davon wahrscheinlich Bots', String(r.newBots), true],
-    ...(others ? [[`Geräte der übrigen ${others}: ` + r.newDevices.map(([device, n]) => `${n}× ${device}`).join(' · '), '', true] as Row] : [])
+  const others = r.newBots === null ? r.newUsers : r.newUsers - r.newBots;
+  const counted = (pairs: [string, number][]) => pairs.map(([name, n]) => `${n}× ${name}`).join(' · ');
+  const newBotRows: Row[] = [
+    ...(r.newBots === null ? [] : [['davon wahrscheinlich Bots', String(r.newBots), true] as Row]),
+    ...(others && r.newBots !== null ? [[`Geräte der übrigen ${others}: ` + counted(r.newDevices), '', true] as Row] : []),
+    ...(others && r.newSources.length
+      ? [[(r.newBots === null ? 'Herkunft: ' : `Herkunft der übrigen ${others}: `) + counted(r.newSources), '', true] as Row] : [])
   ];
   const sections: [string, Row[]][] = [
     [`Letzte Woche (${week})`, [
       ['App zum ersten Mal geöffnet', String(r.newUsers)],
       ...newBotRows,
       ['Erste Frist gespeichert (Testphase gestartet)', String(r.newTrials)],
+      ...(r.trialSources.length ? [['Herkunft: ' + counted(r.trialSources), '', true] as Row] : []),
       ['Livo Plus gekauft', String(r.newPlus)]
     ]],
     ['Insgesamt', [
@@ -244,7 +282,9 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
   ];
   const footer = (r.bots === null ? '' : 'Bots sind geschätzt: Programme, die die App automatisch öffnen (Suchmaschinen, SEO-Tools, Linux-Rechner) oder 3 und mehr neue Konten innerhalb von 2 Minuten. ') +
     'Eigene Tests zählen mit: Jedes neue Browserfenster ist ein neuer anonymer Nutzer' +
-    (r.bots === null ? '' : ' (bei den Geräten meist „Windows-PC“)') + '. Dieser Bericht kommt jeden Montag automatisch.';
+    (r.bots === null ? '' : ' (bei den Geräten meist „Windows-PC“)') +
+    '. Herkunft = woher jemand beim ersten Öffnen der App kam („direkt“: nicht erkennbar, „unbekannt“: Konto von vor dem 26.10.2026).' +
+    ' Dieser Bericht kommt jeden Montag automatisch.';
   const lists: [string, Person[], string][] = [
     ['Livo Plus', r.plus, 'bis'],
     ['In der Testphase mit E-Mail', r.trialMail, 'Testphase bis'],
@@ -355,7 +395,7 @@ Deno.serve(async (request) => {
     return json({
       sent: true, today: report.today, trialAnon: report.trialAnon, trialMail: report.trialMail.length,
       plus: report.plus.length, openedOnly: report.openedOnly, total: report.total,
-      newUsers: report.newUsers, newBots: report.newBots, bots: report.bots
+      newUsers: report.newUsers, newBots: report.newBots, bots: report.bots, newSources: report.newSources
     });
   } catch (error) {
     console.error('Weekly report failed', error);
