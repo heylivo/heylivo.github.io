@@ -15,8 +15,6 @@ import html
 import sys
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
-
 AUTOMATION_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = AUTOMATION_DIR / "templates" / "card.html"
 LOGO_PATH = AUTOMATION_DIR / "assets" / "logo.png"
@@ -68,7 +66,11 @@ def build_html(row: dict, lang: str) -> str:
     return template
 
 
+# Playwright only here: post_instagram.py imports load_day_row, and the promo/Aktion
+# workflows install nothing but requests
 def render(day_number: int, output_path: Path, lang: str) -> None:
+    from playwright.sync_api import sync_playwright
+
     row = load_day_row(day_number, lang)
     tmp_html = AUTOMATION_DIR / "templates" / f"_tmp_card_day{day_number}.html"
     tmp_html.write_text(build_html(row, lang), encoding="utf-8")
