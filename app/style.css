@@ -103,6 +103,8 @@ main { padding-bottom: 24px; }
 .ylegend .yd { width: 14px; height: 14px; }
 .ylegend .yd.hol { border-color: #f59e0b; background: #f59e0b; } /* in der Legende ein voller Kreis wie die anderen */
 .ylegend .yd.hol::after { display: none; }
+.yholpick { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.yholpick select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; font: inherit; color: var(--ink); }
 .ymonths { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px 12px; }
 .ymonth h4 { margin: 0; font-size: 14px; text-transform: capitalize; }
 .ysum { margin: 1px 0 6px; color: var(--muted); font-size: 11.5px; }

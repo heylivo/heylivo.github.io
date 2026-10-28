@@ -336,8 +336,13 @@ function showYear() {
     (locked ? '<div class="ynav"><span></span>' + range + '<span></span></div>'
       : '<div class="ynav"><button type="button" class="linkbtn plain" data-act="ynav" data-id="-12" aria-label="‹">‹</button>' + range +
         '<button type="button" class="linkbtn plain" data-act="ynav" data-id="12" aria-label="›">›</button></div>') +
+    // Feiertage: Land wählbar (Standard = Land der App-Sprache), nicht im gesperrten Kalender
+    (locked ? "" : '<label class="yholpick"><span>' + esc(t("year.holFor")) + '</span><select id="yhol">' +
+      [["", t("year.holNone")]].concat(holidayCountries()).map(function (c) {
+        return '<option value="' + c[0] + '"' + (c[0] === holidayCountry() ? " selected" : "") + '>' + esc(c[1]) + '</option>';
+      }).join("") + '</select></label>') +
     // Punkt und Wort bleiben zusammen (sonst rutscht beim Umbruch z. B. der Ring von "heute" in die Zeile davor)
-    '<p class="ylegend">' + [["due", "year.legendDue"], ["part", "year.legendPart"], ["late", "year.legendLate"], ["today", "year.legendToday"], ["", "year.legendFree"]].concat(HOLIDAYS[LANG] ? [["hol", "year.legendHol"]] : []).map(function (l) {
+    '<p class="ylegend">' + [["due", "year.legendDue"], ["part", "year.legendPart"], ["late", "year.legendLate"], ["today", "year.legendToday"], ["", "year.legendFree"]].concat(HOLIDAYS[holidayCountry()] ? [["hol", "year.legendHol"]] : []).map(function (l) {
       return '<span class="ylg"><span class="yd ' + l[0] + '"></span>' + esc(t(l[1])) + '</span>';
     }).join("") + '</p>' +
     (locked
@@ -351,6 +356,8 @@ function showYear() {
         '<button type="button" class="btn light" data-act="close">OK</button></div>'));
   showYear.occ = occ;
   showYear.hol = hol;
+  var pick = document.getElementById("yhol");
+  if (pick) pick.addEventListener("change", function () { setHolidayCountry(pick.value); showYear(); });
 }
 // Freie Zeiten eines Tages zwischen 08:00 und 20:00: Termine mit Uhrzeit belegen ihre Zeit
 // (ohne Endzeit eine Stunde), ganztägige Fristen belegen keine Uhrzeit. Lücken unter 15 Minuten zählen nicht.
