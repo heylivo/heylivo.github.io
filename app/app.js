@@ -306,7 +306,7 @@ function showYear() {
   var locked = !canEdit(), upcoming = 0;
   if (locked) yearShift = 0;
   var start = addMonths(new Date(t0.getFullYear(), t0.getMonth(), 1), yearShift), end = addDays(addMonths(start, 12), -1);
-  var occ = occurrences(start, end);
+  var occ = occurrences(start, end), hol = holidayMap(start.getFullYear(), end.getFullYear());
   var monthFmt = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric" });
   var shortFmt = new Intl.DateTimeFormat(LOCALE, { month: "short", year: "numeric" });
   var wdFmt = new Intl.DateTimeFormat(LOCALE, { weekday: "narrow" });
@@ -324,8 +324,8 @@ function showYear() {
       if (!list.length && iso >= todayIso) free++;
       // nur Termine mit Uhrzeit = teilweise belegt (hellblau), sonst ganztägig belegt (blau)
       var partly = list.length && list.every(function (it) { return it.time; });
-      var cls = "yd" + (list.length ? (iso < todayIso ? " late" : partly ? " part" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "");
-      cells += '<button type="button" class="' + cls + '" data-act="yday" data-id="' + iso + '">' + day + '</button>';
+      var cls = "yd" + (list.length ? (iso < todayIso ? " late" : partly ? " part" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "") + (hol[iso] ? " hol" : "");
+      cells += '<button type="button" class="' + cls + '" data-act="yday" data-id="' + iso + '"' + (hol[iso] ? ' title="' + esc(hol[iso]) + '"' : "") + '>' + day + '</button>';
     }
     months += '<div class="ymonth"><h4>' + esc(monthFmt.format(first)) + '</h4>' +
       '<p class="ysum">' + (count ? t("year.count", { n: count }) + " · " : "") + t("year.free", { n: free }) + '</p>' +
@@ -337,7 +337,7 @@ function showYear() {
       : '<div class="ynav"><button type="button" class="linkbtn plain" data-act="ynav" data-id="-12" aria-label="‹">‹</button>' + range +
         '<button type="button" class="linkbtn plain" data-act="ynav" data-id="12" aria-label="›">›</button></div>') +
     // Punkt und Wort bleiben zusammen (sonst rutscht beim Umbruch z. B. der Ring von "heute" in die Zeile davor)
-    '<p class="ylegend">' + [["due", "year.legendDue"], ["part", "year.legendPart"], ["late", "year.legendLate"], ["today", "year.legendToday"], ["", "year.legendFree"]].map(function (l) {
+    '<p class="ylegend">' + [["due", "year.legendDue"], ["part", "year.legendPart"], ["late", "year.legendLate"], ["today", "year.legendToday"], ["", "year.legendFree"]].concat(HOLIDAYS[LANG] ? [["hol", "year.legendHol"]] : []).map(function (l) {
       return '<span class="ylg"><span class="yd ' + l[0] + '"></span>' + esc(t(l[1])) + '</span>';
     }).join("") + '</p>' +
     (locked
@@ -350,6 +350,7 @@ function showYear() {
         '<div class="ydetail" id="ydetail"><p class="muted">' + esc(t("year.hint")) + '</p>' +
         '<button type="button" class="btn light" data-act="close">OK</button></div>'));
   showYear.occ = occ;
+  showYear.hol = hol;
 }
 // Freie Zeiten eines Tages zwischen 08:00 und 20:00: Termine mit Uhrzeit belegen ihre Zeit
 // (ohne Endzeit eine Stunde), ganztägige Fristen belegen keine Uhrzeit. Lücken unter 15 Minuten zählen nicht.
@@ -376,7 +377,9 @@ function showYearDay(iso) {
   var btn = document.querySelector('.yd[data-id="' + iso + '"]');
   if (btn) btn.classList.add("sel");
   var wd = new Intl.DateTimeFormat(LOCALE, { weekday: "long" }).format(fromISO(iso));
+  var hol = (showYear.hol || {})[iso];
   box.innerHTML = '<p class="ydate"><b>' + esc(wd.charAt(0).toLocaleUpperCase(LOCALE) + wd.slice(1) + ", " + fmt(fromISO(iso))) + '</b></p>' +
+    (hol ? '<p class="yhol">' + esc(t("year.holiday", { name: hol })) + '</p>' : "") +
     // Fristen des Tages nach Uhrzeit (ganztägige zuerst); "+ Frist an diesem Tag" an jedem Tag ab heute,
     // auch an belegten - ein Termin belegt nur seine Uhrzeit, nicht den ganzen Tag
     (list.length ? list.slice().sort(function (a, b) { return (a.time || "") < (b.time || "") ? -1 : (a.time || "") > (b.time || "") ? 1 : 0; }).map(card).join("")

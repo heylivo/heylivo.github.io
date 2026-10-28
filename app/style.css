@@ -113,6 +113,10 @@ main { padding-bottom: 24px; }
 .yd.part { border-color: #9db6fb; background: #dbe6ff; color: var(--brand-dark); font-weight: 800; }
 .yd.late { border-color: var(--late); background: var(--late); color: #fff; font-weight: 800; }
 .yd.today { box-shadow: inset 0 0 0 2px var(--violet); }
+/* Feiertag: kleiner orangefarbener Punkt oben rechts - passt zu jedem anderen Zustand des Tages */
+.yd.hol { position: relative; }
+.yd.hol::after { content: ""; position: absolute; top: 2px; right: 2px; width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; }
+.ydetail .yhol { margin: -4px 0 8px; color: #b45309; font-size: 14px; font-weight: 700; }
 /* Rahmen nach innen, damit der gewählte Tag nicht über die Nachbarn ragt */
 .yd.sel { box-shadow: inset 0 0 0 2px var(--ink), inset 0 0 0 3px #fff; }
 /* unten im Fenster fest: der gewählte Tag */
