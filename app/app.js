@@ -1068,6 +1068,46 @@ async function afterPurchase() {
   toast(isPlus() ? t("toast.plusActive", { date: fmt(fromISO(plusUntil)) }) : t("toast.plusPending"));
 }
 
+/* ---------- Gratis-Aktion: Livo Plus geschenkt (Link ?gift=<Code> aus der Instagram-DM) ---------- */
+// Ein Tipp schaltet Plus für ein Jahr frei - Datenbank-Funktion redeem_gift (0015), ohne Stripe und ohne Preis.
+// Danach der Hinweis, das Konto zu sichern: sonst hängt das Geschenk nur an diesem Browser
+// (bei Instagram oft der eingebaute Browser der App).
+var giftCode = "";
+function showGift(msg) {
+  openSheet('<h3>' + t("gift.title") + '</h3>' +
+    '<p class="hint">' + t("gift.text") + '</p>' +
+    (msg ? '<p class="err">' + esc(msg) + '</p>' : "") +
+    '<button type="button" class="btn" data-act="giftRedeem">' + t("gift.btn") + '</button>' +
+    '<p class="legal"><a href="' + (LANG === "de" ? "../aktion" : "../en/giveaway") + '" target="_blank" rel="noopener">' + t("gift.terms") + '</a></p>' +
+    '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>');
+}
+function showGiftDone(already) {
+  openSheet('<h3>' + (already ? t("gift.already") : t("gift.title")) + '</h3>' +
+    (plusUntil ? '<p class="hint">' + t("gift.done", { date: fmt(fromISO(plusUntil)) }) + '</p>' : "") +
+    (userEmail
+      ? '<button type="button" class="btn" data-act="close">OK</button>'
+      : '<p class="muted">' + t("gift.secure") + '</p>' +
+        '<button type="button" class="btn" data-act="account">' + t("acc.secure") + '</button>' +
+        '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>'));
+}
+async function redeemGift(btn) {
+  btn.disabled = true;
+  var res;
+  if (DEMO) res = { ok: true, plus_until: toISO(addMonths(today(), 12)) };
+  else {
+    var r = await sb.rpc("redeem_gift", { p_code: giftCode });
+    if (r.error) { btn.disabled = false; toast(t("toast.retry")); return; }
+    res = r.data || {};
+  }
+  if (res.ok || res.error === "already") {
+    if (res.plus_until) plusUntil = res.plus_until;
+    history.replaceState(null, "", location.pathname);
+    render();
+    return showGiftDone(!res.ok);
+  }
+  showGift(t(res.error === "used_up" ? "gift.errUsed" : res.error === "expired" ? "gift.errExpired" : "gift.errInvalid"));
+}
+
 /* ---------- Kurze Meldung ---------- */
 var toastTimer;
 function toast(msg) {
@@ -1136,6 +1176,7 @@ document.addEventListener("click", function (e) {
     showAccount(act === "signin" ? "signin" : "");
     if (accFlow) accFlow.then = then;
   }
+  else if (act === "giftRedeem") redeemGift(el);
   else if (act === "resend") sendCode(el, true);
   else if (act === "otherEmail") otherEmail();
   else if (act === "signout") signOutHere();
@@ -1233,7 +1274,9 @@ async function start() {
   if (!DEMO && params.get("plus") === "danke") afterPurchase();
   if (params.get("filter")) setFilter(params.get("filter")); // zum Testen: &filter=week | month | all
   var show = params.get("show") || "";
-  if (params.get("say")) understand(params.get("say"));
+  giftCode = (params.get("gift") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 30);
+  if (giftCode) showGift(); // Gratis-Aktion: ?gift=<Code> aus der DM
+  else if (params.get("say")) understand(params.get("say"));
   else if (show === "add") showPicker();
   else if (show === "voice") showVoice();
   else if (show.indexOf("form:") === 0) showNew(show.slice(5));
