@@ -1,6 +1,7 @@
 # Music credits
 
-Short excerpts (first 9 seconds, loudness-normalised) used as background music in the heylivo Reels:
+Short excerpts (first 9 seconds, loudness-normalised) used as background music in the heylivo Reels,
+and the first 25 seconds of the same tracks in `long/` for the Ratgeber-Reels:
 
 - "Wallpaper" – Kevin MacLeod (incompetech.com)
 - "Carefree" – Kevin MacLeod (incompetech.com)

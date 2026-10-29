@@ -1,0 +1,71 @@
+name: Ratgeber Reels
+
+# Posts the daily Ratgeber-Reel from automation/ratgeber/ratgeber.csv to the heylivo Instagram account:
+# a question, three facts and a Livo reminder, German and English taking turns. Renders the Reel
+# (python automation/post_ratgeber.py render), pushes the MP4 so the website serves it, then publishes it.
+# Shares the concurrency group with the other Instagram workflows, so they never post at the same time.
+
+on:
+  schedule:
+    # 06:00 UTC = 07:00 in Germany, 08:00 in Greece (GitHub usually starts it a few hours later)
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: automation
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Make today's Reel
+        id: reel
+        working-directory: automation
+        run: python post_ratgeber.py render
+
+      - name: Commit and push the video (Instagram needs a public URL)
+        if: steps.reel.outputs.file != ''
+        working-directory: automation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "output/${{ steps.reel.outputs.file }}"
+          # only the 7 newest videos stay on the website (same clean-up as daily-post.yml)
+          python -c "import pathlib, subprocess; old = sorted(pathlib.Path('output').glob('*.mp4'), key=lambda p: p.stem[-10:], reverse=True)[7:]; [subprocess.run(['git', 'rm', '-q', str(p)], check=True) for p in old]"
+          git commit -m "chore: Ratgeber Reel ${{ steps.reel.outputs.datum }}" || echo "File already in the repo"
+          git pull --rebase
+          git push
+
+      - name: Post to Instagram
+        if: steps.reel.outputs.file != ''
+        working-directory: automation
+        env:
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: python post_ratgeber.py post "${{ steps.reel.outputs.datum }}"
+
+      - name: Remember what was posted
+        if: steps.reel.outputs.file != ''
+        run: |
+          git add automation/ratgeber/ratgeber.csv
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: Ratgeber Reel posted"
+          git pull --rebase
+          git push

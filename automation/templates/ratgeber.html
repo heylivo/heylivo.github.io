@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="__LANG__">
+<head>
+<meta charset="utf-8">
+<!-- Vorlage für die täglichen Ratgeber-Reels (1080 x 1920, 5 Tafeln). render_ratgeber.py füllt die
+     Platzhalter aus automation/ratgeber/ratgeber.csv und fotografiert jede Tafel einzeln
+     (window.showSlide(n), lokal auch ?slide=n); ffmpeg blendet sie mit Musik ineinander.
+     Rechts ~160 px und unten ~420 px bleiben frei: dort liegen in Reels die Knöpfe und der Text von Instagram. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans:wght@500;600;700;800&display=swap">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; }
+  body { font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif; color: #fff; background: #3062f9; }
+  .slide { position: absolute; inset: 0; box-sizing: border-box; display: none; flex-direction: column;
+    padding: 170px 160px 420px 90px; overflow: hidden; background: linear-gradient(160deg, #08bdf8 0%, #3062f9 50%, #8a3cf5 100%); }
+  .slide.on { display: flex; }
+  .slide > * { position: relative; }
+  .glow { position: absolute; left: -240px; top: -280px; width: 980px; height: 980px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.24) 0, rgba(255,255,255,0) 62%); }
+  .ring { position: absolute; right: -280px; bottom: -300px; width: 860px; height: 860px; border-radius: 50%; background: rgba(255,255,255,.08); }
+  /* Fortschritt wie bei Stories: eine Linie pro Tafel */
+  .bars { display: flex; gap: 12px; margin-bottom: 44px; }
+  .bars i { flex: 1; height: 8px; border-radius: 8px; background: rgba(255,255,255,.3); }
+  .bars i.done { background: #fff; }
+  .brand { display: flex; align-items: center; gap: 18px; font-size: 46px; font-weight: 800; letter-spacing: -.02em; }
+  .brand img { width: 78px; height: 78px; border-radius: 20px; }
+  /* Der Inhalt unter dem Logo steht senkrecht in der Mitte: erstes Element margin-top: auto, letztes margin-bottom: auto */
+  .pill { align-self: flex-start; margin: auto 0 40px; padding: 16px 32px; border-radius: 999px; background: rgba(255,255,255,.2);
+    font-size: 32px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .hook { margin: 0; font-size: __HOOK_SIZE__px; line-height: 1.06; font-weight: 800; letter-spacing: -.03em; }
+  .sub { margin: 48px 0 auto; font-size: 58px; line-height: 1.3; font-weight: 600; color: rgba(255,255,255,.94); }
+  /* Fakten-Tafeln */
+  .num { display: grid; place-items: center; width: 130px; height: 130px; margin-top: auto; border-radius: 38px;
+    background: #fff; color: #5a32e6; font-size: 70px; font-weight: 800; }
+  .ftitle { margin: 50px 0 0; font-size: 94px; line-height: 1.06; font-weight: 800; letter-spacing: -.025em; }
+  .ftext { margin: 44px 0 auto; font-size: 60px; line-height: 1.36; font-weight: 500; color: rgba(255,255,255,.96); }
+  /* Schluss-Tafel */
+  .ctitle { margin: auto 0 0; font-size: 84px; line-height: 1.08; font-weight: 800; letter-spacing: -.025em; }
+  .push { display: flex; align-items: center; gap: 28px; margin-top: 56px; padding: 34px 38px; border-radius: 40px; background: #fff; color: #0d1330;
+    box-shadow: 0 44px 90px -30px rgba(15,10,70,.6); }
+  .push img { flex: none; width: 96px; height: 96px; border-radius: 24px; box-shadow: 0 0 0 1px #ece8fb; }
+  .push b { display: block; margin-bottom: 6px; font-size: 42px; }
+  .push span { font-size: 42px; line-height: 1.3; color: #5d6480; }
+  .more { margin: 90px 0 0; font-size: 44px; font-weight: 600; color: rgba(255,255,255,.9); }
+  .link { margin: 10px 0 0; font-size: 58px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
+  .nw { white-space: nowrap; } /* "Kfz-Versicherung" never breaks at the hyphen */
+  .cta { align-self: flex-start; margin: 48px 0 auto; padding: 24px 40px; border-radius: 26px; background: #fff; color: #5a32e6; font-size: 44px; font-weight: 800; }
+</style>
+</head>
+<body>
+<section class="slide">
+  <span class="glow"></span><span class="ring"></span>
+  <div class="bars"><i class="done"></i><i></i><i></i><i></i><i></i></div>
+  <div class="brand"><img src="__LOGO_PATH__" alt="">heylivo</div>
+  <div class="pill">__CATEGORY__</div>
+  <h1 class="hook">__HOOK__</h1>
+  <p class="sub">__SUB__</p>
+</section>
+<section class="slide">
+  <span class="glow"></span><span class="ring"></span>
+  <div class="bars"><i class="done"></i><i class="done"></i><i></i><i></i><i></i></div>
+  <div class="brand"><img src="__LOGO_PATH__" alt="">heylivo</div>
+  <div class="num">1</div>
+  <h2 class="ftitle">__T1__</h2>
+  <p class="ftext">__F1__</p>
+</section>
+<section class="slide">
+  <span class="glow"></span><span class="ring"></span>
+  <div class="bars"><i class="done"></i><i class="done"></i><i class="done"></i><i></i><i></i></div>
+  <div class="brand"><img src="__LOGO_PATH__" alt="">heylivo</div>
+  <div class="num">2</div>
+  <h2 class="ftitle">__T2__</h2>
+  <p class="ftext">__F2__</p>
+</section>
+<section class="slide">
+  <span class="glow"></span><span class="ring"></span>
+  <div class="bars"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i></i></div>
+  <div class="brand"><img src="__LOGO_PATH__" alt="">heylivo</div>
+  <div class="num">3</div>
+  <h2 class="ftitle">__T3__</h2>
+  <p class="ftext">__F3__</p>
+</section>
+<section class="slide">
+  <span class="glow"></span><span class="ring"></span>
+  <div class="bars"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i></div>
+  <div class="brand"><img src="__LOGO_PATH__" alt="">heylivo</div>
+  <h2 class="ctitle">__CTA_TITLE__</h2>
+  <div class="push"><img src="__LOGO_PATH__" alt=""><div><b>Hey Livo</b><span>__PUSH__</span></div></div>
+  <p class="more">__MORE__</p>
+  <p class="link">__LINK__</p>
+  <span class="cta">__CTA__</span>
+</section>
+<script>
+  // Ein zu langes Wort (z. B. "Wohnungsgeberbestätigung") würde rechts in Instagrams Knöpfe ragen:
+  // dann wird nur dieser Text so weit verkleinert, bis er in seine Spalte passt
+  function overflows(el) {
+    // the real position of every text line - scrollWidth does not report text that runs out of a visible box
+    var range = document.createRange(), right = el.getBoundingClientRect().right;
+    range.selectNodeContents(el);
+    return Array.prototype.some.call(range.getClientRects(), function (r) { return r.right > right + 1; });
+  }
+  function fit(el) {
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    while (overflows(el) && size > 28) { size -= 2; el.style.fontSize = size + "px"; }
+  }
+  // Aufnahme: genau eine Tafel zeigen (0 = Frage, 1-3 = Fakten, 4 = Schluss) - erst nach dem Laden der Schrift
+  window.showSlide = function (n) {
+    document.querySelectorAll(".slide").forEach(function (s, i) { s.classList.toggle("on", i === n); });
+    document.querySelectorAll(".slide.on .hook, .slide.on .sub, .slide.on .ftitle, .slide.on .ftext, .slide.on .ctitle, .slide.on .link, .slide.on .push span").forEach(fit);
+  };
+  // All slides are hidden at first, so the browser would not load the font by itself (document.fonts.ready
+  // resolves too early) - load every weight explicitly, then measure. render_ratgeber.py waits for this too.
+  window.fontsLoaded = Promise.all(["500", "600", "700", "800"].map(function (w) {
+    return document.fonts.load(w + ' 60px "Plus Jakarta Sans"', "Aaä€");
+  }));
+  window.fontsLoaded.then(function () { window.showSlide(+(new URLSearchParams(location.search).get("slide") || 0)); });
+</script>
+</body>
+</html>

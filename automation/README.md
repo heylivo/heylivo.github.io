@@ -33,6 +33,12 @@ Ohne die ersten beiden Secrets postet die Automatik nichts.
 
 Musik: `music.py` wählt je Tag eins von drei 9-Sekunden-Stücken aus `assets/music/` (Kevin MacLeod, incompetech.com, CC BY 4.0 – siehe `assets/music/CREDITS.md`). Die Lizenz verlangt eine Nennung, deshalb steht unter jedem Reel „🎵 Musik: … von Kevin MacLeod (incompetech.com), CC BY 4.0“.
 
+## Ratgeber-Reels (seit 30.10.2026)
+
+Zusätzlich zum Kalender-Post kommt jeden Tag ein Ratgeber-Reel (`.github/workflows/ratgeber-post.yml`, 06:00 UTC, GitHub startet meist später): eine Frage, drei Fakten und eine Livo-Erinnerung mit Link, Deutsch und Englisch im Wechsel. Der Plan steht in `ratgeber/ratgeber.csv`, eine Zeile pro Datum (Spalten Hook, Sub, T1/F1 … T3/F3, Push, Link, Caption, Hashtags; „Gepostet“ füllt der Bot mit der Media-ID). Gepostet wird immer die neueste fällige Zeile ohne Eintrag in „Gepostet“, ältere übrig gebliebene Zeilen werden „ausgelassen“.
+
+`render_ratgeber.py` füllt `templates/ratgeber.html`, fotografiert die 5 Tafeln einzeln und blendet sie mit ffmpeg zu einem ca. 20-Sekunden-Video über 25-Sekunden-Ausschnitten derselben Musik (`assets/music/long/`, Nennung in der Bildunterschrift). Zu lange Wörter verkleinert die Vorlage selbst, damit nichts rechts in Instagrams Knöpfe ragt. Ohne eigene Ratgeberseite verlinkt eine Folge auf `heylivo.com` bzw. `heylivo.com/en` („Kostenlos testen“). Kurzlinks für die Tafeln: `/fuehrerschein`, `/ausweis`, `/expats` (wie `/kfz`). Lokale Vorschau einer Tafel: die gefüllte Vorlage im Browser mit `?slide=0` … `?slide=4`.
+
 ## Pinterest
 
 Jeden Tag um 14:30 UTC macht `.github/workflows/pinterest-pins.yml` mit `make_pins.py` zwei Pins (Deutsch und Englisch, derselbe Tag aus beiden Plänen): die Instagram-Karte im Pinterest-Format 2:3 (1080 × 1620, `templates/pin.css`). Bilder, `items-de/en.json` und die RSS-Feeds liegen in `pinterest/`, die 30 neuesten je Sprache bleiben.

@@ -15,6 +15,15 @@ TRACKS = [
 ]
 
 
+# 25-second excerpts of the same tracks for the longer Ratgeber-Reels (render_ratgeber.py)
+LONG_DIR = MUSIC_DIR / "long"
+
+
+def long_track_for(number: int) -> tuple[Path, str]:
+    file_name, title = TRACKS[number % len(TRACKS)]
+    return LONG_DIR / file_name, title
+
+
 def track_for(day_number: int) -> tuple[Path, str]:
     file_name, title = TRACKS[day_number % len(TRACKS)]
     return MUSIC_DIR / file_name, title
