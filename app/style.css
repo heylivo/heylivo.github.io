@@ -196,6 +196,10 @@ main { padding-bottom: 24px; }
 .sheet h3 { margin: 4px 0 12px; font-size: 20px; }
 .cat { margin: 14px 0 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .tpls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* Eigene Kategorie: gestrichelter Knopf zum Anlegen, Stift zum Umbenennen neben dem Namen */
+.tpl.newcat { border-style: dashed; color: var(--brand-dark); }
+.catedit { margin-left: 4px; padding: 2px 6px; border: 0; border-radius: 8px; background: none; font-size: 14px; cursor: pointer; }
+.catedit:hover { background: var(--brand-soft); }
 .tpl { hyphens: manual; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; text-align: left; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
 .field { display: grid; gap: 6px; margin: 0 0 12px; font-size: 14px; font-weight: 700; }
 .field i { font-style: normal; font-weight: 400; color: var(--muted); }

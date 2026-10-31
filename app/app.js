@@ -432,6 +432,7 @@ function card(it) {
   var s = status(it);
   // Auf jeder Karte das Fälligkeitsdatum mit Uhrzeit (die Erinnerung steht in der Frist selbst)
   var sub = t("card.due", { x: dueText(it) });
+  if (it.tpl === "meine" && MY_CAT.cat) sub = MY_CAT.cat + " · " + sub; // eigene Kategorie, z. B. "George Kalender"
   return '<button type="button" class="card st-' + s.key + '" data-open="' + it.id + '">' +
     '<span class="ico">' + iconOf(it) + '</span>' +
     '<span class="txt"><b>' + esc(it.title) + '</b><small>' + esc(sub) + '</small></span>' +
@@ -472,12 +473,45 @@ function showPicker() {
   var visible = visibleTemplates();
   CATEGORIES.forEach(function (c) {
     var list = visible.filter(function (tp) { return tp.cat === c.id || tp.also === c.id; });
-    if (!list.length) return;
-    html += '<div class="cat">' + c.icon + " " + esc(catName(c)) + '</div><div class="tpls">' +
+    if (!list.length || (c.id === "mine" && !MY_CAT.cat)) return;
+    html += '<div class="cat">' + c.icon + " " + esc(catName(c)) +
+      (c.id === "mine" ? ' <button type="button" class="catedit" data-act="mycat" aria-label="' + esc(t("mycat.rename")) + '" title="' + esc(t("mycat.rename")) + '">✏️</button>' : "") +
+      '</div><div class="tpls">' +
       list.map(function (tp) { return '<button type="button" class="tpl" data-tpl="' + tp.id + '">' + esc(tplTitle(tp)) + '</button>'; }).join("") +
+      // noch keine eigene Kategorie: neben "Eigene Frist" anlegen
+      (c.id === "own" && !MY_CAT.cat ? '<button type="button" class="tpl newcat" data-act="mycat">+ ' + esc(t("mycat.new")) + '</button>' : "") +
       '</div>';
   });
   openSheet(html + '<button type="button" class="btn light" data-act="close">' + t("cancel") + '</button>');
+}
+
+// Eigene Kategorie anlegen oder umbenennen: genau eine Kategorie mit einer Unterkategorie
+function showMyCat() {
+  openSheet('<h3>⭐ ' + t(MY_CAT.cat ? "mycat.rename" : "mycat.new") + '</h3><form id="frm" novalidate>' +
+    '<p class="hint">' + esc(t("mycat.hint")) + '</p>' +
+    '<label class="field"><span>' + t("mycat.cat") + '</span><input name="cat" maxlength="40" value="' + esc(MY_CAT.cat) + '" placeholder="' + esc(t("mycat.catPh")) + '"></label>' +
+    '<label class="field"><span>' + t("mycat.sub") + '</span><input name="sub" maxlength="40" value="' + esc(MY_CAT.sub) + '" placeholder="' + esc(t("mycat.subPh")) + '"></label>' +
+    '<p class="err" id="err"></p>' +
+    '<button class="btn" type="submit">' + t("save") + '</button>' +
+    '<button class="btn light" type="button" data-act="add">' + t("back") + '</button></form>');
+  var form = document.getElementById("frm");
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var cat = form.elements.cat.value.trim().slice(0, 40), sub = form.elements.sub.value.trim().slice(0, 40);
+    if (!cat || !sub) { document.getElementById("err").textContent = t("mycat.err"); return; }
+    var btn = form.querySelector("[type=submit]");
+    btn.disabled = true;
+    try {
+      await saveMyCat(cat, sub);
+    } catch (err) {
+      btn.disabled = false;
+      document.getElementById("err").textContent = t("err.save");
+      return;
+    }
+    render(); // Karten zeigen den neuen Namen
+    showPicker();
+    toast(t("saved.plain"));
+  });
 }
 
 /* ---------- Spracheingabe: "Hey Livo" ---------- */
@@ -985,7 +1019,7 @@ function shareLink(it, via) {
   if (it.every) q += "&rm=" + it.every;
   if (it.everyDays) q += "&rd=" + it.everyDays;
   if (it.renew) q += "&nv=1";
-  return "https://heylivo.com/app/?" + q + "&l=" + it.lead + (it.tpl && it.tpl !== "eigene" ? "&tpl=" + it.tpl : "") + "&von=" + via;
+  return "https://heylivo.com/app/?" + q + "&l=" + it.lead + (it.tpl && it.tpl !== "eigene" && it.tpl !== "meine" ? "&tpl=" + it.tpl : "") + "&von=" + via;
 }
 function shareText(it, via) {
   return "📅 " + it.title + " – " + t("card.due", { x: dueText(it) }) + "\n\n" + t("share.save") + "\n" + shareLink(it, via);
@@ -1242,6 +1276,7 @@ document.addEventListener("click", function (e) {
   else if (act === "del") removeItem(id);
   else if (act === "share") showShare(id);
   else if (act === "shareOther") shareItem(id);
+  else if (act === "mycat") showMyCat();
   else if (act === "inAdd") addIncoming(el);
   else if (act === "calcopy") copyText(calFeedUrl, t("toast.linkCopied"));
   else if (act === "calreset") resetCalendar();

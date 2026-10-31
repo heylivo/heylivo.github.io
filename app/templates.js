@@ -18,8 +18,13 @@ var CATEGORIES = [
   { id: "travel", icon: "✈️" },
   { id: "money", icon: "💶" },
   { id: "appt", icon: "📌" },
-  { id: "own", icon: "📝" }
+  { id: "own", icon: "📝" },
+  { id: "mine", icon: "⭐" } // die eine eigene Kategorie des Nutzers (MY_CAT), nur wenn angelegt
 ];
+
+// Eigene Kategorie mit genau einer Unterkategorie, z. B. "George Kalender" / "Meine wichtigen Termine".
+// Beide Namen stehen im Konto (user_metadata myCat / mySub, account.js) und lassen sich jederzeit umbenennen.
+var MY_CAT = { cat: "", sub: "" };
 
 // Wiederholung: Monate ("m12") oder Tage ("d7"), "0" = einmalig, dazu "custom" = eigene Angabe.
 // Gespeichert wird every (Monate) bzw. everyDays (Tage) - nie beides.
@@ -191,6 +196,15 @@ var TEMPLATES = [
   // Eigene
   {
     id: "eigene", cat: "own", lead: 14,
+    fields: [{ key: "title", type: "text" }, { key: "date", type: "date" }, { key: "every", type: "repeat", value: "0" }],
+    compute: function (v) {
+      var r = v.every && typeof v.every === "object" ? v.every : parseRepeatValue(v.every);
+      return { due: fromISO(v.date), every: r.every, everyDays: r.everyDays };
+    }
+  },
+  // Unterkategorie der eigenen Kategorie: dasselbe Formular wie "Eigene Frist"
+  {
+    id: "meine", cat: "mine", lead: 14,
     fields: [{ key: "title", type: "text" }, { key: "date", type: "date" }, { key: "every", type: "repeat", value: "0" }],
     compute: function (v) {
       var r = v.every && typeof v.every === "object" ? v.every : parseRepeatValue(v.every);
@@ -718,16 +732,20 @@ var TPL_TEXT = {
   }
 };
 
-function tplText(tp) { return (TPL_TEXT[LANG] && TPL_TEXT[LANG][tp.id]) || TPL_TEXT.de[tp.id] || {}; }
+function tplText(tp) {
+  // "meine": Beschriftung wie "Eigene Frist", der Titel ist der Name der Unterkategorie
+  if (tp.id === "meine") return Object.assign({}, tplText({ id: "eigene" }), { title: MY_CAT.sub });
+  return (TPL_TEXT[LANG] && TPL_TEXT[LANG][tp.id]) || TPL_TEXT.de[tp.id] || {};
+}
 function tplTitle(tp) { return tplText(tp).title || tp.id; }
 function tplHint(tp) { return tplText(tp).hint || ""; }
 function fieldLabel(tp, f) { var x = tplText(tp); return (x.labels && x.labels[f.key]) || f.key; }
 function fieldPh(tp, f) { var x = tplText(tp); return (x.ph && x.ph[f.key]) || ""; }
-function catName(c) { return ((TPL_TEXT[LANG] || TPL_TEXT.en).cat || TPL_TEXT.de.cat)[c.id]; }
+function catName(c) { return c.id === "mine" ? MY_CAT.cat : ((TPL_TEXT[LANG] || TPL_TEXT.en).cat || TPL_TEXT.de.cat)[c.id]; }
 function demoWord(key) { return ((TPL_TEXT[LANG] || TPL_TEXT.en).demo || TPL_TEXT.de.demo)[key]; }
 // Titel einer neuen Frist: mit Anbieter/Arzt ("Handyvertrag Telekom – …") oder ohne
 function tplName(tp, v) {
-  if (tp.id === "eigene") return v.title || tplTitle(tp);
+  if (tp.id === "eigene" || tp.id === "meine") return v.title || tplTitle(tp);
   var x = tplText(tp), w = v.what || v.who;
   if (w && x.name) return x.name.replace("{what}", w);
   return x.name0 || tplTitle(tp);

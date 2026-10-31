@@ -15,6 +15,17 @@ var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 function setUser(user) {
   userId = user.id;
   userEmail = !user.is_anonymous && user.email ? user.email : "";
+  var m = user.user_metadata || {};
+  MY_CAT = { cat: m.myCat || "", sub: m.mySub || "" };
+}
+
+// Eigene Kategorie (templates.js MY_CAT) im Konto speichern - so ist sie auf jedem Gerät da
+async function saveMyCat(cat, sub) {
+  if (!DEMO) {
+    var r = await sb.auth.updateUser({ data: { myCat: cat, mySub: sub } });
+    if (r.error) throw r.error;
+  }
+  MY_CAT = { cat: cat, sub: sub };
 }
 
 // "Beta:" vorne im Text wird zum Schild BETA (style.css .beta), der Rest beginnt groß
@@ -188,8 +199,10 @@ function secured(user) {
 }
 
 async function signedIn(user, carry) {
-  var then = accFlow && accFlow.then;
+  var then = accFlow && accFlow.then, oldCat = MY_CAT;
   setUser(user);
+  // Eigene Kategorie vom Gerätekonto mitnehmen, wenn das Konto noch keine hat
+  if (!MY_CAT.cat && oldCat.cat) try { await saveMyCat(oldCat.cat, oldCat.sub); } catch (e) { /* bleibt auf dem Gerätekonto */ }
   accFlow = null;
   try { await sb.auth.updateUser({ data: { lang: LANG } }); } catch (e) { /* nur die Sprache der Mails */ }
   try { await loadAll(); } catch (e) { location.reload(); return; }
