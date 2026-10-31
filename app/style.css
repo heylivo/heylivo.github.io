@@ -213,6 +213,11 @@ main { padding-bottom: 24px; }
 .btn.light:hover { background: linear-gradient(135deg, #e3f6fe 0%, #eaf0ff 50%, #f2e9fe 100%); border-color: #aebffa; }
 .btn.danger { margin-top: 4px; background: none; color: var(--late); }
 a.btn { text-align: center; text-decoration: none; }
+/* Teilen: WhatsApp-Grün (etwas dunkler, damit die weiße Schrift gut lesbar ist) und Viber-Lila */
+.btn.wa { background: #1fa855; }
+.btn.wa:hover { background: #178a45; }
+.btn.viber { margin-top: 8px; background: #7360f2; }
+.btn.viber:hover { background: #5e4bd6; }
 .legal { margin: 8px 2px 4px; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .legal a { color: var(--brand); }
 /* "📖 Mehr dazu im Ratgeber" unter dem Hinweis einer Vorlage */

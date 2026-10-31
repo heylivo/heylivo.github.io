@@ -5,6 +5,7 @@
 // URL-Parameter zum Testen: ?demo=1 zeigt Beispiel-Fristen (wird nicht gespeichert),
 // &show=add | voice | form:<vorlage> | item | account | signin | howto öffnet direkt das passende Blatt,
 // &say=<Satz> verarbeitet einen Satz so, als wäre er gesprochen worden, &lang=en usw.
+// ?add=<Titel>&d=<JJJJ-MM-TT>[&h=&he=&s=&rm=&rd=&nv=&l=&tpl=] = geteilte Frist übernehmen (shareLink).
 
 var SUPABASE_URL = "https://fkhngrvqxlpqxpllrnoj.supabase.co";
 var SUPABASE_KEY = "sb_publishable_Ya83flK2efxCxi1WecSCwA_wbC_njXD"; // öffentlicher Schlüssel, darf im Code stehen
@@ -971,13 +972,35 @@ async function copyText(text, okText) {
   }
 }
 
-// Teilen über das Teilen-Menü des Geräts (WhatsApp, SMS, Mail …), sonst in die Zwischenablage.
-// Jeder darf teilen, auch nach der Testphase - der Link auf heylivo.com ist kostenlose Werbung.
+// Eine Frist teilen: WhatsApp, Viber oder das Teilen-Menü des Geräts (SMS, Mail …).
+// Jeder darf teilen, auch nach der Testphase - jeder Link ist kostenlose Werbung.
+// Der Link trägt die Frist selbst (?add=Titel&d=Datum …, nichts wird gespeichert); wer ihn antippt,
+// übernimmt sie mit einem Tipp (showIncoming). von=whatsapp | viber | teilen landet im Wochenbericht.
+function shareLink(it, via) {
+  var q = "add=" + encodeURIComponent(it.title) + "&d=" + it.due;
+  if (it.time) q += "&h=" + it.time + (it.timeEnd ? "&he=" + it.timeEnd : "") + (it.remindMin ? "&s=" + it.remindMin : "");
+  if (it.every) q += "&rm=" + it.every;
+  if (it.everyDays) q += "&rd=" + it.everyDays;
+  if (it.renew) q += "&nv=1";
+  return "https://heylivo.com/app/?" + q + "&l=" + it.lead + (it.tpl && it.tpl !== "eigene" ? "&tpl=" + it.tpl : "") + "&von=" + via;
+}
+function shareText(it, via) {
+  return "📅 " + it.title + " – " + t("card.due", { x: dueText(it) }) + "\n\n" + t("share.save") + "\n" + shareLink(it, via);
+}
+function showShare(id) {
+  var it = find(items, id);
+  if (!it) return;
+  openSheet('<h3>' + t("share.title") + '</h3>' +
+    '<p class="hint">' + esc(t("share.text")) + '</p>' +
+    '<a class="btn wa" href="https://wa.me/?text=' + encodeURIComponent(shareText(it, "whatsapp")) + '" target="_blank" rel="noopener">WhatsApp</a>' +
+    '<a class="btn viber" href="viber://forward?text=' + encodeURIComponent(shareText(it, "viber")) + '">Viber</a>' +
+    '<button type="button" class="btn light" data-act="shareOther" data-id="' + it.id + '">' + t("share.other") + '</button>' +
+    '<button class="btn light" type="button" data-open="' + it.id + '">' + t("back") + '</button>');
+}
 async function shareItem(id) {
   var it = find(items, id);
   if (!it) return;
-  var text = "📅 " + it.title + " – " + t("card.due", { x: dueText(it) }) + "\n\n" +
-    t("share.by") + " " + (LANG === "de" ? "https://heylivo.com/" : "https://heylivo.com/en/");
+  var text = shareText(it, "teilen");
   if (navigator.share) {
     try {
       await navigator.share({ text: text });
@@ -987,6 +1010,56 @@ async function shareItem(id) {
     }
   }
   copyText(text, t("toast.shareCopied"));
+}
+
+/* ---------- Geteilte Frist übernehmen (Link aus WhatsApp, Viber …) ---------- */
+// Alles kommt aus dem Link - deshalb jeden Wert prüfen; die Datenbank prüft beim Speichern noch einmal.
+var incoming = null;
+function readIncoming() {
+  function g(k) { return params.get(k) || ""; }
+  function num(k, max) { var n = parseInt(g(k), 10); return n > 0 && n <= max ? n : 0; }
+  function hm(k) { return /^([01]\d|2[0-3]):[0-5]\d$/.test(g(k)) ? g(k) : ""; }
+  history.replaceState(null, "", location.pathname); // ein Neuladen fragt nicht noch einmal
+  var title = g("add").trim().slice(0, 120), due = g("d"), time = hm("h");
+  if (!title || !/^\d{4}-\d\d-\d\d$/.test(due) || toISO(fromISO(due)) !== due) return null;
+  var lead = parseInt(g("l"), 10), it = {
+    tpl: find(TEMPLATES, g("tpl")) ? g("tpl") : "eigene", title: title, due: due, time: time,
+    timeEnd: time && hm("he") > time ? hm("he") : "", every: num("rm", 240), everyDays: num("rd", 3650), from: "due",
+    lead: lead >= 0 && lead <= 365 ? lead : 14, renew: g("nv") === "1", remindMin: time ? num("s", 1440) : 0
+  };
+  if (it.every && it.everyDays) it.everyDays = 0;
+  // Wiederholt sich die Frist und liegt schon zurück: der nächste Termin ab heute
+  if (repeats(it)) { var d = fromISO(due); while (d < today()) d = nextRepeat(d, it); it.due = toISO(d); }
+  return it;
+}
+function showIncoming(it) {
+  incoming = it;
+  if (!it) return;
+  var have = items.some(function (x) { return x.title === it.title && x.due === it.due && (x.time || "") === it.time; });
+  var past = it.due < toISO(today());
+  openSheet('<p class="muted">' + esc(t("in.title")) + '</p>' +
+    '<div class="d-head"><span class="ico">' + iconOf(it) + '</span><div><h3>' + esc(it.title) + '</h3></div></div>' +
+    '<dl><dt>' + t("dl.due") + '</dt><dd>' + esc(dueText(it)) + '</dd>' +
+    (past ? "" : '<dt>' + t("dl.remind") + '</dt><dd>' + esc(t("dl.remindVal", { n: it.lead, x: remindText(it) })) + '</dd>') +
+    (repeats(it) ? '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it)) + '</dd>' : "") + '</dl>' +
+    (past || have
+      ? '<p class="hint">' + esc(t(past ? "in.past" : "in.have")) + '</p><button type="button" class="btn" data-act="close">OK</button>'
+      : '<button type="button" class="btn" data-act="inAdd">' + t("in.btn") + '</button>' +
+        '<button type="button" class="btn light" data-act="close">' + t("in.no") + '</button>'));
+}
+async function addIncoming(btn) {
+  var it = incoming;
+  if (!it) return;
+  if (!canEdit()) return showPlus();
+  btn.disabled = true;
+  try { await addItem(it); } catch (e) { btn.disabled = false; toast(errText(e)); return; }
+  incoming = null;
+  render();
+  if (pushState !== "off") { closeSheet(); return toast(t("saved", { x: remindText(it) })); }
+  // Erinnerungen sind noch aus: gleich hier einschalten lassen, sonst meldet sich Livo nie
+  openSheet('<h3>' + t("saved.plain") + '</h3><p class="hint">' + esc(t("in.push")) + '</p>' +
+    '<button type="button" class="btn" data-act="push">' + t("push.card") + '</button>' +
+    '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>');
 }
 
 /* ---------- Kalender-Abo (Livo Plus, Edge Function "calendar") ---------- */
@@ -1133,6 +1206,7 @@ document.addEventListener("click", function (e) {
   if (act === "push" || (act === "info" && id === "push" && pushState === "off")) {
     if (act === "info") infoTab = "push";
     el.disabled = true;
+    if (sheet.contains(el)) closeSheet(); // Knopf im Fenster nach einer geteilten Frist
     enablePush().then(function (ok) {
       render();
       toast(ok ? t("toast.pushOn") : pushState === "blocked" ? t("toast.pushBlocked") : t("toast.pushOff"));
@@ -1160,7 +1234,9 @@ document.addEventListener("click", function (e) {
   else if (act === "done") markDone(id);
   else if (act === "edit") showEdit(id, false);
   else if (act === "del") removeItem(id);
-  else if (act === "share") shareItem(id);
+  else if (act === "share") showShare(id);
+  else if (act === "shareOther") shareItem(id);
+  else if (act === "inAdd") addIncoming(el);
   else if (act === "calcopy") copyText(calFeedUrl, t("toast.linkCopied"));
   else if (act === "calreset") resetCalendar();
   else if (act === "howto") showHowto();
@@ -1276,6 +1352,7 @@ async function start() {
   var show = params.get("show") || "";
   giftCode = (params.get("gift") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 30);
   if (giftCode) showGift(); // Gratis-Aktion: ?gift=<Code> aus der DM
+  else if (params.get("add")) showIncoming(readIncoming()); // geteilte Frist (WhatsApp, Viber …)
   else if (params.get("say")) understand(params.get("say"));
   else if (show === "add") showPicker();
   else if (show === "voice") showVoice();
