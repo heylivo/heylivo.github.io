@@ -218,6 +218,8 @@ a.btn { text-align: center; text-decoration: none; }
 .btn.wa:hover { background: #178a45; }
 .btn.viber { margin-top: 8px; background: #7360f2; }
 .btn.viber:hover { background: #5e4bd6; }
+.toast.withbtn:not([hidden]) { display: flex; align-items: center; gap: 12px; width: max-content; }
+.toastbtn { flex-shrink: 0; padding: 6px 12px; border: 1px solid rgba(255, 255, 255, .55); border-radius: 8px; background: none; color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 .legal { margin: 8px 2px 4px; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .legal a { color: var(--brand); }
 /* "📖 Mehr dazu im Ratgeber" unter dem Hinweis einer Vorlage */

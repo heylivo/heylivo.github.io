@@ -64,11 +64,13 @@ async function loadAll() {
   trialStarted = u.data ? u.data.trial_started : null;
 }
 async function addItem(it) {
-  if (DEMO) { it.id = uid(); items.push(it); return; }
+  if (DEMO) { it.id = uid(); items.push(it); return it; }
   var r = await sb.from("deadlines").insert(toRow(it)).select().single();
   if (r.error) throw r.error;
-  items.push(fromRow(r.data));
+  var saved = fromRow(r.data);
+  items.push(saved);
   if (!trialStarted) trialStarted = toISO(today()); // die erste Frist startet die Testphase
+  return saved;
 }
 async function updateItem(it) {
   if (DEMO) return;
@@ -777,19 +779,20 @@ function showDraft(d, said) {
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!readItemForm(form, d)) return;
-    saving(form, addItem(d), t("saved", { x: remindText(d) }));
+    saving(form, addItem(d), t("saved", { x: remindText(d) }), true);
   });
 }
 
-// Wartet auf das Speichern; bei Erfolg Blatt zu, sonst Fehler im Formular
-async function saving(form, promise, okText) {
+// Wartet auf das Speichern; bei Erfolg Blatt zu, sonst Fehler im Formular.
+// share: neue Frist - die Meldung bekommt den Knopf "Teilen" (WhatsApp, Viber …)
+async function saving(form, promise, okText, share) {
   var btn = form.querySelector("[type=submit]");
   btn.disabled = true;
   btn.textContent = t("saving");
   try {
-    await promise;
+    var saved = await promise;
     closeSheet(); render();
-    toast(okText);
+    toast(okText, share && saved ? saved.id : "");
   } catch (err) {
     document.getElementById("err").textContent = errText(err);
     btn.disabled = false;
@@ -878,7 +881,7 @@ function showNew(tid) {
     var it = current();
     if (!it) { document.getElementById("err").textContent = t("form.errFields"); return; }
     if (readTime(form) === null || readTimeEnd(form) === null) return;
-    saving(form, addItem(it), t("saved", { x: remindText(it) }));
+    saving(form, addItem(it), t("saved", { x: remindText(it) }), true);
   });
   if (dayPick) prefillDay(tp, form);
   update();
@@ -990,6 +993,7 @@ function shareText(it, via) {
 function showShare(id) {
   var it = find(items, id);
   if (!it) return;
+  document.getElementById("toast").hidden = true; // auch aus der Meldung nach dem Speichern
   openSheet('<h3>' + t("share.title") + '</h3>' +
     '<p class="hint">' + esc(t("share.text")) + '</p>' +
     '<a class="btn wa" href="https://wa.me/?text=' + encodeURIComponent(shareText(it, "whatsapp")) + '" target="_blank" rel="noopener">WhatsApp</a>' +
@@ -1182,13 +1186,15 @@ async function redeemGift(btn) {
 }
 
 /* ---------- Kurze Meldung ---------- */
+// shareId: Knopf "Teilen" für diese Frist - die Meldung bleibt dann länger stehen, damit man ihn erwischt
 var toastTimer;
-function toast(msg) {
+function toast(msg, shareId) {
   var el = document.getElementById("toast");
-  el.textContent = msg;
+  el.className = "toast" + (shareId ? " withbtn" : "");
+  el.innerHTML = '<span>' + esc(msg) + '</span>' + (shareId ? '<button type="button" class="toastbtn" data-act="share" data-id="' + esc(shareId) + '">' + t("share") + '</button>' : "");
   el.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function () { el.hidden = true; }, 2800);
+  toastTimer = setTimeout(function () { el.hidden = true; }, shareId ? 6000 : 2800);
 }
 
 /* ---------- Klicks ---------- */
