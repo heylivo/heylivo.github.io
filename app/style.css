@@ -77,7 +77,7 @@ body.lock { overflow: hidden; }
 /* Liste */
 main { padding-bottom: 24px; }
 /* Impressum · Datenschutz · AGB ganz unten; der Abstand darunter hält den Plus-Knopf frei */
-.applinks { padding: 4px 4px 110px; color: var(--muted); font-size: 12px; }
+.applinks { padding: 4px 4px 170px; color: var(--muted); font-size: 12px; }
 .applinks a { margin-right: 14px; color: var(--muted); }
 .applinks .social { display: flex; gap: 12px; margin-top: 14px; }
 .applinks .social a { display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; border: 0; border-radius: 50%; background: var(--grad); color: #fff; box-shadow: 0 6px 14px -8px rgba(91,50,230,.7); }
@@ -179,6 +179,12 @@ main { padding-bottom: 24px; }
   background: var(--grad); color: #fff; font-size: 32px; line-height: 1; cursor: pointer;
   box-shadow: 0 10px 24px -8px rgba(48,98,249,.65);
 }
+/* Mikrofon über dem +: etwas kleiner, mittig darüber - startet "Hey Livo" */
+.fab-mic {
+  right: calc(max(16px, calc(50% - 264px)) + 5px); bottom: 96px;
+  width: 50px; height: 50px; display: grid; place-items: center;
+}
+.fab-mic svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
 .field[hidden] { display: none; }
 /* Wiederholung "Benutzerdefiniert": Zahl und Einheit nebeneinander */
@@ -244,7 +250,7 @@ dt { color: var(--muted); }
 dd { margin: 0; font-weight: 600; }
 
 /* Hey Livo – Spracheingabe */
-/* Feld "Hey Livo" mit dem Mikrofon rechts im Feld (weißer Ring auf dem Verlauf) */
+/* Feld "Hey Livo" (das Mikrofon steht unten rechts über dem +, .fab-mic) */
 .vbrow { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; }
 .empty .vbrow { margin: 0 0 18px; }
 .voicebar {
@@ -252,9 +258,6 @@ dd { margin: 0; font-weight: 600; }
   border: 0; border-radius: 18px; background: var(--grad); color: #fff;
   text-align: left; font: inherit; cursor: pointer; box-shadow: 0 8px 20px -10px rgba(48,98,249,.75);
 }
-.vb-mic { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: rgba(255,255,255,.16); }
-.voicebar:hover .vb-mic { background: rgba(255,255,255,.28); }
-.vb-mic svg { width: 26px; height: 26px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 /* Symbole unter "Hey Livo" (Konto, Kalender, Erinnerungen, Plus); der Text des gewählten steht darunter */
 .infobar { display: flex; gap: 4px; margin: 12px 0 0; }
 .info-item { display: grid; justify-items: center; gap: 4px; min-width: 52px; padding: 0 2px; border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer; }
@@ -311,7 +314,7 @@ a.brand { color: inherit; text-decoration: none; }
 .pushcard:disabled { opacity: .6; }
 .pushinfo { margin: 12px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--brand-soft); color: #1e3a8a; font-size: 14px; }
 
-.toast { position: fixed; left: 50%; bottom: 96px; z-index: 30; max-width: 90vw; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: var(--grad); box-shadow: 0 8px 24px rgba(48, 98, 249, .3); color: #fff; font-size: 14px; } /* Verlauf wie "Hey Livo" (gewählt: Variante A, __preview-toast.html) */
+.toast { position: fixed; left: 50%; bottom: 160px; z-index: 30; max-width: 90vw; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: var(--grad); box-shadow: 0 8px 24px rgba(48, 98, 249, .3); color: #fff; font-size: 14px; } /* Verlauf wie "Hey Livo" (gewählt: Variante A, __preview-toast.html) */
 
 /* Handy: "Hey Livo" kompakter, damit der feste Bereich klein bleibt; Karten mit zweizeiligem Titel,
    das Schild ("in 2 Tagen") steht unter dem Text statt rechts daneben */
@@ -319,8 +322,6 @@ a.brand { color: inherit; text-decoration: none; }
   .dock { padding-bottom: 10px; }
   .vbrow { gap: 8px; margin-top: 6px; }
   .voicebar { gap: 10px; padding: 10px 12px; border-radius: 16px; }
-  .vb-mic { width: 42px; height: 42px; }
-  .vb-mic svg { width: 21px; height: 21px; }
   .voicebar b { font-size: 16px; }
   .voicebar small { display: block; font-size: 12.5px; line-height: 1.35; }
   .card { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: start; padding: 12px; }

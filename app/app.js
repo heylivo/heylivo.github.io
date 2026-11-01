@@ -169,12 +169,11 @@ function sortedItems() {
 }
 
 /* ---------- Liste ---------- */
-// "Hey Livo": Feld mit Text, rechts darin das Mikrofon im weißen Ring - ein Knopf, startet die Spracheingabe
+// "Hey Livo": Feld mit Text, startet die Spracheingabe (dort kann man auch tippen).
+// Das Mikrofon steht unten rechts über dem + (index.html .fab-mic), dort erreicht man es mit dem Daumen.
 function voicebarHTML() {
   return '<div class="vbrow"><button type="button" class="voicebar" data-act="voice">' +
-    '<span class="vb-txt"><b>Hey Livo …</b><small>' + esc(t("voicebar.sub")) + '</small></span>' +
-    '<span class="vb-mic" aria-hidden="true"><svg viewBox="0 0 24 24">' +
-    '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></span></button></div>';
+    '<span class="vb-txt"><b>Hey Livo 👋</b><small>' + esc(t("voicebar.sub")) + '</small></span></button></div>';
 }
 
 // Symbole unter "Hey Livo" (scrollen mit): Konto, Kalender, Erinnerungen, Livo Plus - Linien-Symbole wie das Mikrofon,
@@ -1350,7 +1349,7 @@ function setupLanguage() {
   });
   document.addEventListener("click", function (e) { if (!list.hidden && !e.target.closest("#langDd")) open(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") open(false); });
-  document.querySelector(".fab").setAttribute("aria-label", t("add"));
+  document.querySelector(".fab:not(.fab-mic)").setAttribute("aria-label", t("add"));
   document.getElementById("brand").href = LANG === "de" ? "../" : "../en/";
   // "← Startseite" oben in der Mitte - das Logo führt auch dorthin, aber das sieht man nicht
   document.getElementById("homeLink").href = LANG === "de" ? "../" : "../en/";
