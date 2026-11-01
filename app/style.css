@@ -223,7 +223,7 @@ a.btn { text-align: center; text-decoration: none; }
 .btn.viber { margin-top: 8px; background: #7360f2; }
 .btn.viber:hover { background: #5e4bd6; }
 .toast.withbtn:not([hidden]) { display: flex; align-items: center; gap: 12px; width: max-content; }
-.toastbtn { flex-shrink: 0; padding: 6px 12px; border: 1px solid rgba(255, 255, 255, .55); border-radius: 8px; background: none; color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+.toastbtn { flex-shrink: 0; padding: 6px 12px; border: 0; border-radius: 8px; background: #fff; color: var(--brand-dark); font: inherit; font-weight: 800; cursor: pointer; }
 .legal { margin: 8px 2px 4px; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .legal a { color: var(--brand); }
 /* "📖 Mehr dazu im Ratgeber" unter dem Hinweis einer Vorlage */
@@ -244,7 +244,7 @@ dt { color: var(--muted); }
 dd { margin: 0; font-weight: 600; }
 
 /* Hey Livo – Spracheingabe */
-/* Feld "Hey Livo" und rechts daneben der runde Mikrofon-Knopf */
+/* Feld "Hey Livo" mit dem Mikrofon rechts im Feld (weißer Ring auf dem Verlauf) */
 .vbrow { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; }
 .empty .vbrow { margin: 0 0 18px; }
 .voicebar {
@@ -252,7 +252,8 @@ dd { margin: 0; font-weight: 600; }
   border: 0; border-radius: 18px; background: var(--grad); color: #fff;
   text-align: left; font: inherit; cursor: pointer; box-shadow: 0 8px 20px -10px rgba(48,98,249,.75);
 }
-.vb-mic { flex: none; width: 58px; height: 58px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--grad); cursor: pointer; box-shadow: 0 8px 20px -10px rgba(48,98,249,.75); }
+.vb-mic { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: rgba(255,255,255,.16); }
+.voicebar:hover .vb-mic { background: rgba(255,255,255,.28); }
 .vb-mic svg { width: 26px; height: 26px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 /* Symbole unter "Hey Livo" (Konto, Kalender, Erinnerungen, Plus); der Text des gewählten steht darunter */
 .infobar { display: flex; gap: 4px; margin: 12px 0 0; }
@@ -310,7 +311,7 @@ a.brand { color: inherit; text-decoration: none; }
 .pushcard:disabled { opacity: .6; }
 .pushinfo { margin: 12px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--brand-soft); color: #1e3a8a; font-size: 14px; }
 
-.toast { position: fixed; left: 50%; bottom: 96px; z-index: 30; max-width: 90vw; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: var(--ink); color: #fff; font-size: 14px; }
+.toast { position: fixed; left: 50%; bottom: 96px; z-index: 30; max-width: 90vw; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: var(--grad); box-shadow: 0 8px 24px rgba(48, 98, 249, .3); color: #fff; font-size: 14px; } /* Verlauf wie "Hey Livo" (gewählt: Variante A, __preview-toast.html) */
 
 /* Handy: "Hey Livo" kompakter, damit der feste Bereich klein bleibt; Karten mit zweizeiligem Titel,
    das Schild ("in 2 Tagen") steht unter dem Text statt rechts daneben */
@@ -318,8 +319,8 @@ a.brand { color: inherit; text-decoration: none; }
   .dock { padding-bottom: 10px; }
   .vbrow { gap: 8px; margin-top: 6px; }
   .voicebar { gap: 10px; padding: 10px 12px; border-radius: 16px; }
-  .vb-mic { width: 50px; height: 50px; }
-  .vb-mic svg { width: 23px; height: 23px; }
+  .vb-mic { width: 42px; height: 42px; }
+  .vb-mic svg { width: 21px; height: 21px; }
   .voicebar b { font-size: 16px; }
   .voicebar small { display: block; font-size: 12.5px; line-height: 1.35; }
   .card { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: start; padding: 12px; }

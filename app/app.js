@@ -169,12 +169,12 @@ function sortedItems() {
 }
 
 /* ---------- Liste ---------- */
-// "Hey Livo": Feld mit Text, rechts daneben ein runder Mikrofon-Knopf (beide starten die Spracheingabe)
+// "Hey Livo": Feld mit Text, rechts darin das Mikrofon im weißen Ring - ein Knopf, startet die Spracheingabe
 function voicebarHTML() {
   return '<div class="vbrow"><button type="button" class="voicebar" data-act="voice">' +
-    '<span class="vb-txt"><b>Hey Livo …</b><small>' + esc(t("voicebar.sub")) + '</small></span></button>' +
-    '<button type="button" class="vb-mic" data-act="voice" aria-label="Hey Livo"><svg viewBox="0 0 24 24">' +
-    '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></button></div>';
+    '<span class="vb-txt"><b>Hey Livo …</b><small>' + esc(t("voicebar.sub")) + '</small></span>' +
+    '<span class="vb-mic" aria-hidden="true"><svg viewBox="0 0 24 24">' +
+    '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></span></button></div>';
 }
 
 // Symbole unter "Hey Livo" (scrollen mit): Konto, Kalender, Erinnerungen, Livo Plus - Linien-Symbole wie das Mikrofon,
