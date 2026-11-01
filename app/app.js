@@ -169,11 +169,54 @@ function sortedItems() {
 }
 
 /* ---------- Liste ---------- */
-// "Hey Livo": Feld mit Text, startet die Spracheingabe (dort kann man auch tippen).
-// Das Mikrofon steht unten rechts über dem + (index.html .fab-mic), dort erreicht man es mit dem Daumen.
+// "Hey Livo": Kasten mit echtem Eingabefeld - tippen und Enter, oder rechts aufs Mikrofon.
+// Sobald Text im Feld steht, wird das Mikrofon zum Pfeil (abschicken).
 function voicebarHTML() {
-  return '<div class="vbrow"><button type="button" class="voicebar" data-act="voice">' +
-    '<span class="vb-txt"><b>Hey Livo 👋</b><small>' + esc(t("voicebar.sub")) + '</small></span></button></div>';
+  return '<div class="hero"><div class="hero-head"><b>Hey Livo 👋</b><small>' + esc(t("hero.sub")) + '</small></div>' +
+    '<form class="hero-form" id="heroForm" autocomplete="off"><span class="hero-spark" aria-hidden="true">✨</span>' +
+    '<input id="heroSay" name="say" type="text" enterkeyhint="send" placeholder="' + esc(t("hero.ph")) + '" aria-label="Hey Livo">' +
+    '<button type="button" class="hero-go" data-act="heroGo" aria-label="Hey Livo">' +
+    '<svg class="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg>' +
+    '<svg class="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form></div>';
+}
+// "Schon gewusst?" über der Liste, bis man es mit × schließt (merkt sich nur dieser Browser)
+var tipClosed = false;
+try { tipClosed = localStorage.getItem("livo.tip1") === "x"; } catch (e) {}
+function tipHTML() {
+  return tipClosed ? "" : '<div class="tipbox"><span class="tipbox-ico" aria-hidden="true">✨</span>' +
+    '<div><b>' + esc(t("tip.title")) + '</b><small>' + esc(t("tip.text")) + '</small></div>' +
+    '<button type="button" class="tipbox-x" data-act="tipClose" aria-label="' + esc(t("cancel")) + '">×</button></div>';
+}
+// Eingabe im Kasten: Text verstehen lassen, ohne Text die Spracheingabe öffnen
+function heroGo() {
+  var input = document.getElementById("heroSay"), txt = input ? input.value.trim() : "";
+  if (!canEdit()) return showPlus();
+  if (!txt) return showVoice();
+  input.value = "";
+  input.closest(".hero-form").classList.remove("typed");
+  understand(txt, false);
+}
+document.addEventListener("submit", function (e) { if (e.target.id === "heroForm") { e.preventDefault(); heroGo(); } });
+document.addEventListener("input", function (e) {
+  if (e.target.id === "heroSay") e.target.closest(".hero-form").classList.toggle("typed", !!e.target.value.trim());
+});
+
+// "Heute für dich": überfällig, in den nächsten 7 Tagen fällig, Tage bis zur nächsten Frist
+function todayHTML(all) {
+  var late = 0, week = 0, next = null;
+  all.forEach(function (it) {
+    var d = status(it).days;
+    if (d < 0) late++;
+    else { if (d <= 7) week++; if (next === null || d < next) next = d; }
+  });
+  function stat(n, cls, label, act) {
+    return '<' + (act ? 'button type="button" data-act="' + act + '"' : 'div') + ' class="tstat ' + cls + '"><span class="tnum">' + n + '</span><span>' + esc(label) + '</span></' + (act ? 'button' : 'div') + '>';
+  }
+  return '<div class="todaybox"><div class="todaybox-head"><span aria-hidden="true">☀️</span><b>' + esc(t("today.title")) + '</b></div><div class="tstats">' +
+    stat(late, late ? "t-late" : "t-ok", t("today.late"), "") +
+    stat(week, "t-week", t("today.week"), week ? "todayWeek" : "") +
+    (next === null ? "" : stat(next, "t-next", next === 0 ? t("today.nextToday") : t("today.next"), "")) +
+    '</div></div>';
 }
 
 // Symbole unter "Hey Livo" (scrollen mit): Konto, Kalender, Erinnerungen, Livo Plus - Linien-Symbole wie das Mikrofon,
@@ -254,8 +297,11 @@ function render() {
   // stehen darunter als Symbole mit ausklappbarem Text und scrollen mit: fest oben belegten sie am Handy
   // mit großer Schrift mehr als den halben Bildschirm.
   controls.innerHTML = canEdit() ? voicebarHTML() : "";
-  stat.innerHTML = DEMO ? "" : infoHTML(); // Demo: nichts gespeichert, kein Konto, kein Plus - keine Symbole
-  var html = (now.length
+  // Demo: nichts gespeichert, kein Konto, kein Plus - keine Symbole (zum Ansehen der Gestaltung: &icons=1,
+  // dann auch die Glocke "Erinnern" wie bei ausgeschalteten Erinnerungen)
+  if (DEMO && params.get("icons") && !pushState) pushState = "off";
+  stat.innerHTML = DEMO && !params.get("icons") ? "" : infoHTML();
+  var html = tipHTML() + todayHTML(all) + (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
     : '<div class="allgood">' + t("allgood") + '</div>');
   // Ohne "Alles im Blick" trotzdem der Knopf "Jahr im Blick"
@@ -435,7 +481,7 @@ function card(it) {
   return '<button type="button" class="card st-' + s.key + '" data-open="' + it.id + '">' +
     '<span class="ico">' + iconOf(it) + '</span>' +
     '<span class="txt"><b>' + esc(it.title) + '</b><small>' + esc(sub) + '</small></span>' +
-    '<span class="pill">' + esc(whenText(s.days)) + '</span></button>';
+    '<span class="pill">' + esc(whenText(s.days)) + '</span><span class="chev" aria-hidden="true">›</span></button>';
 }
 function emptyHTML() {
   var quick = ["personalausweis", "tuev", "kfzversicherung", "zahnarzt", "rechnung", "versicherung", "arzttermin"];
@@ -1276,6 +1322,9 @@ document.addEventListener("click", function (e) {
   else if (act === "share") showShare(id);
   else if (act === "shareOther") shareItem(id);
   else if (act === "mycat") showMyCat();
+  else if (act === "heroGo") heroGo();
+  else if (act === "tipClose") { tipClosed = true; try { localStorage.setItem("livo.tip1", "x"); } catch (e) {} render(); }
+  else if (act === "todayWeek") { setFilter("week"); var sec = document.querySelector(".sec-row"); if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (act === "inAdd") addIncoming(el);
   else if (act === "calcopy") copyText(calFeedUrl, t("toast.linkCopied"));
   else if (act === "calreset") resetCalendar();
@@ -1349,7 +1398,7 @@ function setupLanguage() {
   });
   document.addEventListener("click", function (e) { if (!list.hidden && !e.target.closest("#langDd")) open(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") open(false); });
-  document.querySelector(".fab:not(.fab-mic)").setAttribute("aria-label", t("add"));
+  document.querySelector(".fab").setAttribute("aria-label", t("add"));
   document.getElementById("brand").href = LANG === "de" ? "../" : "../en/";
   // "← Startseite" oben in der Mitte - das Logo führt auch dorthin, aber das sieht man nicht
   document.getElementById("homeLink").href = LANG === "de" ? "../" : "../en/";

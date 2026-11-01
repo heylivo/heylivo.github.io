@@ -77,7 +77,7 @@ body.lock { overflow: hidden; }
 /* Liste */
 main { padding-bottom: 24px; }
 /* Impressum · Datenschutz · AGB ganz unten; der Abstand darunter hält den Plus-Knopf frei */
-.applinks { padding: 4px 4px 170px; color: var(--muted); font-size: 12px; }
+.applinks { padding: 4px 4px 110px; color: var(--muted); font-size: 12px; }
 .applinks a { margin-right: 14px; color: var(--muted); }
 .applinks .social { display: flex; gap: 12px; margin-top: 14px; }
 .applinks .social a { display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; border: 0; border-radius: 50%; background: var(--grad); color: #fff; box-shadow: 0 6px 14px -8px rgba(91,50,230,.7); }
@@ -101,8 +101,7 @@ main { padding-bottom: 24px; }
 .ylegend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0 0 12px; color: var(--muted); font-size: 12px; }
 .ylg { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .ylegend .yd { width: 14px; height: 14px; }
-.ylegend .yd.hol { border-color: #f59e0b; background: #f59e0b; } /* in der Legende ein voller Kreis wie die anderen */
-.ylegend .yd.hol::after { display: none; }
+.ylegend .yd.hol { border-color: #f59e0b; background: #fef3c7; } /* in der Legende wie ein Feiertag im Kalender: hellgelb, Rand bernstein */
 .yholpick { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: var(--muted); font-size: 13px; font-weight: 600; }
 .yholpick select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; font: inherit; color: var(--ink); }
 .ymonths { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px 12px; }
@@ -117,9 +116,15 @@ main { padding-bottom: 24px; }
 .yd.part { border-color: #9db6fb; background: #dbe6ff; color: var(--brand-dark); font-weight: 800; }
 .yd.late { border-color: var(--late); background: var(--late); color: #fff; font-weight: 800; }
 .yd.today { box-shadow: inset 0 0 0 2px var(--violet); }
-/* Feiertag: kleiner orangefarbener Punkt oben rechts - passt zu jedem anderen Zustand des Tages */
-.yd.hol { position: relative; }
-.yd.hol::after { content: ""; position: absolute; top: 2px; right: 2px; width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; }
+/* Feiertag: Zahl fett in Bernstein auf Hellgelb (reines Gelb wäre auf Weiß nicht lesbar).
+   Liegt eine Frist darauf (blau/rot), bleibt die Farbe der Frist und der Feiertag ist ein kleiner Punkt oben rechts. */
+.yd.hol { position: relative; border-color: #fcd34d; background: #fef3c7; color: #b45309; font-weight: 800; }
+.yd.hol.past { border-color: transparent; background: none; color: #e7b56b; }
+.yd.hol.due, .yd.hol.part, .yd.hol.late { font-weight: 800; }
+.yd.hol.due { border-color: var(--brand); background: var(--brand); color: #fff; }
+.yd.hol.part { border-color: #9db6fb; background: #dbe6ff; color: var(--brand-dark); }
+.yd.hol.late { border-color: var(--late); background: var(--late); color: #fff; }
+.yd.hol.due::after, .yd.hol.part::after, .yd.hol.late::after { content: ""; position: absolute; top: 2px; right: 2px; width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; }
 .ydetail .yhol { margin: -4px 0 8px; color: #b45309; font-size: 14px; font-weight: 700; }
 /* Rahmen nach innen, damit der gewählte Tag nicht über die Nachbarn ragt */
 .yd.sel { box-shadow: inset 0 0 0 2px var(--ink), inset 0 0 0 3px #fff; }
@@ -179,12 +184,6 @@ main { padding-bottom: 24px; }
   background: var(--grad); color: #fff; font-size: 32px; line-height: 1; cursor: pointer;
   box-shadow: 0 10px 24px -8px rgba(48,98,249,.65);
 }
-/* Mikrofon über dem +: etwas kleiner, mittig darüber - startet "Hey Livo" */
-.fab-mic {
-  right: calc(max(16px, calc(50% - 264px)) + 5px); bottom: 96px;
-  width: 50px; height: 50px; display: grid; place-items: center;
-}
-.fab-mic svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
 .field[hidden] { display: none; }
 /* Wiederholung "Benutzerdefiniert": Zahl und Einheit nebeneinander */
@@ -250,14 +249,40 @@ dt { color: var(--muted); }
 dd { margin: 0; font-weight: 600; }
 
 /* Hey Livo – Spracheingabe */
-/* Feld "Hey Livo" (das Mikrofon steht unten rechts über dem +, .fab-mic) */
-.vbrow { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; }
-.empty .vbrow { margin: 0 0 18px; }
-.voicebar {
-  display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; padding: 14px 16px;
-  border: 0; border-radius: 18px; background: var(--grad); color: #fff;
-  text-align: left; font: inherit; cursor: pointer; box-shadow: 0 8px 20px -10px rgba(48,98,249,.75);
-}
+/* Kasten "Hey Livo": Verlauf, weißes Eingabefeld mit Mikrofon (wird beim Tippen zum Pfeil) */
+.hero { margin: 14px 0 0; padding: 16px; border-radius: 20px; background: var(--grad); color: #fff; box-shadow: 0 10px 24px -12px rgba(48,98,249,.75); }
+.empty .hero { margin: 0 0 18px; }
+.hero-head b { display: block; font-size: 20px; }
+.hero-head small { display: block; margin-top: 2px; font-size: 13.5px; opacity: .92; }
+.hero-form { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; padding: 5px 5px 5px 14px; border-radius: 999px; background: #fff; box-shadow: 0 6px 16px -8px rgba(11,20,32,.35); }
+.hero-spark { flex: none; font-size: 15px; }
+.hero-form input { flex: 1; min-width: 0; padding: 8px 0; border: 0; outline: 0; background: none; color: var(--ink); font: inherit; font-size: 15px; }
+.hero-form input::placeholder { color: #7a8396; }
+.hero-go { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--grad); cursor: pointer; }
+.hero-go svg { width: 21px; height: 21px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.hero-go .i-send, .hero-form.typed .hero-go .i-mic { display: none; }
+.hero-form.typed .hero-go .i-send { display: block; }
+/* "Heute für dich": drei Zahlen über der Liste */
+/* Name "todaybox", nicht "today": .yd.today ist der heutige Tag im Jahreskalender */
+.todaybox { margin: 14px 0 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
+.todaybox-head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 15px; }
+/* "Schon gewusst?": ein Tipp, mit × ausblendbar (merkt sich der Browser) */
+.tipbox { position: relative; display: flex; align-items: flex-start; gap: 12px; margin: 14px 0 0; padding: 12px 40px 12px 12px; border: 1px solid #d3dcfb; border-radius: 16px; background: linear-gradient(135deg, #e3f6fe 0%, #eaf0ff 50%, #f2e9fe 100%); }
+.tipbox-ico { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: #fff; font-size: 18px; }
+.tipbox b { display: block; font-size: 14.5px; }
+.tipbox small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.tipbox-x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; }
+.tipbox-x:hover { background: rgba(255,255,255,.7); }
+.tstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tstat { display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12.5px; font-weight: 600; line-height: 1.25; text-align: left; }
+button.tstat { cursor: pointer; }
+.tnum { flex: none; min-width: 28px; height: 28px; display: grid; place-items: center; padding: 0 6px; border-radius: 999px; color: #fff; font-size: 14px; font-weight: 800; }
+.t-late .tnum { background: var(--late); } .t-late { color: var(--late); }
+.t-ok .tnum { background: #16a34a; }
+.t-week .tnum { background: var(--brand); }
+.t-next .tnum { background: var(--violet); }
+/* Pfeil rechts auf jeder Karte: "antippen öffnet" */
+.chev { flex: none; margin-left: -4px; color: #a3acbd; font-size: 22px; line-height: 1; }
 /* Symbole unter "Hey Livo" (Konto, Kalender, Erinnerungen, Plus); der Text des gewählten steht darunter */
 .infobar { display: flex; gap: 4px; margin: 12px 0 0; }
 .info-item { display: grid; justify-items: center; gap: 4px; min-width: 52px; padding: 0 2px; border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer; }
@@ -279,9 +304,6 @@ dd { margin: 0; font-weight: 600; }
 .infotext b { overflow-wrap: anywhere; }
 .infotext > .linkbtn { text-align: left; }
 .mic-ico { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.2); font-size: 22px; }
-.voicebar b { display: block; font-size: 17px; }
-.voicebar small { font-size: 13px; opacity: .9; }
-.vb-txt { flex: 1; min-width: 0; }
 .muted { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
 /* "So funktioniert's": vier Schritte mit Symbol */
 .howto { display: grid; gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; }
@@ -314,17 +336,22 @@ a.brand { color: inherit; text-decoration: none; }
 .pushcard:disabled { opacity: .6; }
 .pushinfo { margin: 12px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--brand-soft); color: #1e3a8a; font-size: 14px; }
 
-.toast { position: fixed; left: 50%; bottom: 160px; z-index: 30; max-width: 90vw; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: var(--grad); box-shadow: 0 8px 24px rgba(48, 98, 249, .3); color: #fff; font-size: 14px; } /* Verlauf wie "Hey Livo" (gewählt: Variante A, __preview-toast.html) */
+.toast { position: fixed; left: 50%; bottom: 96px; z-index: 30; max-width: 90vw; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: var(--grad); box-shadow: 0 8px 24px rgba(48, 98, 249, .3); color: #fff; font-size: 14px; } /* Verlauf wie "Hey Livo" (gewählt: Variante A, __preview-toast.html) */
 
 /* Handy: "Hey Livo" kompakter, damit der feste Bereich klein bleibt; Karten mit zweizeiligem Titel,
    das Schild ("in 2 Tagen") steht unter dem Text statt rechts daneben */
 @media (max-width: 560px) {
   .dock { padding-bottom: 10px; }
-  .vbrow { gap: 8px; margin-top: 6px; }
-  .voicebar { gap: 10px; padding: 10px 12px; border-radius: 16px; }
-  .voicebar b { font-size: 16px; }
-  .voicebar small { display: block; font-size: 12.5px; line-height: 1.35; }
-  .card { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: start; padding: 12px; }
+  .hero { margin-top: 6px; padding: 12px; border-radius: 18px; }
+  .hero-head b { font-size: 17px; }
+  .hero-head small { font-size: 12.5px; line-height: 1.35; }
+  .hero-form { margin-top: 8px; }
+  .hero-form input { font-size: 16px; } /* unter 16 px zoomt das iPhone beim Tippen hinein */
+  .hero-go { width: 38px; height: 38px; }
+  .tstats { gap: 6px; }
+  .tstat { flex-direction: column; align-items: flex-start; gap: 4px; font-size: 11.5px; }
+  .card { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 12px; align-items: start; padding: 12px; }
+  .card .chev { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
   .card .ico { grid-row: span 2; width: 38px; height: 38px; font-size: 19px; }
   .card .txt b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .card .pill { grid-column: 2; justify-self: start; padding: 3px 9px; }
@@ -337,5 +364,10 @@ a.brand { color: inherit; text-decoration: none; }
   .yd { border-color: transparent; background: var(--later-bg); font-size: 10px; letter-spacing: -.02em; }
   .yd.past { background: none; }
   .yd.part { background: #dbe6ff; }
+  .yd.hol { background: #fef3c7; }
+  .yd.hol.past { background: none; }
+  .yd.hol.due { background: var(--brand); }
+  .yd.hol.part { background: #dbe6ff; }
+  .yd.hol.late { background: var(--late); }
   .ywd span { font-size: 9px; }
 }
