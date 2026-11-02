@@ -41,11 +41,12 @@ def caption_for(day_number: int, lang: str, reel: bool = False) -> str:
 
 
 # An .mp4 becomes a Reel (also shown in the profile grid), anything else an image post.
-# thumb_offset: the Reel's cover is the frame at 7.5 s, when everything is on screen.
+# thumb_offset: the Reel's cover is the frame at 5 s, when question and subline are on screen
+# (scene 1 of the 15-second Reel; at 7 s it changes to "Hey Livo").
 def create_container(ig_id: str, access_token: str, media_url: str, caption: str) -> str:
     data = {"caption": caption, "access_token": access_token}
     if media_url.endswith(".mp4"):
-        data.update({"media_type": "REELS", "video_url": media_url, "share_to_feed": "true", "thumb_offset": "7500"})
+        data.update({"media_type": "REELS", "video_url": media_url, "share_to_feed": "true", "thumb_offset": "5000"})
     else:
         data["image_url"] = media_url
     resp = requests.post(f"{BASE}/{ig_id}/media", data=data)

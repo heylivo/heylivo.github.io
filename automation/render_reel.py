@@ -1,5 +1,5 @@
 """
-Renders the heylivo Reel (1080 x 1920 MP4, 8 seconds, 30 fps) for one day of the content calendar.
+Renders the heylivo Reel (1080 x 1920 MP4, 15 seconds, 30 fps) for one day of the content calendar.
 
 Usage:
     python render_reel.py <day_number> <output.mp4> [de|en]
@@ -8,6 +8,9 @@ Fills templates/reel.html like render_card.py fills card.html, then records it f
 frame: window.setTime(t) puts every CSS animation at the frame's time, Playwright takes a
 screenshot, and ffmpeg joins the frames into an H.264 MP4 with the day's background music
 (music.py, faded in and out). Local preview of single frames: __preview-reel.html?day=N&t=3.
+
+Two scenes since 11/2026 (was one scene of 8 seconds - longer Reels with more going on are watched
+more): the question (0-7 s), then "Hey Livo, ..." said into the app and Livo's reminder (7-15 s).
 """
 
 import html
@@ -19,12 +22,17 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-from music import track_for
+from music import long_track_for
 from render_card import AUTOMATION_DIR, CARD_CTA, LOGO_PATH, hook_font_size, load_day_row
 
 TEMPLATE_PATH = AUTOMATION_DIR / "templates" / "reel.html"
 FPS = 30
-SECONDS = 8
+SECONDS = 15
+# Scene 2: what you say to Livo - the same for every day, the reminder text comes from the row ("Push")
+VOICE_LINE = {
+    "de": "„Hey Livo, erinnere mich rechtzeitig daran.“",
+    "en": "“Hey Livo, remind me in time.”",
+}
 
 
 # A bit bigger than on the card - the Reel has more room (same as hookSize() in the preview)
@@ -41,6 +49,7 @@ def build_html(row: dict, lang: str) -> str:
         "__HOOK__": html.escape(row["Hook"]),
         "__SUB__": html.escape(row["Sub"]),
         "__PUSH__": html.escape(row["Push"]),
+        "__VOICE__": html.escape(VOICE_LINE[lang]),
         "__CTA__": CARD_CTA[lang],
         "__HOOK_SIZE__": str(reel_hook_size(row["Hook"])),
     }
@@ -67,7 +76,8 @@ def render(day_number: int, output_path: Path, lang: str) -> None:
             browser.close()
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        music, _ = track_for(day_number)
+        # the 25-second excerpts (the 9-second ones are too short); same track, so the caption credit stays right
+        music, _ = long_track_for(day_number)
         subprocess.run([
             "ffmpeg", "-y", "-loglevel", "error",
             "-framerate", str(FPS), "-i", str(frames / "f%04d.png"),
