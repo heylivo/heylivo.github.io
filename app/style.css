@@ -276,7 +276,7 @@ dd { margin: 0; font-weight: 600; }
 .tstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .tstat { display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12.5px; font-weight: 600; line-height: 1.25; text-align: left; }
 button.tstat { cursor: pointer; }
-.tnum { flex: none; min-width: 28px; height: 28px; display: grid; place-items: center; padding: 0 6px; border-radius: 999px; color: #fff; font-size: 14px; font-weight: 800; }
+.tnum { flex: none; min-width: 28px; height: 28px; display: grid; place-items: center; padding: 0 6px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 800; }
 .t-late .tnum { background: var(--late); } .t-late { color: var(--late); }
 .t-ok .tnum { background: #16a34a; }
 .t-week .tnum { background: var(--brand); }
