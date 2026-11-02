@@ -254,12 +254,15 @@ dd { margin: 0; font-weight: 600; }
 .empty .hero { margin: 0 0 18px; }
 .hero-head b { display: block; font-size: 20px; }
 .hero-head small { display: block; margin-top: 2px; font-size: 13.5px; opacity: .92; }
-.hero-form { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; padding: 5px 5px 5px 14px; border-radius: 999px; background: #fff; box-shadow: 0 6px 16px -8px rgba(11,20,32,.35); }
+.hero-form { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; }
+/* Weiße Pille nur mit dem Eingabefeld - das Mikrofon steht rechts daneben */
+.hero-pill { flex: 1; min-width: 0; min-height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 999px; background: #fff; box-shadow: 0 6px 16px -8px rgba(11,20,32,.35); }
 .hero-spark { flex: none; font-size: 15px; }
 .hero-form input { flex: 1; min-width: 0; padding: 8px 0; border: 0; outline: 0; background: none; color: var(--ink); font: inherit; font-size: 15px; }
 .hero-form input::placeholder { color: #7a8396; }
-.hero-go { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--grad); cursor: pointer; }
-.hero-go svg { width: 21px; height: 21px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* Weiß mit blauem Symbol: ein Knopf im Verlauf wäre auf dem Verlauf des Kastens kaum zu sehen */
+.hero-go { flex: none; width: 46px; height: 46px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px -8px rgba(11,20,32,.35); cursor: pointer; }
+.hero-go svg { width: 21px; height: 21px; fill: none; stroke: var(--brand); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .hero-go .i-send, .hero-form.typed .hero-go .i-mic { display: none; }
 .hero-form.typed .hero-go .i-send { display: block; }
 /* "Heute für dich": drei Zahlen über der Liste */
@@ -347,7 +350,8 @@ a.brand { color: inherit; text-decoration: none; }
   .hero-head small { font-size: 12.5px; line-height: 1.35; }
   .hero-form { margin-top: 8px; }
   .hero-form input { font-size: 16px; } /* unter 16 px zoomt das iPhone beim Tippen hinein */
-  .hero-go { width: 38px; height: 38px; }
+  .hero-pill { min-height: 44px; }
+  .hero-go { width: 44px; height: 44px; }
   .tstats { gap: 6px; }
   .tstat { flex-direction: column; align-items: flex-start; gap: 4px; font-size: 11.5px; }
   .card { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 12px; align-items: start; padding: 12px; }

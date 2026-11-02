@@ -169,12 +169,12 @@ function sortedItems() {
 }
 
 /* ---------- Liste ---------- */
-// "Hey Livo": Kasten mit echtem Eingabefeld - tippen und Enter, oder rechts aufs Mikrofon.
+// "Hey Livo": Kasten mit echtem Eingabefeld - tippen und Enter, oder rechts daneben aufs Mikrofon.
 // Sobald Text im Feld steht, wird das Mikrofon zum Pfeil (abschicken).
 function voicebarHTML() {
   return '<div class="hero"><div class="hero-head"><b>Hey Livo 👋</b><small>' + esc(t("hero.sub")) + '</small></div>' +
-    '<form class="hero-form" id="heroForm" autocomplete="off"><span class="hero-spark" aria-hidden="true">✨</span>' +
-    '<input id="heroSay" name="say" type="text" enterkeyhint="send" placeholder="' + esc(t("hero.ph")) + '" aria-label="Hey Livo">' +
+    '<form class="hero-form" id="heroForm" autocomplete="off"><div class="hero-pill"><span class="hero-spark" aria-hidden="true">✨</span>' +
+    '<input id="heroSay" name="say" type="text" enterkeyhint="send" placeholder="' + esc(t("hero.ph")) + '" aria-label="Hey Livo"></div>' +
     '<button type="button" class="hero-go" data-act="heroGo" aria-label="Hey Livo">' +
     '<svg class="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg>' +
     '<svg class="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form></div>';
