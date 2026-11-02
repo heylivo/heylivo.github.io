@@ -1,0 +1,33 @@
+name: Facebook token (Page token from the personal token)
+
+# One-off helper: if FACEBOOK_PAGE_TOKEN holds the personal token of the Page admin instead of the
+# Page token, this looks up the Page token of facebook.com/heylivo (/me/accounts) and stores it in
+# FACEBOOK_PAGE_TOKEN - no copying by hand. A Page token made from a long-lived personal token never
+# runs out; the step fails if it would. The token never shows up in the log (masked). Writing a
+# secret needs GH_SECRETS_TOKEN, like refresh-instagram-token.yml.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  page-token:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Store the Page token of facebook.com/heylivo
+        env:
+          TOKEN: ${{ secrets.FACEBOOK_PAGE_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+          PAGE_ID: "1371686046035971"
+          GRAPH: "https://graph.facebook.com/v26.0"
+        run: |
+          if [ -z "$TOKEN" ]; then echo "FACEBOOK_PAGE_TOKEN is empty."; exit 1; fi
+          if [ -z "$GH_TOKEN" ]; then echo "GH_SECRETS_TOKEN is missing - the Page token could not be saved."; exit 1; fi
+          ME=$(curl -s "$GRAPH/me?fields=id&access_token=$TOKEN" | jq -r '.id // empty')
+          if [ "$ME" = "$PAGE_ID" ]; then echo "FACEBOOK_PAGE_TOKEN already is the Page token - nothing to do."; exit 0; fi
+          PAGE_TOKEN=$(curl -s "$GRAPH/me/accounts?fields=id,access_token&access_token=$TOKEN" | jq -r --arg id "$PAGE_ID" '.data[]? | select(.id == $id) | .access_token')
+          if [ -z "$PAGE_TOKEN" ]; then echo "The token in FACEBOOK_PAGE_TOKEN is invalid or does not manage facebook.com/heylivo."; exit 1; fi
+          echo "::add-mask::$PAGE_TOKEN"
+          EXPIRES=$(curl -s "$GRAPH/debug_token?input_token=$PAGE_TOKEN&access_token=$TOKEN" | jq -r '.data.expires_at // "unknown"')
+          if [ "$EXPIRES" != "0" ]; then echo "The Page token would run out (expires_at=$EXPIRES) - the personal token was not the long-lived one."; exit 1; fi
+          gh secret set FACEBOOK_PAGE_TOKEN --body "$PAGE_TOKEN" --repo "$GITHUB_REPOSITORY"
+          echo "Stored the Page token of facebook.com/heylivo in FACEBOOK_PAGE_TOKEN - it never runs out."
