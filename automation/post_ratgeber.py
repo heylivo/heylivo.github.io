@@ -8,7 +8,8 @@ Posts the daily Ratgeber-Reel from ratgeber/ratgeber.csv to the heylivo Instagra
 
 Like post_promo.py: per day the newest row whose date has come (Europe/Berlin) and that has nothing in
 "Gepostet" yet - a backlog (e.g. a scheduled run GitHub skipped) is skipped instead of posted late.
-Reads INSTAGRAM_USER_ID and INSTAGRAM_ACCESS_TOKEN from the environment.
+Reads INSTAGRAM_USER_ID and INSTAGRAM_ACCESS_TOKEN from the environment. The German Reels also go to
+the Facebook Page (post_facebook.py, FACEBOOK_PAGE_TOKEN).
 """
 
 import csv
@@ -21,6 +22,7 @@ from zoneinfo import ZoneInfo
 import requests
 
 from music import credit_line
+from post_facebook import post_reel as post_facebook_reel
 from post_instagram import BASE, publish, wait_until_ready
 from post_promo import wait_for_url
 from render_ratgeber import CSV_PATH, FIELDS, load_rows, render, track_number
@@ -92,6 +94,10 @@ def post_reel(date: str) -> None:
             old["Gepostet"] = f"ausgelassen {today}"
     save(rows)
     print(f"Published Ratgeber {row['Datum']} {row['Sprache']}: media_id={media_id}")
+
+    # The German Ratgeber-Reels also go to the Facebook Page (no AI label: text slides and music only)
+    if row["Sprache"] == "de":
+        post_facebook_reel(url, caption_for(row))
 
 
 if __name__ == "__main__":

@@ -7,7 +7,8 @@ content_calendar_en.csv (English), or from specials.csv on the date of a special
 Instagram needs a publicly reachable image_url (no direct upload), so the workflow pushes
 the JPEG to the repo first and passes its raw.githubusercontent.com URL.
 
-Reads INSTAGRAM_USER_ID and INSTAGRAM_ACCESS_TOKEN from the environment.
+Reads INSTAGRAM_USER_ID and INSTAGRAM_ACCESS_TOKEN from the environment. German special Reels
+(Tag 101+, e.g. the Kfz countdown) also go to the Facebook Page (post_facebook.py, FACEBOOK_PAGE_TOKEN).
 
 Usage:
     python post_instagram.py <public_image_or_mp4_url> <day_number> [de|en]
@@ -20,9 +21,11 @@ import time
 import requests
 
 from music import credit_line
+from post_facebook import post_reel as post_facebook_reel
 from render_card import load_day_row
 
 API_VERSION = "v21.0"
+SPECIAL_FROM = 101  # specials.csv: posts with a fixed date (e.g. the Kfz countdown) - they also go to Facebook
 BASE = f"https://graph.instagram.com/{API_VERSION}"
 CTA = {
     "de": "👉 30 Tage kostenlos testen – Link in der Bio: heylivo.com",
@@ -87,7 +90,9 @@ if __name__ == "__main__":
         sys.exit(1)
 
     media_url = sys.argv[1]
-    caption = caption_for(int(sys.argv[2]), sys.argv[3] if len(sys.argv) == 4 else "de", media_url.endswith(".mp4"))
+    day = int(sys.argv[2])
+    lang = sys.argv[3] if len(sys.argv) == 4 else "de"
+    caption = caption_for(day, lang, media_url.endswith(".mp4"))
     ig_user_id = os.environ["INSTAGRAM_USER_ID"]
     token = os.environ["INSTAGRAM_ACCESS_TOKEN"]
 
@@ -95,3 +100,7 @@ if __name__ == "__main__":
     wait_until_ready(container_id, token)
     media_id = publish(ig_user_id, token, container_id)
     print(f"Published. media_id={media_id}")
+
+    # German special Reels also go to the Facebook Page; the calendar Reels stay on Instagram
+    if day >= SPECIAL_FROM and lang == "de" and media_url.endswith(".mp4"):
+        post_facebook_reel(media_url, caption)

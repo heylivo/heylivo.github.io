@@ -1,0 +1,52 @@
+name: Facebook Reel (by hand)
+
+# Posts one Reel to the heylivo Facebook Page (python automation/post_facebook.py), e.g. as a test.
+# "draft" only saves it as a draft that nobody sees (Meta Business Suite > Content > Drafts).
+# The scheduled posts need nothing from here: promo-post, ratgeber-post and daily-post send their
+# German Reels to Facebook themselves, right after Instagram.
+
+on:
+  workflow_dispatch:
+    inputs:
+      video:
+        description: "Video on heylivo.com, e.g. automation/promo/serie-de02.mp4"
+        required: true
+      text:
+        description: "Text of the post"
+        required: true
+      ai:
+        description: "AI voice in the video (AI info label)"
+        type: boolean
+        default: false
+      draft:
+        description: "Only save as a draft (test)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests==2.32.3
+
+      - name: Post to Facebook
+        working-directory: automation
+        env:
+          FACEBOOK_PAGE_TOKEN: ${{ secrets.FACEBOOK_PAGE_TOKEN }}
+          VIDEO: ${{ inputs.video }}
+          TEXT: ${{ inputs.text }}
+          AI: ${{ inputs.ai && 'ai' || '' }}
+          DRAFT: ${{ inputs.draft && 'draft' || '' }}
+        run: |
+          printf '%s' "$TEXT" > "$RUNNER_TEMP/facebook-text.txt"
+          python post_facebook.py "https://heylivo.com/$VIDEO" "$RUNNER_TEMP/facebook-text.txt" $AI $DRAFT

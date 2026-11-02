@@ -9,8 +9,9 @@ backlog would push every following day back by one.
 KI = ja sets Instagram's "AI info" label (is_ai_generated, Content Publishing API since
 June 2026, all API versions). Cover_ms is the Reel cover frame in milliseconds.
 The videos are served by the website (heylivo.com/automation/promo/...), like the daily Reels.
+The German videos also go to the Facebook Page (post_facebook.py), from 03.11.2026 on.
 
-Reads INSTAGRAM_USER_ID and INSTAGRAM_ACCESS_TOKEN from the environment.
+Reads INSTAGRAM_USER_ID, INSTAGRAM_ACCESS_TOKEN and FACEBOOK_PAGE_TOKEN from the environment.
 
 Usage:
     python post_promo.py
@@ -26,11 +27,13 @@ from zoneinfo import ZoneInfo
 
 import requests
 
+from post_facebook import is_german_video, post_reel as post_facebook_reel
 from post_instagram import BASE, publish, wait_until_ready
 
 PROMO_CSV = Path(__file__).resolve().parent / "promo" / "promo.csv"
 VIDEO_BASE = "https://heylivo.com/automation/promo/"
 FIELDS = ["Datum", "Datei", "KI", "Cover_ms", "Text", "Gepostet"]
+FACEBOOK_FROM = "2026-11-03"  # the Page started on 02.11.2026 with serie-de03, posted by hand
 
 
 def wait_for_url(url: str, timeout: int = 360) -> None:
@@ -91,3 +94,6 @@ if __name__ == "__main__":
     print(f"Published {row['Datei']}. media_id={media_id} {info.text}")
     if row["KI"].strip().lower() == "ja" and '"is_ai_generated":true' not in info.text.replace(" ", ""):
         print("WARNING: the AI label is not confirmed - add it in the Instagram app (edit the Reel).")
+
+    if is_german_video(row["Datei"]) and row["Datum"] >= FACEBOOK_FROM:
+        post_facebook_reel(VIDEO_BASE + row["Datei"], row["Text"], ai=row["KI"].strip().lower() == "ja")
