@@ -279,7 +279,7 @@ dd { margin: 0; font-weight: 600; }
 .tipbox-x:hover { background: rgba(255,255,255,.7); }
 .tstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 /* Karte: Symbol (abgerundetes Viereck) und Zahl nebeneinander, Text darunter */
-.tcard { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "ico num" "lab lab"; align-items: center; gap: 6px 8px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; }
+.tcard { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "ico num" "lab lab"; align-items: center; align-content: start; gap: 6px 8px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; }
 button.tcard { cursor: pointer; }
 .tico { grid-area: ico; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; }
 .tico svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
