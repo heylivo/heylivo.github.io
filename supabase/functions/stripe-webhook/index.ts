@@ -11,6 +11,7 @@
 // samt Widerrufsbelehrung, frisch von heylivo.com geholt (Bestätigung auf dauerhaftem Datenträger).
 // Aktionscodes (Stripe-Gutschein mit 100 % Rabatt, z. B. für Social-Media-Aktionen): Stripe meldet
 // dann 0 € und payment_status "no_payment_required" - das zählt wie ein Kauf, die Mails sagen "gratis".
+// Den Betrag merkt sich plans.paid_cents (0016_plus_paid.sql), damit der Wochenbericht Geschenke getrennt zählt.
 // Test ohne Kauf und ohne Datenbank: POST {"test":"confirmation","lang":"de"|"en"[,"free":true]} mit Header
 // x-cron-secret schickt eine Probe-Bestätigung an OWNER_EMAIL (mit "free" die Fassung für einen Gratis-Code).
 //
@@ -308,6 +309,10 @@ Deno.serve(async (request) => {
     return json({ error: 'Could not save' }, 500);
   }
   console.log('Livo Plus activated', userId, plusUntil, session.id);
+  // Betrag für den Wochenbericht (0 = Aktionscode = geschenkt). Eigener Schritt: Fehlt die Spalte,
+  // bleibt Plus trotzdem freigeschaltet - der Bericht zählt die Buchung dann einfach als gekauft.
+  const { error: paidError } = await supabase.from('plans').update({ paid_cents: session.amount_total ?? null }).eq('user_id', userId);
+  if (paidError) console.error('paid_cents could not be saved', session.id, paidError);
   await notifyOwner(session, userId, plusUntil);
   // Kaufbestätigung an den Käufer - Plus ist schon freigeschaltet, ein Fehler hier darf den Kauf nicht scheitern lassen
   let confirmed = false;

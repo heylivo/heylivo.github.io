@@ -9,6 +9,8 @@
 // Tests zählen also mit. Bots (Programme, die die App automatisch öffnen) schätzt der Bericht über
 // das Gerät der ersten Sitzung (report_devices() aus 0014_report_devices.sql) und weist sie extra aus.
 // Die Herkunft (user_metadata.src) schreibt die App beim ersten Öffnen mit (ref.js), siehe Zeilen „Herkunft“.
+// Livo Plus per Gratis-Code (Stripe-Aktionscode mit 0 € oder ein Tipp auf den Geschenk-Link ?gift=) zählt
+// als „geschenkt“, nicht als gekauft: plans.paid_cents (0016_plus_paid.sql) und gift_redemptions (0015).
 // Secrets wie bei send-reminders und stripe-webhook: CRON_SECRET, RESEND_API_KEY, OWNER_EMAIL.
 
 import { createClient, type User } from 'npm:@supabase/supabase-js@2';
@@ -45,7 +47,7 @@ async function fetchAll<T>(page: (from: number, to: number) => PromiseLike<{ dat
   }
 }
 
-type Person = { email: string; date: string };
+type Person = { email: string; date: string; gift?: boolean }; // gift: Livo Plus kam per Gratis-Code
 type Report = {
   today: string;
   weekFrom: string;
@@ -60,14 +62,16 @@ type Report = {
   endingSoon: number; // Testphase endet in den nächsten 7 Tagen
   newUsers: number; // letzte Woche zum ersten Mal geöffnet
   newTrials: number; // letzte Woche die erste Frist gespeichert
-  newPlus: number; // letzte Woche Livo Plus gekauft oder verlängert
+  newPlus: number; // letzte Woche Livo Plus gekauft oder verlängert (bezahlt)
+  newGifts: number; // letzte Woche Livo Plus per Gratis-Code bekommen oder verlängert
   bots: number | null; // davon "nur geöffnet" wahrscheinlich Bots - null = Geräte nicht lesbar, Zeilen fehlen dann
   newBots: number | null; // davon letzte Woche neu
   newDevices: [string, number][]; // Geräte der übrigen Neuen der letzten Woche, häufigstes zuerst
   newSources: [string, number][]; // Herkunft der übrigen Neuen (user_metadata.src, ref.js), häufigste zuerst
   trialSources: [string, number][]; // Herkunft derer, die letzte Woche die erste Frist gespeichert haben
 };
-type PlanRow = { user_id: string; plus_until: string | null; email: string | null; updated_at: string };
+// paid_cents: Betrag der letzten Stripe-Buchung (0 = Aktionscode), leer = von vor 0016 oder kein Stripe
+type PlanRow = { user_id: string; plus_until: string | null; email: string | null; updated_at: string; paid_cents?: number | null };
 
 // <device-check>
 // Jeder Aufruf der App legt ein anonymes Konto an - auch Programme, die Seiten automatisch öffnen
@@ -140,10 +144,15 @@ async function collect(today: string): Promise<Report> {
   const usage = new Map((await fetchAll<{ user_id: string; trial_started: string | null }>((a, b) =>
     supabase.from('usage').select('user_id, trial_started').order('user_id').range(a, b)))
     .map((row) => [row.user_id, row.trial_started] as const));
-  // updated_at schreibt nur stripe-webhook, bei jedem Kauf
+  // updated_at schreiben stripe-webhook (Kauf oder Aktionscode) und redeem_gift (Geschenk-Link).
+  // "*" statt einer Spaltenliste: Fehlt paid_cents (0016 noch nicht eingespielt), kommt der Bericht trotzdem.
   const plans = new Map((await fetchAll<PlanRow>((a, b) =>
-    supabase.from('plans').select('user_id, plus_until, email, updated_at').order('user_id').range(a, b)))
+    supabase.from('plans').select('*').order('user_id').range(a, b)))
     .map((row) => [row.user_id, row] as const));
+  // Geschenk-Link: geschenkt, solange plus_until noch das Ende aus der Einlösung ist (danach z. B. gekauft)
+  const gifts = new Set((await fetchAll<{ user_id: string | null; plus_until: string }>((a, b) =>
+    supabase.from('gift_redemptions').select('user_id, plus_until').order('id').range(a, b)))
+    .map((row) => `${row.user_id} ${row.plus_until}`));
   // Gerät der ersten Sitzung. Schlägt das fehl (z. B. 0014 noch nicht eingespielt), kommt der Bericht
   // wie bisher, nur ohne die Bot-Zeilen.
   let agents: Map<string, string | null> | null = null;
@@ -161,7 +170,7 @@ async function collect(today: string): Promise<Report> {
   const lastWeek = (iso: string | null | undefined) => !!iso && iso >= weekFrom && iso <= weekTo;
   const report: Report = {
     today, weekFrom, weekTo, trialAnon: 0, trialMail: [], plus: [], overAnon: 0, overMail: [],
-    openedOnly: 0, total: users.length, endingSoon: 0, newUsers: 0, newTrials: 0, newPlus: 0,
+    openedOnly: 0, total: users.length, endingSoon: 0, newUsers: 0, newTrials: 0, newPlus: 0, newGifts: 0,
     bots: null, newBots: null, newDevices: [], newSources: [], trialSources: []
   };
   const openedOnly: (Visit & { isNew: boolean; src: string })[] = [];
@@ -181,8 +190,12 @@ async function collect(today: string): Promise<Report> {
       trialSources.push(src);
     }
     if (plan?.plus_until && plan.plus_until >= today) {
-      report.plus.push({ email: email || plan.email || '-', date: plan.plus_until });
-      if (lastWeek(berlinDate(new Date(plan.updated_at)))) report.newPlus++;
+      const gift = plan.paid_cents === 0 || gifts.has(`${user.id} ${plan.plus_until}`);
+      report.plus.push({ email: email || plan.email || '-', date: plan.plus_until, gift });
+      if (lastWeek(berlinDate(new Date(plan.updated_at)))) {
+        if (gift) report.newGifts++;
+        else report.newPlus++;
+      }
       if (isNew) {
         newHumanAgents.push(agent);
         newHumanSources.push(src);
@@ -270,7 +283,8 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
       ...newBotRows,
       ['Erste Frist gespeichert (Testphase gestartet)', String(r.newTrials)],
       ...(r.trialSources.length ? [['Herkunft: ' + counted(r.trialSources), '', true] as Row] : []),
-      ['Livo Plus gekauft', String(r.newPlus)]
+      ['Livo Plus gekauft', String(r.newPlus)],
+      ['Livo Plus geschenkt (Gratis-Code)', String(r.newGifts)]
     ]],
     ['Insgesamt', [
       ['Testphase endet in den nächsten 7 Tagen', String(r.endingSoon)],
@@ -284,6 +298,7 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
     'Eigene Tests zählen mit: Jedes neue Browserfenster ist ein neuer anonymer Nutzer' +
     (r.bots === null ? '' : ' (bei den Geräten meist „Windows-PC“)') +
     '. Herkunft = woher jemand beim ersten Öffnen der App kam („direkt“: nicht erkennbar, „unbekannt“: Konto von vor dem 26.10.2026).' +
+    ' „Geschenkt“ = Livo Plus per Gratis-Code (Aktion oder Test), ohne Zahlung.' +
     ' Dieser Bericht kommt jeden Montag automatisch.';
   const lists: [string, Person[], string][] = [
     ['Livo Plus', r.plus, 'bis'],
@@ -291,7 +306,7 @@ function renderReport(r: Report): { subject: string; html: string; text: string 
     ['Testphase vorbei, mit E-Mail', r.overMail, 'Testphase endete am']
   ];
   const listRows = (people: Person[], prefix: string): [string, string][] => {
-    const rows: [string, string][] = people.slice(0, LIST_MAX).map((p) => [p.email, `${prefix} ${dateDe(p.date)}`]);
+    const rows: [string, string][] = people.slice(0, LIST_MAX).map((p) => [p.email, `${prefix} ${dateDe(p.date)}${p.gift ? ' · geschenkt' : ''}`]);
     if (people.length > LIST_MAX) rows.push([`… und ${people.length - LIST_MAX} weitere`, '']);
     return rows;
   };
@@ -395,7 +410,8 @@ Deno.serve(async (request) => {
     return json({
       sent: true, today: report.today, trialAnon: report.trialAnon, trialMail: report.trialMail.length,
       plus: report.plus.length, openedOnly: report.openedOnly, total: report.total,
-      newUsers: report.newUsers, newBots: report.newBots, bots: report.bots, newSources: report.newSources
+      newUsers: report.newUsers, newBots: report.newBots, bots: report.bots, newSources: report.newSources,
+      newPlus: report.newPlus, newGifts: report.newGifts, plusGifts: report.plus.filter((p) => p.gift).length
     });
   } catch (error) {
     console.error('Weekly report failed', error);
