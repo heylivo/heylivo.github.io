@@ -370,6 +370,10 @@ a.brand { color: inherit; text-decoration: none; }
   .card .txt b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .card .pill { grid-column: 2; justify-self: start; padding: 3px 9px; }
 }
+/* Sehr schmale Handys: Beschriftung der drei Karten etwas kleiner, damit einzelne Wörter in einer Zeile bleiben */
+@media (max-width: 340px) {
+  .tlab { font-size: 10.5px; }
+}
 
 /* Jahr im Blick am Handy: Tage ohne Rahmen und kleinere Zahlen, damit zwei Monate nebeneinander passen */
 @media (max-width: 420px) {
