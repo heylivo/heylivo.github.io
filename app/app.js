@@ -201,7 +201,14 @@ document.addEventListener("input", function (e) {
   if (e.target.id === "heroSay") e.target.closest(".hero-form").classList.toggle("typed", !!e.target.value.trim());
 });
 
-// "Heute für dich": überfällig, in den nächsten 7 Tagen fällig, Tage bis zur nächsten Frist
+// "Deine Fristen auf einen Blick": Karten für überfällig, in den nächsten 7 Tagen fällig und Tage bis zur nächsten Frist.
+// Ist nichts überfällig und in den nächsten 7 Tagen nichts fällig, steht statt zweier Nullen grün "Alles im Griff!".
+var TODAY_SVG = {
+  late: '<path d="M12 6v7M12 17.5v.5"/>',
+  ok: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  week: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  next: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+};
 function todayHTML(all) {
   var late = 0, week = 0, next = null;
   all.forEach(function (it) {
@@ -209,14 +216,18 @@ function todayHTML(all) {
     if (d < 0) late++;
     else { if (d <= 7) week++; if (next === null || d < next) next = d; }
   });
-  function stat(n, cls, label, act) {
-    return '<' + (act ? 'button type="button" data-act="' + act + '"' : 'div') + ' class="tstat ' + cls + '"><span class="tnum">' + n + '</span><span>' + esc(label) + '</span></' + (act ? 'button' : 'div') + '>';
+  // big: die Zahl, bei "Alles im Griff!" die Überschrift (schon maskiert)
+  function card(cls, icon, big, label, act) {
+    return '<' + (act ? 'button type="button" data-act="' + act + '"' : 'div') + ' class="tcard ' + cls + '">' +
+      '<span class="tico" aria-hidden="true"><svg viewBox="0 0 24 24">' + TODAY_SVG[icon] + '</svg></span>' +
+      '<b class="tnum">' + big + '</b><span class="tlab">' + esc(label) + '</span></' + (act ? 'button' : 'div') + '>';
   }
-  return '<div class="todaybox"><div class="todaybox-head"><span aria-hidden="true">☀️</span><b>' + esc(t("today.title")) + '</b></div><div class="tstats">' +
-    stat(late, late ? "t-late" : "t-ok", t("today.late"), "") +
-    stat(week, "t-week", t("today.week"), week ? "todayWeek" : "") +
-    (next === null ? "" : stat(next, "t-next", next === 0 ? t("today.nextToday") : t("today.next"), "")) +
-    '</div></div>';
+  var cards = !late && !week ? card("t-good", "ok", esc(t("today.good")), t("today.goodText"), "") :
+    card(late ? "t-late" : "t-ok", late ? "late" : "ok", late, t("today.late"), "") +
+    card("t-week", "week", week, t("today.week"), week ? "todayWeek" : "");
+  if (next !== null) cards += card("t-next", "next", next, next === 0 ? t("today.nextToday") : t("today.next"), "");
+  return '<div class="todaybox"><div class="todaybox-head"><span aria-hidden="true">☀️</span><b>' + esc(t("today.title")) + '</b></div>' +
+    '<div class="tstats">' + cards + '</div></div>';
 }
 
 // Symbole unter "Hey Livo" (scrollen mit): Konto, Kalender, Erinnerungen, Livo Plus - Linien-Symbole wie das Mikrofon,
@@ -1398,7 +1409,7 @@ function setupLanguage() {
   });
   document.addEventListener("click", function (e) { if (!list.hidden && !e.target.closest("#langDd")) open(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") open(false); });
-  document.querySelector(".fab").setAttribute("aria-label", t("add"));
+  document.getElementById("fabText").textContent = t("add");
   document.getElementById("brand").href = LANG === "de" ? "../" : "../en/";
   // "← Startseite" oben in der Mitte - das Logo führt auch dorthin, aber das sieht man nicht
   document.getElementById("homeLink").href = LANG === "de" ? "../" : "../en/";

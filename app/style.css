@@ -177,11 +177,11 @@ main { padding-bottom: 24px; }
 .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 0 22px; }
 .chip { padding: 8px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font: inherit; font-size: 14px; cursor: pointer; }
 
-/* Plus-Knopf */
+/* Plus-Knopf mit Text "+ Erinnerung hinzufügen": Neue sehen sofort, was zu tun ist */
 .fab {
   position: fixed; right: max(16px, calc(50% - 264px)); bottom: 24px; z-index: 10;
-  width: 60px; height: 60px; border: 0; border-radius: 50%;
-  background: var(--grad); color: #fff; font-size: 32px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 20px 0 16px; border: 0; border-radius: 16px;
+  background: var(--grad); color: #fff; font: inherit; font-size: 16px; font-weight: 800; line-height: 1; cursor: pointer;
   box-shadow: 0 10px 24px -8px rgba(48,98,249,.65);
 }
 
@@ -265,7 +265,8 @@ dd { margin: 0; font-weight: 600; }
 .hero-go svg { width: 21px; height: 21px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .hero-go .i-send, .hero-form.typed .hero-go .i-mic { display: none; }
 .hero-form.typed .hero-go .i-send { display: block; }
-/* "Heute für dich": drei Zahlen über der Liste */
+.fab-plus { font-size: 28px; font-weight: 600; }
+/* "Deine Fristen auf einen Blick": drei Karten über der Liste */
 /* Name "todaybox", nicht "today": .yd.today ist der heutige Tag im Jahreskalender */
 .todaybox { margin: 14px 0 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
 .todaybox-head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 15px; }
@@ -277,13 +278,20 @@ dd { margin: 0; font-weight: 600; }
 .tipbox-x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; }
 .tipbox-x:hover { background: rgba(255,255,255,.7); }
 .tstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.tstat { display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12.5px; font-weight: 600; line-height: 1.25; text-align: left; }
-button.tstat { cursor: pointer; }
-.tnum { flex: none; min-width: 28px; height: 28px; display: grid; place-items: center; padding: 0 6px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 800; }
-.t-late .tnum { background: var(--late); } .t-late { color: var(--late); }
-.t-ok .tnum { background: #16a34a; }
-.t-week .tnum { background: var(--brand); }
-.t-next .tnum { background: var(--violet); }
+/* Karte: Symbol (abgerundetes Viereck) und Zahl nebeneinander, Text darunter */
+.tcard { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "ico num" "lab lab"; align-items: center; gap: 6px 8px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; }
+button.tcard { cursor: pointer; }
+.tico { grid-area: ico; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; }
+.tico svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.tnum { grid-area: num; min-width: 0; font-size: 22px; font-weight: 800; line-height: 1; }
+.tlab { grid-area: lab; color: var(--muted); font-size: 12px; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; hyphens: auto; }
+.t-late { background: #fef2f2; border-color: #fecaca; } .t-late .tico { background: var(--late); } .t-late .tnum, .t-late .tlab { color: var(--late); }
+.t-ok { background: #f0fdf4; border-color: #bbf7d0; } .t-ok .tico { background: #16a34a; } .t-ok .tnum { color: #15803d; }
+.t-week { background: #eff4ff; border-color: #d3dcfb; } .t-week .tico { background: var(--brand); }
+.t-next { background: #f6f1ff; border-color: #e4d6fd; } .t-next .tico { background: var(--violet); }
+/* "Alles im Griff!" nimmt den Platz der zwei Nullen ein */
+.t-good { grid-column: span 2; background: #f0fdf4; border-color: #bbf7d0; } .t-good .tico { background: #16a34a; }
+.t-good .tnum { color: #166534; font-size: 15px; line-height: 1.2; } .t-good .tlab { color: #15803d; }
 /* Pfeil rechts auf jeder Karte: "antippen öffnet" */
 .chev { flex: none; margin-left: -4px; color: #a3acbd; font-size: 22px; line-height: 1; }
 /* Symbole unter "Hey Livo" (Konto, Kalender, Erinnerungen, Plus); der Text des gewählten steht darunter */
@@ -353,7 +361,9 @@ a.brand { color: inherit; text-decoration: none; }
   .hero-pill { min-height: 44px; }
   .hero-go { width: 44px; height: 44px; }
   .tstats { gap: 6px; }
-  .tstat { flex-direction: column; align-items: flex-start; gap: 4px; font-size: 11.5px; }
+  .tcard { padding: 8px; gap: 6px; }
+  .tnum { font-size: 20px; }
+  .tlab { font-size: 11.5px; }
   .card { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 12px; align-items: start; padding: 12px; }
   .card .chev { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
   .card .ico { grid-row: span 2; width: 38px; height: 38px; font-size: 19px; }
