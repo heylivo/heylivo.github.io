@@ -64,6 +64,17 @@ def wait_until_published(video_id: str, token: str, timeout: int = 600) -> dict:
     return status
 
 
+def token_hint(token: str) -> str:
+    # Says only whether the secret holds the Page token - the Actions logs are public, so no names
+    try:
+        me = requests.get(f"{GRAPH}/me", params={"fields": "id", "access_token": token}).json()
+    except Exception as error:
+        return f"Token check failed: {error}"
+    if me.get("id") == PAGE_ID:
+        return "The token is the Page token of facebook.com/heylivo."
+    return "The token is NOT the Page token (probably the personal one) - FACEBOOK_PAGE_TOKEN needs the Page token."
+
+
 def post_reel(video_url: str, caption: str, ai: bool = False, draft: bool = False) -> str | None:
     token = os.environ.get("FACEBOOK_PAGE_TOKEN", "")
     if not token:
@@ -95,6 +106,7 @@ def post_reel(video_url: str, caption: str, ai: bool = False, draft: bool = Fals
     except Exception as error:
         detail = getattr(getattr(error, "response", None), "text", "")
         print(f"Facebook post failed (Instagram is not affected): {error} {detail}")
+        print(token_hint(token))
         return None
 
 
