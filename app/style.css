@@ -260,9 +260,9 @@ dd { margin: 0; font-weight: 600; }
 .hero-spark { flex: none; font-size: 15px; }
 .hero-form input { flex: 1; min-width: 0; padding: 8px 0; border: 0; outline: 0; background: none; color: var(--ink); font: inherit; font-size: 15px; }
 .hero-form input::placeholder { color: #7a8396; }
-/* Weiß mit blauem Symbol: ein Knopf im Verlauf wäre auf dem Verlauf des Kastens kaum zu sehen */
-.hero-go { flex: none; width: 46px; height: 46px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px -8px rgba(11,20,32,.35); cursor: pointer; }
-.hero-go svg { width: 21px; height: 21px; fill: none; stroke: var(--brand); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* Blau mit weißem Symbol; der dezente weiße Rand hebt ihn vom Verlauf des Kastens ab */
+.hero-go { flex: none; width: 46px; height: 46px; display: grid; place-items: center; border: 2px solid rgba(255,255,255,.6); border-radius: 50%; background: var(--brand); box-shadow: 0 6px 16px -8px rgba(11,20,32,.35); cursor: pointer; }
+.hero-go svg { width: 21px; height: 21px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .hero-go .i-send, .hero-form.typed .hero-go .i-mic { display: none; }
 .hero-form.typed .hero-go .i-send { display: block; }
 /* "Heute für dich": drei Zahlen über der Liste */
