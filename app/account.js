@@ -172,9 +172,14 @@ async function sendCode(btn, again) {
 async function verifyCode(code, btn) {
   var signin = accFlow.mode === "signin";
   var carry = signin && canEdit() ? items.slice() : []; // Fristen dieses Geräts ohne Konto - kommen mit, solange die Testphase läuft
-  var r;
+  var r, carryToken = null;
   btn.disabled = true;
   btn.textContent = "…";
+  // Gratis-Jahr dieses Browsers mitnehmen (z. B. im Instagram-Browser eingelöst): noch als anonymes Konto
+  // einen Einmal-Schlüssel holen, nach dem Anmelden zieht claim_carry das Plus um (0017_plus_carry.sql)
+  if (signin && !userEmail && plusUntil && plusUntil >= toISO(today())) {
+    try { var pc = await sb.rpc("prepare_carry"); carryToken = pc.data || null; } catch (e) { /* dann bleibt das Plus hier */ }
+  }
   try {
     r = await sb.auth.verifyOtp({ email: accFlow.email, token: code, type: signin ? "email" : "email_change" });
   } catch (e) { r = { error: e }; }
@@ -185,7 +190,7 @@ async function verifyCode(code, btn) {
     document.getElementById("err").textContent = r.error && (r.error.status === 403 || /expired|invalid/i.test(msg)) ? t("acc.errCode") : t("toast.retry");
     return;
   }
-  if (signin) signedIn(r.data.user, carry); else secured(r.data.user);
+  if (signin) signedIn(r.data.user, carry, carryToken); else secured(r.data.user);
 }
 
 function secured(user) {
@@ -198,13 +203,18 @@ function secured(user) {
   if (then === "plus") showPlus(); // vom Kauf-Fenster aus gesichert: gleich weiter zum Kauf
 }
 
-async function signedIn(user, carry) {
-  var then = accFlow && accFlow.then, oldCat = MY_CAT;
+async function signedIn(user, carry, carryToken) {
+  var then = accFlow && accFlow.then, oldCat = MY_CAT, plusMoved = false;
   setUser(user);
   // Eigene Kategorie vom Gerätekonto mitnehmen, wenn das Konto noch keine hat
   if (!MY_CAT.cat && oldCat.cat) try { await saveMyCat(oldCat.cat, oldCat.sub); } catch (e) { /* bleibt auf dem Gerätekonto */ }
   accFlow = null;
   try { await sb.auth.updateUser({ data: { lang: LANG } }); } catch (e) { /* nur die Sprache der Mails */ }
+  // Gratis-Jahr vom Gerätekonto ins angemeldete Konto umziehen - vor loadAll, damit das neue Ende gleich da ist
+  if (carryToken) try {
+    var cc = await sb.rpc("claim_carry", { p_token: carryToken });
+    plusMoved = !!(cc.data && cc.data.ok);
+  } catch (e) { /* bleibt auf dem Gerätekonto */ }
   try { await loadAll(); } catch (e) { location.reload(); return; }
   var moved = 0;
   try {
@@ -217,7 +227,7 @@ async function signedIn(user, carry) {
   } catch (e) { /* z. B. Testphase des Kontos vorbei - der Rest bleibt auf dem alten Gerätekonto */ }
   closeSheet();
   render();
-  toast(moved ? t("acc.welcomeCarry", { n: moved }) : t("acc.welcome"));
+  toast(plusMoved ? t("acc.welcomePlus") : moved ? t("acc.welcomeCarry", { n: moved }) : t("acc.welcome"));
   if (then === "plus") showPlus();
   // Das Push-Abo dieses Geräts gehört noch dem anonymen Konto - initPush holt dann ein neues
   initPush().then(render, render);
