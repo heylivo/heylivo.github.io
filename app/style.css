@@ -277,6 +277,10 @@ dd { margin: 0; font-weight: 600; }
 .tipbox small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.4; }
 .tipbox-x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; }
 .tipbox-x:hover { background: rgba(255,255,255,.7); }
+/* Im Instagram-/Facebook-Browser: Hinweis "In Chrome öffnen" (gleiche Box wie der Tipp) */
+.inapp small + small { margin-top: 6px; }
+.inapp small b { display: inline; font-size: inherit; color: var(--ink); }
+.inapp-btn { display: inline-block; width: auto; margin: 8px 0 0; padding: 9px 16px; font-size: 14px; text-decoration: none; }
 .tstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 /* Karte: Symbol (abgerundetes Viereck) und Zahl nebeneinander, Text darunter */
 .tcard { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "ico num" "lab lab"; align-items: center; align-content: start; gap: 6px 8px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; }

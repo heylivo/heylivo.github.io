@@ -187,6 +187,31 @@ function tipHTML() {
     '<div><b>' + esc(t("tip.title")) + '</b><small>' + esc(t("tip.text")) + '</small></div>' +
     '<button type="button" class="tipbox-x" data-act="tipClose" aria-label="' + esc(t("cancel")) + '">×</button></div>';
 }
+// Im Browser von Instagram/Facebook gibt es keine Erinnerungen (kein Push) - Hinweis, heylivo in Chrome bzw. Safari zu öffnen.
+// Android: Knopf mit intent://-Link zu Chrome. iPhone: Anleitung über "⋯" (dort gibt es keinen Link, der Safari öffnet).
+// Liegt schon etwas in diesem Browser (Fristen, Plus), zuerst Konto sichern - sonst bleibt es hier.
+// Mit × für diese Sitzung aus. Ansehen ohne Instagram: ?demo=1&inapp=android bzw. ios
+var UA = navigator.userAgent;
+var IN_APP = params.get("inapp") ? "Instagram" : /Instagram/.test(UA) ? "Instagram" : /FBAN|FBAV|FB_IAB/.test(UA) ? "Facebook" : "";
+var IN_APP_ANDROID = params.get("inapp") ? params.get("inapp") === "android" : /Android/.test(UA);
+var inappClosed = false;
+try { inappClosed = sessionStorage.getItem("livo.inapp") === "x"; } catch (e) {}
+function chromeLink() {
+  var url = location.host + location.pathname + location.search;
+  return "intent://" + url + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent("https://" + url) + ";end";
+}
+function inappHTML() {
+  if (!IN_APP || inappClosed) return "";
+  var keep = !DEMO && !userEmail && (items.length || isPlus());
+  var after = keep ? '<small>' + t("inapp.secureFirst") + ' <button type="button" class="linkbtn" data-act="account">' + t("acc.secure") + '</button></small>'
+    : userEmail ? '<small>' + t("inapp.signinThere", { email: "<b>" + esc(userEmail) + "</b>" }) + '</small>' : "";
+  var how = IN_APP_ANDROID ? '<a class="btn inapp-btn" href="' + esc(chromeLink()) + '">' + t("inapp.btn") + '</a>'
+    : '<small>' + t("inapp.ios") + '</small>';
+  return '<div class="tipbox inapp"><span class="tipbox-ico" aria-hidden="true">🔔</span>' +
+    '<div><b>' + esc(t("inapp.title")) + '</b><small>' + t("inapp.text", { app: IN_APP }) + '</small>' + how + after + '</div>' +
+    '<button type="button" class="tipbox-x" data-act="inappClose" aria-label="' + esc(t("cancel")) + '">×</button></div>';
+}
+
 // Eingabe im Kasten: Text verstehen lassen, ohne Text die Spracheingabe öffnen
 function heroGo() {
   var input = document.getElementById("heroSay"), txt = input ? input.value.trim() : "";
@@ -300,6 +325,7 @@ function render() {
   renderedDay = fmt(new Date());
   var list = document.getElementById("list"), controls = document.getElementById("controls"), stat = document.getElementById("status");
   renderNote();
+  document.getElementById("inapp").innerHTML = inappHTML();
   if (!items.length) { controls.innerHTML = stat.innerHTML = ""; list.innerHTML = emptyHTML(); return; }
   var all = sortedItems();
   var now = all.filter(function (it) { return status(it).key !== "later"; });
@@ -1334,6 +1360,7 @@ document.addEventListener("click", function (e) {
   else if (act === "shareOther") shareItem(id);
   else if (act === "mycat") showMyCat();
   else if (act === "heroGo") heroGo();
+  else if (act === "inappClose") { inappClosed = true; try { sessionStorage.setItem("livo.inapp", "x"); } catch (e) {} render(); }
   else if (act === "tipClose") { tipClosed = true; try { localStorage.setItem("livo.tip1", "x"); } catch (e) {} render(); }
   else if (act === "todayWeek") { setFilter("week"); var sec = document.querySelector(".sec-row"); if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (act === "inAdd") addIncoming(el);
