@@ -190,7 +190,7 @@ function zonedUtc(date, time, tz) {
   return guess - (shownThere - guess);
 }
 
-// Ein Termin. item: { id, title, due, due_time, due_time_end, tz, lead_days, remind_min, repeat }
+// Ein Termin. item: { id, title, due, due_end, due_time, due_time_end, tz, lead_days, remind_min, repeat }
 function icsEvent(item, lang, stamp, nowMs) {
   const uid = 'heylivo-' + item.id + (item.repeat ? '-' + icsDate(item.due) : '') + '@heylivo.com';
   const lines = ['BEGIN:VEVENT', 'UID:' + uid, 'DTSTAMP:' + stamp];
@@ -201,7 +201,8 @@ function icsEvent(item, lang, stamp, nowMs) {
     const end = item.due_time_end ? zonedUtc(item.due, item.due_time_end.slice(0, 5), tz) : 0;
     lines.push('DTSTART:' + icsUtc(start), 'DTEND:' + icsUtc(end > start ? end : start + 3600000));
   } else {
-    lines.push('DTSTART;VALUE=DATE:' + icsDate(item.due), 'DTEND;VALUE=DATE:' + icsDate(addDaysIso(item.due, 1)));
+    // Zeitraum (Urlaubstage, seit 0018_due_end.sql): ganztägig bis einschließlich due_end - DTEND ist der Tag danach
+    lines.push('DTSTART;VALUE=DATE:' + icsDate(item.due), 'DTEND;VALUE=DATE:' + icsDate(addDaysIso(item.due_end || item.due, 1)));
     lines.push('TRANSP:TRANSPARENT');
   }
   lines.push('SUMMARY:' + icsEscape(item.title), 'DESCRIPTION:' + icsEscape(icsText(lang, 'event')));
@@ -298,7 +299,7 @@ Deno.serve(async (request) => {
   }
 
   const { data: rows, error: rowsError } = await supabase.from('deadlines')
-    .select('id, title, due, due_time, due_time_end, tz, lead_days, remind_min, every_months, every_days')
+    .select('id, title, due, due_end, due_time, due_time_end, tz, lead_days, remind_min, every_months, every_days')
     .eq('user_id', feed.user_id).order('due').limit(500);
   if (rowsError) return new Response('Try again later', { status: 503 });
   return calendarResponse(buildCalendar(feed.lang, withRepeats(rows ?? [], today), '', now), head);

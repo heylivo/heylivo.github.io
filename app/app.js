@@ -28,20 +28,24 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 var TIME_ZONE = (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Berlin"; } catch (e) { return "Europe/Berlin"; } })();
 
 function toRow(it) {
-  return {
+  var row = {
     tpl: it.tpl || "eigene", title: it.title, due: it.due, due_time: it.time || null,
     // Endzeit (Spalte aus 0012_time_end.sql) nur zusammen mit einer Uhrzeit
     due_time_end: it.time && it.timeEnd ? it.timeEnd : null,
     every_months: it.every || 0, every_days: it.everyDays || 0, from_done: it.from === "done", lead_days: it.lead, renew: !!it.renew,
     remind_min: it.time && it.remindMin ? it.remindMin : null, tz: TIME_ZONE
   };
+  // Letzter Tag eines Zeitraums (Spalte aus 0018_due_end.sql) - nur bei Urlaubstagen, damit alle anderen
+  // Fristen auch ohne die Spalte gespeichert werden können
+  if (it.end) row.due_end = it.end;
+  return row;
 }
 function fromRow(r) {
   return {
     id: r.id, tpl: r.tpl, title: r.title, due: r.due, time: r.due_time ? r.due_time.slice(0, 5) : "",
     timeEnd: r.due_time && r.due_time_end ? r.due_time_end.slice(0, 5) : "",
     every: r.every_months, everyDays: r.every_days || 0, from: r.from_done ? "done" : "due", lead: r.lead_days, renew: r.renew,
-    remindMin: r.remind_min || 0
+    remindMin: r.remind_min || 0, end: r.due_end || ""
   };
 }
 async function signIn() {
@@ -123,10 +127,16 @@ function isDate(d) { return d instanceof Date && !isNaN(d.getTime()); }
 /* ---------- Status und Texte ---------- */
 function status(it) {
   var days = diffDays(today(), fromISO(it.due));
+  // Zeitraum (Urlaubstage): läuft vom ersten bis zum letzten Tag, vorbei erst danach
+  if (it.end && days < 0) {
+    var left = diffDays(today(), fromISO(it.end));
+    return left >= 0 ? { key: "now", days: 0, running: true } : { key: "late", days: left };
+  }
   if (days < 0) return { key: "late", days: days };
   if (days <= it.lead) return { key: "now", days: days };
   return { key: "later", days: days };
 }
+function pillText(s) { return s.running ? t("when.running") : whenText(s.days); }
 function whenText(days) {
   if (days === 0) return t("when.today");
   if (days === 1) return t("when.tomorrow");
@@ -150,7 +160,19 @@ function everyText(it) {
 }
 function repeats(it) { return (it.every || 0) > 0 || (it.everyDays || 0) > 0; }
 function nextRepeat(d, it) { return it.everyDays > 0 ? addDays(d, it.everyDays) : addMonths(d, it.every); }
-function dueText(it) { return fmt(fromISO(it.due)) + (it.time ? ", " + it.time + (it.timeEnd ? "–" + it.timeEnd : "") + t("time.suffix") : ""); }
+// Arbeitstage eines Zeitraums: ohne Samstag, Sonntag und die Feiertage des gewählten Landes (Jahr im Blick)
+function workDays(it) {
+  var a = fromISO(it.due), b = fromISO(it.end), hol = holidayMap(a.getFullYear(), b.getFullYear()), n = 0;
+  for (var d = a; d <= b; d = addDays(d, 1)) if (d.getDay() % 6 && !hol[toISO(d)]) n++;
+  return n;
+}
+function dueText(it) {
+  if (it.end) {
+    var n = workDays(it);
+    return fmt(fromISO(it.due)) + " – " + fmt(fromISO(it.end)) + " · " + (n === 1 ? t("range.day1") : t("range.days", { n: n }));
+  }
+  return fmt(fromISO(it.due)) + (it.time ? ", " + it.time + (it.timeEnd ? "–" + it.timeEnd : "") + t("time.suffix") : "");
+}
 function remindText(it) {
   var r = addDays(fromISO(it.due), -it.lead);
   return r <= today() ? t("remind.now") : t("remind.from", { date: fmt(r) });
@@ -376,6 +398,13 @@ var yearShift = 0;
 function occurrences(from, to) {
   var map = {};
   items.forEach(function (it) {
+    // Zeitraum: jeder Tag vom ersten bis zum letzten
+    if (it.end) {
+      for (var x = fromISO(it.due), last = fromISO(it.end); x <= last && x <= to; x = addDays(x, 1)) {
+        if (x >= from) (map[toISO(x)] = map[toISO(x)] || []).push(it);
+      }
+      return;
+    }
     for (var d = fromISO(it.due), n = 0; d <= to && n < 400; n++) {
       if (d >= from) (map[toISO(d)] = map[toISO(d)] || []).push(it);
       if (!repeats(it)) break;
@@ -404,12 +433,16 @@ function showYear() {
     for (var e = 0; e < (first.getDay() + 6) % 7; e++) cells += '<span></span>';
     for (var day = 1; day <= days; day++) {
       var iso = toISO(new Date(first.getFullYear(), first.getMonth(), day)), list = occ[iso] || [];
-      count += list.length;
-      if (iso >= todayIso) upcoming += list.length;
+      // ein Zeitraum zählt einmal (an seinem ersten Tag im Monat), nicht an jedem Tag
+      var counted = list.filter(function (it) { return !it.end || iso === it.due || day === 1; }).length;
+      count += counted;
+      if (iso >= todayIso) upcoming += counted;
       if (!list.length && iso >= todayIso) free++;
       // nur Termine mit Uhrzeit = teilweise belegt (hellblau), sonst ganztägig belegt (blau)
       var partly = list.length && list.every(function (it) { return it.time; });
-      var cls = "yd" + (list.length ? (iso < todayIso ? " late" : partly ? " part" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "") + (hol[iso] ? " hol" : "");
+      // vergangene Urlaubstage sind nicht "überfällig"
+      var late = iso < todayIso && list.some(function (it) { return !it.end; });
+      var cls = "yd" + (list.length ? (late ? " late" : partly ? " part" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "") + (hol[iso] ? " hol" : "");
       cells += '<button type="button" class="' + cls + '" data-act="yday" data-id="' + iso + '"' + (hol[iso] ? ' title="' + esc(hol[iso]) + '"' : "") + '>' + day + '</button>';
     }
     months += '<div class="ymonth"><h4>' + esc(monthFmt.format(first)) + '</h4>' +
@@ -513,12 +546,12 @@ function setFilter(f) {
 function card(it) {
   var s = status(it);
   // Auf jeder Karte das Fälligkeitsdatum mit Uhrzeit (die Erinnerung steht in der Frist selbst)
-  var sub = t("card.due", { x: dueText(it) });
+  var sub = it.end ? dueText(it) : t("card.due", { x: dueText(it) });
   if (it.tpl === "meine" && MY_CAT.cat) sub = MY_CAT.cat + " · " + sub; // eigene Kategorie, z. B. "George Kalender"
   return '<button type="button" class="card st-' + s.key + '" data-open="' + it.id + '">' +
     '<span class="ico">' + iconOf(it) + '</span>' +
     '<span class="txt"><b>' + esc(it.title) + '</b><small>' + esc(sub) + '</small></span>' +
-    '<span class="pill">' + esc(whenText(s.days)) + '</span><span class="chev" aria-hidden="true">›</span></button>';
+    '<span class="pill">' + esc(pillText(s)) + '</span><span class="chev" aria-hidden="true">›</span></button>';
 }
 function emptyHTML() {
   var quick = ["personalausweis", "tuev", "kfzversicherung", "zahnarzt", "rechnung", "versicherung", "arzttermin"];
@@ -553,16 +586,24 @@ function showPicker() {
   var html = '<h3>' + t("picker.title") + '</h3>' +
     '<button type="button" class="btn light" data-act="voice">' + t("picker.voice") + '</button>';
   var visible = visibleTemplates();
+  function tplBtn(tp) { return '<button type="button" class="tpl" data-tpl="' + tp.id + '">' + esc(tplTitle(tp)) + '</button>'; }
+  function catHead(c) {
+    return '<div class="cat">' + c.icon + " " + esc(catName(c)) +
+      (c.id === "mine" ? ' <button type="button" class="catedit" data-act="mycat" aria-label="' + esc(t("mycat.rename")) + '" title="' + esc(t("mycat.rename")) + '">✏️</button>' : "") + '</div>';
+  }
   CATEGORIES.forEach(function (c) {
     var list = visible.filter(function (tp) { return tp.cat === c.id || tp.also === c.id; });
-    if (!list.length || (c.id === "mine" && !MY_CAT.cat)) return;
-    html += '<div class="cat">' + c.icon + " " + esc(catName(c)) +
-      (c.id === "mine" ? ' <button type="button" class="catedit" data-act="mycat" aria-label="' + esc(t("mycat.rename")) + '" title="' + esc(t("mycat.rename")) + '">✏️</button>' : "") +
-      '</div><div class="tpls">' +
-      list.map(function (tp) { return '<button type="button" class="tpl" data-tpl="' + tp.id + '">' + esc(tplTitle(tp)) + '</button>'; }).join("") +
-      // noch keine eigene Kategorie: neben "Eigene Frist" anlegen
-      (c.id === "own" && !MY_CAT.cat ? '<button type="button" class="tpl newcat" data-act="mycat">+ ' + esc(t("mycat.new")) + '</button>' : "") +
-      '</div>';
+    if (!list.length || c.id === "mine") return;
+    if (c.id === "own") {
+      // "Eigene" und die eigene Kategorie nebeneinander: links "Eigene Frist", rechts z. B. "⭐ George" mit ihrer
+      // Unterkategorie - Überschriften und Knöpfe je auf einer Linie. Noch keine eigene Kategorie: rechts "+ anlegen"
+      var mine = find(CATEGORIES, "mine"), mineTpl = find(TEMPLATES, "meine");
+      html += MY_CAT.cat
+        ? '<div class="tpls catpair">' + catHead(c) + catHead(mine) + tplBtn(list[0]) + tplBtn(mineTpl) + '</div>'
+        : catHead(c) + '<div class="tpls">' + tplBtn(list[0]) + '<button type="button" class="tpl newcat" data-act="mycat">+ ' + esc(t("mycat.new")) + '</button></div>';
+      return;
+    }
+    html += catHead(c) + '<div class="tpls">' + list.map(tplBtn).join("") + '</div>';
   });
   openSheet(html + '<button type="button" class="btn light" data-act="close">' + t("cancel") + '</button>');
 }
@@ -851,9 +892,12 @@ function readRepeat(form, quiet) {
 function itemFormHTML(it, opts) {
   return '<form id="frm" novalidate>' + (opts.intro || "") +
     '<label class="field"><span>' + t("form.what") + '</span><input name="title" type="text" value="' + esc(it.title) + '"></label>' +
-    '<label class="field"><span>' + (opts.dateLabel || t("form.due")) + '</span><input name="due" type="date" value="' + esc(it.due) + '"></label>' +
-    timeHTML(it.time, it.remindMin, it.timeEnd) +
-    repeatHTML(it) +
+    '<label class="field"><span>' + (it.end ? t("form.from") : opts.dateLabel || t("form.due")) + '</span><input name="due" type="date" value="' + esc(it.due) + '"></label>' +
+    // Zeitraum: letzter Tag statt Uhrzeit
+    (it.end ? '<label class="field"><span>' + t("form.until") + '</span><input name="end" type="date" value="' + esc(it.end) + '"></label>' +
+      '<div hidden>' + timeHTML("", undefined) + '</div>' : timeHTML(it.time, it.remindMin, it.timeEnd)) +
+    // ein Zeitraum wiederholt sich nicht (beim Erledigen würde sonst nur der erste Tag weiterrücken)
+    (it.end ? '<div hidden>' + repeatHTML(it) + '</div>' : repeatHTML(it)) +
     leadHTML(it.lead) +
     '<p class="err" id="err"></p><button class="btn" type="submit">' + t("save") + '</button>' + (opts.back || "") + '</form>';
 }
@@ -864,6 +908,11 @@ function readItemForm(form, it) {
     document.getElementById("err").textContent = t("form.err");
     return false;
   }
+  var end = form.elements.end ? form.elements.end.value : "";
+  if (form.elements.end && (!end || !isDate(fromISO(end)) || end < due)) {
+    document.getElementById("err").textContent = t("form.errUntil");
+    return false;
+  }
   var time = readTime(form);
   if (time === null) return false;
   var timeEnd = readTimeEnd(form);
@@ -872,6 +921,7 @@ function readItemForm(form, it) {
   if (!rep) return false;
   it.title = title;
   it.due = due;
+  if (end) it.end = end;
   it.time = time;
   it.timeEnd = time ? timeEnd : "";
   it.remindMin = readSoon(form);
@@ -944,7 +994,9 @@ function build(tp, v, lead) {
   if (tp.fields.some(function (f) { return !f.optional && !v[f.key]; })) return null;
   var r = tp.compute(v);
   if (!isDate(r.due)) return null;
-  return { tpl: tp.id, title: tplName(tp, v), due: toISO(r.due), time: "", every: r.every || 0, everyDays: r.everyDays || 0, from: tp.from || "due", lead: lead, renew: !!tp.renew };
+  // Zeitraum: der letzte Tag darf nicht vor dem ersten liegen
+  if (r.end && (!isDate(r.end) || r.end < r.due)) return null;
+  return { tpl: tp.id, title: tplName(tp, v), due: toISO(r.due), end: r.end ? toISO(r.end) : "", time: "", every: r.every || 0, everyDays: r.everyDays || 0, from: tp.from || "due", lead: lead, renew: !!tp.renew };
 }
 
 // Ratgeber-Seite zur Vorlage (es gibt sie nur auf Deutsch und Englisch)
@@ -964,7 +1016,8 @@ function showNew(tid) {
   openSheet('<h3>' + find(CATEGORIES, tp.cat).icon + " " + esc(tplTitle(tp)) + '</h3><form id="frm" novalidate>' +
     (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") + guideLinkHTML(tp) +
     tp.fields.map(function (f) { return fieldHTML(tp, f); }).join("") +
-    timeHTML("", undefined) +
+    // Zeitraum (Urlaubstage): ganze Tage, keine Uhrzeit
+    (tp.range ? '<div hidden>' + timeHTML("", undefined) + '</div>' : timeHTML("", undefined)) +
     leadHTML(tp.lead) +
     '<div class="preview" id="pv"></div><p class="err" id="err"></p>' +
     '<button class="btn" type="submit">' + t("save") + '</button>' +
@@ -986,9 +1039,10 @@ function showNew(tid) {
   }
   function update() {
     var it = current();
-    document.getElementById("pv").innerHTML = it
-      ? t("preview", { due: esc(dueText(it)), remind: esc(remindText(it)), every: esc(everyText(it)) })
-      : t("preview.empty");
+    var pv = it ? t("preview", { due: esc(dueText(it)), remind: esc(remindText(it)), every: esc(everyText(it)) }) : t("preview.empty");
+    // Zeitraum: "Zeitraum 21.12. – 06.01. …" statt "Fällig am …"
+    if (it && it.end) pv = esc(t("dl.range")) + " " + pv.slice(pv.indexOf("<b>"));
+    document.getElementById("pv").innerHTML = pv;
   }
   form.addEventListener("input", update);
   form.addEventListener("submit", function (e) {
@@ -1010,8 +1064,8 @@ function showItem(id) {
   var s = status(it), tp = find(TEMPLATES, it.tpl), hint = tp ? tplHint(tp) : "";
   var main = repeats(it) ? t("done.next") : it.renew ? t("done.renew") : t("done");
   openSheet('<div class="st-' + s.key + '"><div class="d-head"><span class="ico">' + iconOf(it) + '</span><div><h3>' + esc(it.title) + '</h3>' +
-    '<span class="pill">' + esc(whenText(s.days)) + '</span></div></div>' +
-    '<dl><dt>' + t("dl.due") + '</dt><dd>' + esc(dueText(it)) + '</dd>' +
+    '<span class="pill">' + esc(pillText(s)) + '</span></div></div>' +
+    '<dl><dt>' + t(it.end ? "dl.range" : "dl.due") + '</dt><dd>' + esc(dueText(it)) + '</dd>' +
     '<dt>' + t("dl.remind") + '</dt><dd>' + esc(t("dl.remindVal", { n: it.lead, x: remindText(it) })) + '</dd>' +
     (it.time && it.remindMin ? '<dt>' + t("dl.soon") + '</dt><dd>' + esc(soonText(it.remindMin)) + '</dd>' : "") +
     '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it)) + '</dd></dl>' +
