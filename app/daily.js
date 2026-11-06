@@ -230,14 +230,14 @@ function dayAll() {
 function dayOpen(q) {
   var s = dayState.seen[q.id];
   if (s === "x" || (s && s > toISO(today()))) return false;
-  return q.kind === "q" || !dayHasTpl(q.tpl);
+  return q.kind === "q" || q.kind === "z" || !dayHasTpl(q.tpl);
 }
-// Die nächste Frage: zuerst die Jahreszeit, sonst jede 3. ein Quiz und jede 6. aus dem Ratgeber
+// Die nächste Frage: zuerst die Jahreszeit, dann das Quiz mit Ratgeber (quiz.js), danach jede 3. ein kurzes Quiz und jede 6. aus dem Ratgeber
 function dayNext() {
   var open = dayAll().filter(dayOpen);
   function of(kind) { return open.filter(function (q) { return q.kind === kind; })[0]; }
   var n = dayState.count % 6;
-  return of("s") || (n === 2 || n === 5 ? of("q") : n === 4 ? of("r") : of("t")) || of("t") || of("q") || of("r") || null;
+  return of("s") || of("z") || (n === 2 || n === 5 ? of("q") : n === 4 ? of("r") : of("t")) || of("t") || of("q") || of("r") || null;
 }
 function dayCurrent() {
   var forced = DEMO && params.get("day");
@@ -267,12 +267,16 @@ function dayHTML() {
   if (dayState.hide === iso && !forced) return "";
   var streak = dayState.streak >= 2 && (dayState.done === iso || dayState.done === toISO(addDays(today(), -1)))
     ? '<span class="day-streak">🔥 ' + esc(t("day.streak", { d: dayState.streak })) + '</span>' : "";
+  // Ergebnis des Quiz mit Ratgeber bleibt stehen, bis man es schließt, auch nach einem Neustart der App
+  var zDone = dayState.zShow === iso && dayState.zId ? DAY_EXTRA.filter(function (e) { return e.id === dayState.zId; })[0] : null;
+  if (zDone && dayText(zDone.id)) return dayZHTML(zDone, streak);
   // Für heute beantwortet: nur noch eine kleine Zeile. Höchstens eine Frage am Tag, die nächste kommt morgen.
   if (dayState.done === iso && dayQuizPick === null && !forced) {
     return '<div class="day day-mini"><div class="day-mini-l"><span>' + esc(t("day.finished")) + '</span>' + streak + '</div>' + dayBellHTML() + '</div>';
   }
   var q = dayCurrent();
   if (!q) return "";
+  if (q.kind === "z") return dayZHTML(q, streak);
   var tp = find(TEMPLATES, q.tpl), x = dayText(q.id) || {};
   var head = { t: "💡 " + t("day.title"), s: "🍂 " + t("day.season"), r: "📖 " + t("day.guide"), q: "🧠 " + t("day.quiz") }[q.kind];
   var top = '<div class="day-top"><span>' + esc(head) + '</span>' + streak + '</div>' +
@@ -309,6 +313,7 @@ function dayAct(act, el) {
   if (act === "dayPush") return dayPushShow();
   if (act === "dayPushToggle") return dayPushToggle(el);
   if (act === "dayBell") return dayBell(el);
+  if (act === "dayZAns" || act === "dayZClose" || act === "dayZAdd") return dayZAct(act, el);
   if (act === "dayClose") { dayState.hide = toISO(today()); daySave(); return render(); }
   var q = dayCurrent();
   if (!q) return render();
@@ -328,6 +333,63 @@ function dayAct(act, el) {
   if (!wasQuiz) dayAnswered(); else daySave();
   render();
   if (act === "dayAdd") showNew(q.tpl);
+}
+
+/* ---------- Quiz mit Ratgeber (Texte in quiz.js): 4 Antworten, 3 Versuche ---------- */
+// Richtig: Der Ratgeber öffnet sich, danach führt die Karte zur passenden Frist. Dreimal falsch: Die richtige Antwort wird gezeigt,
+// der Ratgeber bleibt zu und die Frage kommt nach 3 Wochen wieder. Die Versuche gelten für einen Tag.
+var DAY_Z_TRIES = 3, DAY_Z_ICON = { geld: "💶", essen: "🥦", bewegung: "🏃", schlaf: "😴", stress: "🧘" };
+function dayZPicks(q) { return dayState.zId === q.id && dayState.zDay === toISO(today()) ? dayState.zPicks || [] : []; }
+function dayZTopic(q) { return DAY_Z_ICON[q.topic] + " " + t("day.t." + q.topic); }
+function dayZHTML(q, streak) {
+  var x = dayText(q.id);
+  if (!x) return "";
+  var picks = dayZPicks(q), won = picks.indexOf(q.right) >= 0, lost = !won && picks.length >= DAY_Z_TRIES;
+  var opts = x.o.map(function (o, i) {
+    var cls = i === q.right && (won || lost) ? " ok" : picks.indexOf(i) >= 0 ? " no" : "";
+    return '<button type="button" class="day-opt' + cls + '" data-act="dayZAns" data-i="' + i + '"' + (won || lost || picks.indexOf(i) >= 0 ? " disabled" : "") + '>' + esc(o) + '</button>';
+  }).join("");
+  var html = '<div class="day"><div class="day-top"><span>🧠 ' + esc(t("day.quiz")) + '</span>' + streak + '</div>' +
+    '<button type="button" class="tipbox-x" data-act="dayClose" aria-label="' + esc(t("cancel")) + '">×</button>' +
+    '<div class="day-q">' + esc(x.q) + '</div><div class="day-opts">' + opts + '</div>';
+  if (won) {
+    var ok = '<button type="button" class="day-btn main" data-act="dayZClose">OK</button>';
+    html += '<div class="day-guide"><div class="day-gh">🎁 ' + esc(t("day.zWon", { x: dayZTopic(q) })) + '</div><div class="day-gt">' + esc(x.title) + '</div><div class="day-gx">' + esc(x.text) + '</div>' +
+      '<div class="day-src">' + esc(t("day.zSrc", { x: x.src })) + (q.med ? " · " + esc(t("day.zMed")) : "") + '</div></div>' +
+      (dayHasTpl(q.tpl) ? '<div class="day-btns">' + ok + '</div>'
+        : '<div class="day-ask">' + esc(x.ask) + '</div><div class="day-btns"><button type="button" class="day-btn main" data-act="dayZAdd">' + esc(t("day.add")) + '</button>' +
+          '<button type="button" class="day-btn" data-act="dayZClose">' + esc(t("day.later")) + '</button></div>');
+  } else if (lost) {
+    html += '<div class="day-res"><b>' + esc(t("day.zLost", { x: x.o[q.right] })) + '</b> ' + esc(t("day.zLostMore")) + '</div><div class="day-btns"><button type="button" class="day-btn main" data-act="dayZClose">OK</button></div>';
+  } else if (picks.length) {
+    var left = DAY_Z_TRIES - picks.length;
+    html += '<div class="day-try">' + esc(left === 1 ? t("day.zLeft1") : t("day.zLeft", { c: left })) + '</div>';
+  } else {
+    html += '<div class="day-foot day-tries">' + esc(t("day.zTries", { x: dayZTopic(q) })) + '</div>';
+  }
+  return html + '</div>';
+}
+function dayZAct(act, el) {
+  var iso = toISO(today());
+  if (act === "dayZAns") {
+    var q = dayCurrent();
+    if (!q || q.kind !== "z") return render();
+    if (dayState.zId !== q.id || dayState.zDay !== iso) { dayState.zId = q.id; dayState.zDay = iso; dayState.zPicks = []; }
+    var pick = +el.getAttribute("data-i");
+    if (dayState.zPicks.indexOf(pick) < 0) dayState.zPicks.push(pick);
+    var won = pick === q.right;
+    if (won || dayState.zPicks.length >= DAY_Z_TRIES) {
+      dayState.seen[q.id] = won ? "x" : dayLaterDate(21);
+      dayState.zShow = iso;
+      dayAnswered();
+    } else daySave();
+    return render();
+  }
+  var done = DAY_EXTRA.filter(function (e) { return e.id === dayState.zId; })[0];
+  dayState.zShow = "";
+  daySave();
+  render();
+  if (act === "dayZAdd" && done) showNew(done.tpl);
 }
 
 /* ---------- Als Nachricht: pro Gerät, kommt beim Einschalten der Erinnerungen mit (dayPushAutoOn), einzeln abschaltbar ---------- */
