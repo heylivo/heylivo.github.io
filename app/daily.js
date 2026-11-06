@@ -206,9 +206,8 @@ var DAY_TEXT = {
   }
 };
 
-var dayState = { seen: {}, day: "", id: "", done: "", streak: 0, count: 0, hide: "", pushHour: null };
+var dayState = { seen: {}, day: "", id: "", done: "", streak: 0, count: 0, hide: "", pushHour: null, pushOptOut: false };
 try { dayState = Object.assign(dayState, JSON.parse(localStorage.getItem("livo.day") || "{}")); } catch (e) {}
-var dayAgain = false;    // "Noch eine": heute schon beantwortet, trotzdem die nächste Frage zeigen
 var dayQuizPick = null;  // gewählte Antwort des laufenden Quiz (Auflösung sichtbar)
 function daySave() {
   if (DEMO) return;
@@ -268,11 +267,9 @@ function dayHTML() {
   if (dayState.hide === iso && !forced) return "";
   var streak = dayState.streak >= 2 && (dayState.done === iso || dayState.done === toISO(addDays(today(), -1)))
     ? '<span class="day-streak">🔥 ' + esc(t("day.streak", { d: dayState.streak })) + '</span>' : "";
-  // Für heute beantwortet: nur noch eine kleine Zeile, auf Wunsch die nächste Frage
-  if (dayState.done === iso && !dayAgain && dayQuizPick === null && !forced) {
-    var more = dayAll().filter(dayOpen).length > 0;
-    return '<div class="day day-mini"><span>' + esc(t("day.finished")) + '</span>' + streak +
-      (more ? '<button type="button" class="linkbtn" data-act="dayMore">' + esc(t("day.more")) + '</button>' : "") + dayPushLinkHTML(more) + '</div>';
+  // Für heute beantwortet: nur noch eine kleine Zeile. Höchstens eine Frage am Tag, die nächste kommt morgen.
+  if (dayState.done === iso && dayQuizPick === null && !forced) {
+    return '<div class="day day-mini"><div class="day-mini-l"><span>' + esc(t("day.finished")) + '</span>' + streak + '</div>' + dayBellHTML() + '</div>';
   }
   var q = dayCurrent();
   if (!q) return "";
@@ -297,7 +294,7 @@ function dayHTML() {
   return '<div class="day">' + top + '<div class="day-q">' + esc(dayTitle(q)) + '</div>' + (hint ? '<div class="day-hint">' + esc(hint) + '</div>' : "") +
     '<div class="day-btns">' + addBtn + '<button type="button" class="day-btn" data-act="dayNo">' + esc(t(q.kind === "s" ? "day.done" : "day.no")) + '</button>' + laterBtn + '</div>' + dayProgress() + '</div>';
 }
-// Beantwortet: Serie hochzählen (einmal am Tag), die nächste Frage kommt morgen oder über "Noch eine"
+// Beantwortet: Serie hochzählen (einmal am Tag), die nächste Frage kommt morgen
 function dayAnswered() {
   var iso = toISO(today());
   if (dayState.done !== iso) {
@@ -305,15 +302,14 @@ function dayAnswered() {
     dayState.done = iso;
   }
   dayState.count++;
-  dayAgain = false;
   daySave();
 }
 function dayLaterDate(days) { return toISO(addDays(today(), days)); }
 function dayAct(act, el) {
   if (act === "dayPush") return dayPushShow();
   if (act === "dayPushToggle") return dayPushToggle(el);
+  if (act === "dayBell") return dayBell(el);
   if (act === "dayClose") { dayState.hide = toISO(today()); daySave(); return render(); }
-  if (act === "dayMore") { dayAgain = true; dayState.id = ""; return render(); }
   var q = dayCurrent();
   if (!q) return render();
   if (act === "dayAns") {
@@ -334,11 +330,11 @@ function dayAct(act, el) {
   if (act === "dayAdd") showNew(q.tpl);
 }
 
-/* ---------- Als Nachricht: freiwillig, pro Gerät, voreingestellt aus ---------- */
+/* ---------- Als Nachricht: pro Gerät, kommt beim Einschalten der Erinnerungen mit (dayPushAutoOn), einzeln abschaltbar ---------- */
 // Die gewählte Stunde liegt in livo.day (pushHour) und zusätzlich in der eigenen Zeile von push_subscriptions, zusammen mit
 // der nächsten Frage, denn die kennt nur die App. Verschickt wird sie von send-reminders (action "daily", siehe dort die Regeln).
 // Getrennt vom Speichern des Abos (saveSubscription): klemmt etwas an diesen Feldern, bleiben die Erinnerungen davon unberührt.
-var DAY_PUSH_HOURS = [8, 12, 18, 20], DAY_PUSH_DEFAULT = 18;
+var DAY_PUSH_HOURS = [8, 10, 12, 18, 20], DAY_PUSH_DEFAULT = 10;
 var dayPushLast = ""; // was zuletzt geschrieben wurde: nur bei einer Änderung neu schreiben
 function dayPushOn() { return pushState === "on" && dayState.pushHour != null; }
 function dayPushClock(hour) { return (hour < 10 ? "0" : "") + hour + ":00"; }
@@ -376,12 +372,24 @@ function dayPushSync() {
   dayPushLast = key;
   dayPushWrite(fields);
 }
-// Erinnerungen auf diesem Gerät aus oder abgemeldet: die Zeile ist schon gelöscht
-function dayPushForget() {
+// Erinnerungen auf diesem Gerät aus oder abgemeldet: die Zeile ist schon gelöscht. Beim Abmelden (all) zählt auch
+// "bewusst abgeschaltet" nicht mehr, denn danach kann jemand anderes den Browser nutzen.
+function dayPushForget(all) {
   dayState.pushHour = null;
   dayPushLast = "";
   pushEndpoint = "";
+  if (all) dayState.pushOptOut = false;
   daySave();
+}
+// Erinnerungen gerade eingeschaltet: Die Frage des Tages kommt mit, außer sie wurde auf diesem Gerät bewusst abgeschaltet.
+// Geräte, auf denen die Erinnerungen schon an waren, bleiben, wie sie sind (dort wurde nur nach den Fristen gefragt).
+async function dayPushAutoOn() {
+  if (dayState.pushHour != null || dayState.pushOptOut || !canEdit()) return false;
+  return dayPushSet(DAY_PUSH_DEFAULT);
+}
+// Hinweis beim Einschalten der Erinnerungen
+function dayPushCardAdd() {
+  return dayState.pushOptOut ? "" : " " + t("day.pushCardAdd");
 }
 // hour: gewählte Stunde oder null = aus. Es gilt erst, wenn der Server es hat: sonst käme die Nachricht weiter, obwohl "aus" dasteht.
 async function dayPushSet(hour) {
@@ -394,6 +402,7 @@ async function dayPushSet(hour) {
     return false;
   }
   dayPushLast = hour === null ? "" : JSON.stringify(fields);
+  dayState.pushOptOut = hour === null;
   daySave();
   return true; // Rückmeldung ist der Schalter selbst, der erst jetzt umspringt
 }
@@ -431,10 +440,20 @@ function dayPushShow() {
     });
   });
 }
-// Link in der kleinen Zeile "Für heute erledigt". Dort kommt auch hin, wer noch keine Frist und damit keine Glocke hat.
-function dayPushLinkHTML(more) {
-  if ((DEMO && !params.get("icons")) || pushState === "unsupported" || (!more && !dayPushOn())) return "";
-  return '<button type="button" class="linkbtn" data-act="dayPush">🔔 ' + esc(dayPushOn() ? dayPushClock(dayState.pushHour) : t("day.pushOffer")) + '</button>';
+// Glocke in der kleinen Zeile "Für heute erledigt": schaltet die tägliche Nachricht an und aus, auch ohne Frist (dann gibt es
+// die große Glocke nicht). Die Uhrzeit ändert man unter der großen Glocke.
+function dayBellHTML() {
+  if ((DEMO && !params.get("icons")) || pushState === "unsupported") return "";
+  var on = dayPushOn(), label = esc(t("day.pushOffer"));
+  if (!on && !dayAll().filter(dayOpen).length) return ""; // keine Frage mehr offen: es käme ohnehin nichts
+  return '<button type="button" class="day-bell' + (on ? " on" : "") + '" data-act="dayBell" aria-pressed="' + on + '" aria-label="' + label + '" title="' + label + '">' +
+    '<svg viewBox="0 0 24 24" aria-hidden="true">' + INFO_SVG[on ? "bell" : "belloff"] + '</svg></button>';
+}
+async function dayBell(el) {
+  if (pushState === "blocked" || pushState === "ios-install") return dayPushShow(); // erklärt, was zu tun ist
+  var was = dayPushOn();
+  await dayPushToggle(el);
+  if (dayPushOn() !== was) toast(was ? t("day.bellOff") : t("day.bellOn", { time: dayPushClock(dayState.pushHour) }));
 }
 // Zweite Zeile unter der Glocke, wenn die Erinnerungen an sind
 function dayPushLineHTML() {

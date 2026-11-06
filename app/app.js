@@ -1232,7 +1232,7 @@ async function addIncoming(btn) {
   render();
   if (pushState !== "off") { closeSheet(); return toast(t("saved", { x: remindText(it) })); }
   // Erinnerungen sind noch aus: gleich hier einschalten lassen, sonst meldet sich Livo nie
-  openSheet('<h3>' + t("saved.plain") + '</h3><p class="hint">' + esc(t("in.push")) + '</p>' +
+  openSheet('<h3>' + t("saved.plain") + '</h3><p class="hint">' + esc(t("in.push") + dayPushCardAdd()) + '</p>' +
     '<button type="button" class="btn" data-act="push">' + t("push.card") + '</button>' +
     '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>');
 }
@@ -1384,9 +1384,10 @@ document.addEventListener("click", function (e) {
     if (act === "info") infoTab = "push";
     el.disabled = true;
     if (sheet.contains(el)) closeSheet(); // Knopf im Fenster nach einer geteilten Frist
-    enablePush().then(function (ok) {
+    enablePush().then(async function (ok) {
+      var daily = ok && (await dayPushAutoOn()); // die Frage des Tages kommt mit
       render();
-      toast(ok ? t("toast.pushOn") : pushState === "blocked" ? t("toast.pushBlocked") : t("toast.pushOff"));
+      toast(ok ? t(daily ? "day.pushOnToast" : "toast.pushOn") : pushState === "blocked" ? t("toast.pushBlocked") : t("toast.pushOff"));
     }, function () {
       render();
       toast(t("toast.retry"));

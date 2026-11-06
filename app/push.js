@@ -130,7 +130,7 @@ function pushHTML() {
   if ((DEMO && !params.get("icons")) || !items.length || !canEdit()) return ""; // &icons=1: Gestaltung im Demo ansehen
   if (pushState === "off") {
     return '<button type="button" class="pushcard" data-act="push"><span class="mic-ico">🔔</span>' +
-      '<span><b>' + t("push.card") + '</b><small>' + t("push.cardSub") + '</small></span></button>';
+      '<span><b>' + t("push.card") + '</b><small>' + t("push.cardSub") + esc(dayPushCardAdd()) + '</small></span></button>';
   }
   if (pushState === "ios-install") return '<div class="pushinfo">' + t("push.ios") + '</div>';
   if (pushState === "blocked") return '<div class="pushinfo">' + t("push.blocked") + '</div>';

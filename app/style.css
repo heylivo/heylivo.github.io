@@ -298,8 +298,9 @@ dd { margin: 0; font-weight: 600; }
 .day-opt.ok, .day-opt.ok:disabled { border-color: #18a058; background: #e7f7ee; color: #0f7a42; }
 .day-opt.no, .day-opt.no:disabled { border-color: #e5b4b4; background: #fdf1f1; color: #a33; }
 .day-res { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #fff; font-size: 13.5px; line-height: 1.4; }
-.day-mini { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 14px; font-size: 13px; }
-.day-mini span:first-child { flex: 1 1 60%; }
+.day-mini { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; }
+.day-mini-l { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.day-mini-l > span:first-child { flex: 1 1 60%; }
 /* Frage des Tages als Nachricht: Schalter und Uhrzeit im Blatt, zweite Zeile unter der Glocke */
 .day-set { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 12px 0; border: 0; border-top: 1px solid var(--line); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .day-set b { display: block; font-size: 14.5px; }
@@ -310,6 +311,10 @@ dd { margin: 0; font-weight: 600; }
 .day-set[aria-checked="true"] .day-sw::after { left: 21px; }
 .day-set select { flex: none; padding: 8px 10px; border: 1px solid #d3dcfb; border-radius: 10px; background: #fff; color: inherit; font: inherit; font-size: 16px; font-weight: 800; }
 .infotext .quota + .quota { margin-top: 6px; }
+.day-bell { flex: none; display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; background: none; color: #7a8399; cursor: pointer; }
+.day-bell:hover { background: rgba(255,255,255,.7); }
+.day-bell.on { color: var(--brand); }
+.day-bell svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 /* Im Instagram-/Facebook-Browser: Hinweis "In Chrome öffnen" (gleiche Box wie der Tipp) */
 .inapp small + small { margin-top: 6px; }
 .inapp small b { display: inline; font-size: inherit; color: var(--ink); }
