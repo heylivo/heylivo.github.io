@@ -1,7 +1,8 @@
 // heylivo: "Frage des Tages" statt "Schon gewusst?": jeden Tag eine kurze Frage, damit die App täglich etwas zu bieten hat
 // und die Liste von selbst wächst. Vier Arten: Vorlage (Titel + Tipp aus templates.js), Jahreszeit (months), Ratgeber, Quiz.
 // "Eintragen" öffnet die passende Vorlage. Eine Frage gibt es nur in Sprachen mit Text in DAY_TEXT: Regeln, die nur in
-// Deutschland gelten, stehen deshalb nur bei de und en (Zugezogene in Deutschland), Vorlagen mit only: "de" nur bei de.
+// Deutschland gelten, stehen bei den kurzen Fragen nur bei de und en (Zugezogene in Deutschland), Vorlagen mit only: "de" nur bei de.
+// Das Quiz mit Ratgeber (quiz.js) gibt es in allen 10 Sprachen.
 // Der Stand liegt nur in diesem Browser (localStorage livo.day); bereits eingetragene Vorlagen werden nie mehr gefragt.
 // Zum Ansehen: ?demo=1&day=<id>, z. B. q-ausweis, t-reisepass, s-reifen.
 
