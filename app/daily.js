@@ -11,6 +11,9 @@ var DAY_TPLS = ["personalausweis", "reisepass", "tuev", "zahnarzt", "handy", "ve
   "reiseversicherung", "urlaubstage"];
 // Vorlagen, die man mehrfach anlegt: ein vorhandener Eintrag sagt nichts über die Frage
 var DAY_MULTI = { eigene: 1, behoerde: 1 };
+// Vorerst abgeschaltet (Entscheidung offen): kurzes Quiz und Ratgeber. Das Quiz mit Ratgeber ist dazu in index.html auskommentiert.
+// Wieder an: diese Zeile leeren und das script-Tag von quiz.js zurückholen. Der Stand der Nutzer bleibt in livo.day erhalten.
+var DAY_KINDS_OFF = { q: 1, r: 1, z: 1 };
 var DAY_EXTRA = [
   { id: "s-reifen", kind: "s", tpl: "reifen", months: [10, 11] },
   { id: "s-reifen2", kind: "s", tpl: "reifen", months: [3, 4] },
@@ -223,7 +226,7 @@ function dayAll() {
   var month = new Date().getMonth() + 1, iso = toISO(today());
   var tpls = DAY_TPLS.filter(dayTplOk).map(function (tid) { return { id: "t-" + tid, kind: "t", tpl: tid }; });
   var extra = DAY_EXTRA.filter(function (q) {
-    return dayText(q.id) && dayTplOk(q.tpl) && (!q.months || q.months.indexOf(month) >= 0) && (!q.until || iso <= q.until);
+    return !DAY_KINDS_OFF[q.kind] && dayText(q.id) && dayTplOk(q.tpl) && (!q.months || q.months.indexOf(month) >= 0) && (!q.until || iso <= q.until);
   });
   return tpls.concat(extra);
 }
