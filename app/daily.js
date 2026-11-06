@@ -42,8 +42,10 @@ var DAY_EXTRA = [
 ];
 
 // q = Frage, h = Tipp (Jahreszeit, Ratgeber); Quiz: o = zwei Antworten, a = Auflösung, ask = Frage zum Eintragen
+// t-<Vorlage> mit h: eigener Tipp für die Karte, wenn der Tipp der Vorlage ein Datumsfeld voraussetzt ("bis zu diesem Tag")
 var DAY_TEXT = {
   de: {
+    "t-versicherung": { h: "Die Kündigung muss rechtzeitig beim Versicherer ankommen. Sonst verlängert sich der Vertrag meist um ein Jahr." },
     "s-reifen": { q: "Schon Winterreifen drauf?", h: "Faustregel „von O bis O“: Winterreifen von Oktober bis Ostern." },
     "s-reifen2": { q: "Schon an die Sommerreifen gedacht?", h: "Faustregel „von O bis O“: Ab Ostern können die Winterreifen wieder runter." },
     "s-kfz": { q: "Läuft deine Kfz-Versicherung zum Jahresende?", h: "Dann muss die Kündigung bis 30.11. beim Versicherer sein. Ob das für dich gilt, steht im Versicherungsschein." },
@@ -74,6 +76,7 @@ var DAY_TEXT = {
     "q-elterngeld": { q: "Für wie viele Monate rückwirkend gibt es Elterngeld?", o: ["3 Monate", "12 Monate"], a: "Nur für die letzten 3 Lebensmonate vor dem Antrag.", ask: "Erwartet ihr ein Kind?" }
   },
   en: {
+    "t-versicherung": { h: "Your cancellation has to reach the insurer in time. Otherwise the policy usually renews for another year." },
     "s-zahnarzt": { q: "Been to the dentist this year?", h: "For the German Bonusheft, adults need one check-up per calendar year." },
     "s-urlaub": { q: "Planned your days off for the new year?", h: "Add your days off – Livo counts the working days and reminds you." },
     "s-sommer": { q: "Summer trip planned? Is your passport still valid?", h: "Many countries require at least 6 months of validity on entry." },
@@ -98,6 +101,7 @@ var DAY_TEXT = {
     "q-widerruf": { q: "How long can you usually withdraw from online orders?", o: ["14 days", "30 days"], a: "Usually 14 days.", ask: "Just ordered something?" }
   },
   it: {
+    "t-versicherung": { h: "La disdetta deve arrivare all'assicurazione in tempo. Altrimenti di solito il contratto si rinnova per un anno." },
     "s-urlaub": { q: "Hai già pianificato le ferie per il nuovo anno?", h: "Inserisci i giorni di ferie: Livo conta i giorni lavorativi e te lo ricorda." },
     "s-sommer": { q: "Vacanze estive in vista? Il passaporto è ancora valido?", h: "Molti Paesi richiedono almeno 6 mesi di validità all'ingresso." },
     "r-probeabo": { q: "Hai una prova gratuita in corso?", h: "Molte si rinnovano da sole. Inserisci entro quando disdire, prima che costi." },
@@ -110,6 +114,7 @@ var DAY_TEXT = {
     "q-ausland": { q: "L'assistenza sanitaria pubblica paga sempre tutto all'estero?", o: ["Sì", "No"], a: "No, spesso solo una parte o niente, ad esempio non il rimpatrio.", ask: "Hai un viaggio in programma?" }
   },
   el: {
+    "t-versicherung": { h: "Η καταγγελία πρέπει να φτάσει έγκαιρα στην ασφαλιστική. Αλλιώς το συμβόλαιο συνήθως ανανεώνεται για έναν χρόνο." },
     "s-urlaub": { q: "Έχεις ήδη σχεδιάσει την άδειά σου για τη νέα χρονιά;", h: "Πρόσθεσε τις ημέρες άδειας – το Livo μετράει τις εργάσιμες και σου το θυμίζει." },
     "s-sommer": { q: "Καλοκαιρινό ταξίδι; Ισχύει ακόμα το διαβατήριό σου;", h: "Πολλές χώρες ζητούν ισχύ τουλάχιστον 6 μηνών κατά την είσοδο." },
     "r-probeabo": { q: "Έχεις αυτή τη στιγμή δωρεάν δοκιμή;", h: "Πολλές ανανεώνονται μόνες τους. Γράψε έως πότε πρέπει να την ακυρώσεις, πριν σου κοστίσει." },
@@ -122,6 +127,7 @@ var DAY_TEXT = {
     "q-ausland": { q: "Πληρώνει πάντα τα πάντα η δημόσια ασφάλιση στο εξωτερικό;", o: ["Ναι", "Όχι"], a: "Όχι, συχνά μόνο ένα μέρος ή τίποτα, για παράδειγμα όχι τον επαναπατρισμό.", ask: "Έχεις κάποιο ταξίδι μπροστά σου;" }
   },
   es: {
+    "t-versicherung": { h: "Tu baja tiene que llegar a tiempo a la aseguradora. Si no, la póliza suele renovarse un año más." },
     "s-urlaub": { q: "¿Ya has planificado tus vacaciones del nuevo año?", h: "Añade tus días de vacaciones: Livo cuenta los días laborables y te lo recuerda." },
     "s-sommer": { q: "¿Viaje de verano? ¿Tu pasaporte sigue siendo válido?", h: "Muchos países exigen al menos 6 meses de validez al entrar." },
     "r-probeabo": { q: "¿Tienes ahora una prueba gratuita?", h: "Muchas se renuevan solas. Añade hasta cuándo debes cancelarla, antes de que te cueste." },
@@ -134,6 +140,7 @@ var DAY_TEXT = {
     "q-ausland": { q: "¿La sanidad pública lo paga siempre todo en el extranjero?", o: ["Sí", "No"], a: "No, a menudo solo una parte o nada, por ejemplo la repatriación no.", ask: "¿Tienes un viaje a la vista?" }
   },
   fr: {
+    "t-versicherung": { h: "Votre résiliation doit parvenir à temps à l'assureur. Sinon, le contrat est souvent reconduit pour un an." },
     "s-urlaub": { q: "Avez-vous déjà prévu vos congés de la nouvelle année ?", h: "Ajoutez vos jours de congé : Livo compte les jours ouvrés et vous le rappelle." },
     "s-sommer": { q: "Vacances d'été prévues ? Votre passeport est-il encore valable ?", h: "Beaucoup de pays exigent au moins 6 mois de validité à l'entrée." },
     "r-probeabo": { q: "Avez-vous un essai gratuit en cours ?", h: "Beaucoup se renouvellent tout seuls. Ajoutez la date limite pour résilier avant que cela coûte." },
@@ -146,6 +153,7 @@ var DAY_TEXT = {
     "q-ausland": { q: "L'assurance maladie paie-t-elle toujours tout à l'étranger ?", o: ["Oui", "Non"], a: "Non, souvent seulement une partie ou rien, par exemple pas le rapatriement.", ask: "Un voyage en vue ?" }
   },
   nl: {
+    "t-versicherung": { h: "Je opzegging moet op tijd bij de verzekeraar binnen zijn. Anders wordt de polis meestal verlengd." },
     "s-urlaub": { q: "Heb je je vrije dagen voor het nieuwe jaar al gepland?", h: "Voeg je vrije dagen toe: Livo telt de werkdagen en herinnert je eraan." },
     "s-sommer": { q: "Zomervakantie gepland? Is je paspoort nog geldig?", h: "Veel landen eisen bij binnenkomst nog minstens 6 maanden geldigheid." },
     "r-probeabo": { q: "Loopt er bij jou nu een gratis proefperiode?", h: "Veel worden vanzelf verlengd. Voeg toe wanneer je uiterlijk moet opzeggen, voordat het geld kost." },
@@ -158,6 +166,7 @@ var DAY_TEXT = {
     "q-ausland": { q: "Vergoedt je zorgverzekering in het buitenland altijd alles?", o: ["Ja", "Nee"], a: "Nee, vaak maar een deel of niets, bijvoorbeeld geen repatriëring.", ask: "Staat er een reis gepland?" }
   },
   pt: {
+    "t-versicherung": { h: "O cancelamento tem de chegar a tempo à seguradora. Caso contrário, a apólice costuma renovar por mais um ano." },
     "s-urlaub": { q: "Já planeou as férias do novo ano?", h: "Adicione os seus dias de férias: o Livo conta os dias úteis e lembra-o." },
     "s-sommer": { q: "Férias de verão à vista? O seu passaporte ainda é válido?", h: "Muitos países exigem pelo menos 6 meses de validade à entrada." },
     "r-probeabo": { q: "Tem agora um período de teste gratuito?", h: "Muitos renovam-se sozinhos. Adicione até quando tem de cancelar, antes que custe dinheiro." },
@@ -170,6 +179,7 @@ var DAY_TEXT = {
     "q-ausland": { q: "O serviço público de saúde paga sempre tudo no estrangeiro?", o: ["Sim", "Não"], a: "Não, muitas vezes só uma parte ou nada, por exemplo o repatriamento não.", ask: "Tem uma viagem à vista?" }
   },
   tr: {
+    "t-versicherung": { h: "İptal talebin sigorta şirketine zamanında ulaşmalı. Yoksa poliçe genelde bir yıl daha yenilenir." },
     "s-urlaub": { q: "Yeni yılın iznini planladın mı?", h: "İzin günlerini ekle: Livo iş günlerini sayar ve sana hatırlatır." },
     "s-sommer": { q: "Yaz tatili mi var? Pasaportun hâlâ geçerli mi?", h: "Birçok ülke girişte en az 6 ay geçerlilik ister." },
     "r-probeabo": { q: "Şu anda ücretsiz denemen var mı?", h: "Çoğu kendiliğinden yenilenir. Ücret ödemeden önce en geç ne zaman iptal etmen gerektiğini ekle." },
@@ -182,6 +192,7 @@ var DAY_TEXT = {
     "q-ausland": { q: "Genel sağlık sigortası yurt dışında her zaman her şeyi öder mi?", o: ["Evet", "Hayır"], a: "Hayır, çoğu zaman sadece bir kısmını ya da hiçbirini; örneğin geri dönüş nakli ödenmez.", ask: "Yaklaşan bir seyahatin var mı?" }
   },
   pl: {
+    "t-versicherung": { h: "Wypowiedzenie musi dotrzeć do ubezpieczyciela na czas. Inaczej polisa zwykle odnawia się na kolejny rok." },
     "s-urlaub": { q: "Zaplanowałeś już urlop na nowy rok?", h: "Dodaj dni urlopu: Livo liczy dni robocze i przypomina." },
     "s-sommer": { q: "Wakacje w planach? Czy twój paszport jest jeszcze ważny?", h: "Wiele krajów wymaga co najmniej 6 miesięcy ważności przy wjeździe." },
     "r-probeabo": { q: "Masz teraz darmowy okres próbny?", h: "Wiele odnawia się samo. Dodaj, do kiedy trzeba zrezygnować, zanim zacznie kosztować." },
@@ -282,7 +293,7 @@ function dayHTML() {
       (dayHasTpl(q.tpl) ? '<button type="button" class="day-btn main" data-act="dayOk">OK</button>' : addBtn + laterBtn) + '</div>';
     return '<div class="day">' + top + '<div class="day-q">' + esc(x.q) + '</div><div class="day-opts">' + opts + '</div>' + res + dayProgress() + '</div>';
   }
-  var hint = q.kind === "t" ? tplHint(tp) : x.h;
+  var hint = x.h || (q.kind === "t" ? tplHint(tp) : "");
   return '<div class="day">' + top + '<div class="day-q">' + esc(dayTitle(q)) + '</div>' + (hint ? '<div class="day-hint">' + esc(hint) + '</div>' : "") +
     '<div class="day-btns">' + addBtn + '<button type="button" class="day-btn" data-act="dayNo">' + esc(t(q.kind === "s" ? "day.done" : "day.no")) + '</button>' + laterBtn + '</div>' + dayProgress() + '</div>';
 }
@@ -339,7 +350,7 @@ function dayPushQuestion() {
     if (q && !dayOpen(q)) q = null;
   }
   q = q || dayNext();
-  return q ? dayTitle(q).slice(0, 200) : "";
+  return q ? dayTitle(q).split(String.fromCharCode(173)).join("").slice(0, 200) : "";
 }
 function dayPushFields() {
   var iso = toISO(today());
