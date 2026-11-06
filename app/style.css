@@ -300,6 +300,16 @@ dd { margin: 0; font-weight: 600; }
 .day-res { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #fff; font-size: 13.5px; line-height: 1.4; }
 .day-mini { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 14px; font-size: 13px; }
 .day-mini span:first-child { flex: 1 1 60%; }
+/* Frage des Tages als Nachricht: Schalter und Uhrzeit im Blatt, zweite Zeile unter der Glocke */
+.day-set { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 12px 0; border: 0; border-top: 1px solid var(--line); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.day-set b { display: block; font-size: 14.5px; }
+.day-set small { display: block; margin-top: 2px; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.day-sw { flex: none; position: relative; width: 46px; height: 28px; border-radius: 99px; background: #c9cfdd; transition: background .15s; }
+.day-sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: left .15s; }
+.day-set[aria-checked="true"] .day-sw { background: var(--brand); }
+.day-set[aria-checked="true"] .day-sw::after { left: 21px; }
+.day-set select { flex: none; padding: 8px 10px; border: 1px solid #d3dcfb; border-radius: 10px; background: #fff; color: inherit; font: inherit; font-size: 16px; font-weight: 800; }
+.infotext .quota + .quota { margin-top: 6px; }
 /* Im Instagram-/Facebook-Browser: Hinweis "In Chrome öffnen" (gleiche Box wie der Tipp) */
 .inapp small + small { margin-top: 6px; }
 .inapp small b { display: inline; font-size: inherit; color: var(--ink); }

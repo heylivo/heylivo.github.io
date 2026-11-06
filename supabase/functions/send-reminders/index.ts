@@ -10,6 +10,8 @@
 // - POST {"action":"soon"} mit Header x-cron-secret: jede Minute per pg_cron (0005_soon_reminders.sql).
 //   Erinnert kurz vor Terminen mit Uhrzeit (remind_min Minuten vorher), einmal pro Termin
 //   (time_notified_for). Die Uhrzeit gilt in der Zeitzone, in der die Frist gespeichert wurde.
+// - POST {"action":"daily"} mit Header x-cron-secret: jede volle Stunde per pg_cron (0019_daily_question.sql).
+//   Die "Frage des Tages" als freiwillige Nachricht an Geräte, auf denen sie eingeschaltet ist (runDaily).
 // - POST {"action":"test"} mit dem Login des Nutzers (Authorization: Bearer <access token>):
 //   sofort eine Probe-Nachricht an seine Geräte, nach "Erinnerungen einschalten".
 //
@@ -49,6 +51,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: 'in {n} Tagen', months: 'in {n} Monaten', years: 'in {n} Jahren', dueOn: 'fällig am {date}', clock: ' Uhr',
     many: '{n} Fristen brauchen deine Aufmerksamkeit', more: '… und {n} weitere',
     soon: 'Beginnt in {n} Minuten · {time}', soon1: 'Beginnt in 1 Minute · {time}', now: 'Jetzt · {time}',
+    dailyTitle: 'Deine Frage des Tages 💡',
     testTitle: '✓ Erinnerungen sind an', testBody: 'Livo meldet sich, sobald eine Frist näher rückt.'
   },
   en: {
@@ -56,6 +59,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: 'in {n} days', months: 'in {n} months', years: 'in {n} years', dueOn: 'due {date}', clock: '',
     many: '{n} deadlines need your attention', more: '… and {n} more',
     soon: 'Starts in {n} minutes · {time}', soon1: 'Starts in 1 minute · {time}', now: 'Now · {time}',
+    dailyTitle: 'Your question of the day 💡',
     testTitle: '✓ Reminders are on', testBody: 'Livo will get in touch when a deadline is coming up.'
   },
   it: {
@@ -63,6 +67,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: 'tra {n} giorni', months: 'tra {n} mesi', years: 'tra {n} anni', dueOn: 'scade il {date}', clock: '',
     many: '{n} scadenze richiedono la tua attenzione', more: '… e altre {n}',
     soon: 'Inizia tra {n} minuti · {time}', soon1: 'Inizia tra 1 minuto · {time}', now: 'Adesso · {time}',
+    dailyTitle: 'La tua domanda del giorno 💡',
     testTitle: '✓ Promemoria attivi', testBody: 'Livo ti avvisa quando una scadenza si avvicina.'
   },
   el: {
@@ -70,6 +75,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: 'σε {n} μέρες', months: 'σε {n} μήνες', years: 'σε {n} χρόνια', dueOn: 'λήγει {date}', clock: '',
     many: '{n} προθεσμίες θέλουν την προσοχή σου', more: '… και {n} ακόμα',
     soon: 'Ξεκινά σε {n} λεπτά · {time}', soon1: 'Ξεκινά σε 1 λεπτό · {time}', now: 'Τώρα · {time}',
+    dailyTitle: 'Η ερώτηση της ημέρας 💡',
     testTitle: '✓ Οι υπενθυμίσεις είναι ενεργές', testBody: 'Το Livo θα σε ειδοποιεί όταν πλησιάζει μια προθεσμία.'
   },
   es: {
@@ -77,6 +83,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: 'en {n} días', months: 'en {n} meses', years: 'en {n} años', dueOn: 'vence el {date}', clock: '',
     many: '{n} plazos necesitan tu atención', more: '… y {n} más',
     soon: 'Empieza en {n} minutos · {time}', soon1: 'Empieza en 1 minuto · {time}', now: 'Ahora · {time}',
+    dailyTitle: 'Tu pregunta del día 💡',
     testTitle: '✓ Avisos activados', testBody: 'Livo te avisará cuando se acerque un plazo.'
   },
   fr: {
@@ -84,6 +91,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: 'dans {n} jours', months: 'dans {n} mois', years: 'dans {n} ans', dueOn: 'échéance le {date}', clock: '',
     many: '{n} échéances demandent votre attention', more: '… et {n} autres',
     soon: 'Commence dans {n} minutes · {time}', soon1: 'Commence dans 1 minute · {time}', now: 'Maintenant · {time}',
+    dailyTitle: 'Votre question du jour 💡',
     testTitle: '✓ Rappels activés', testBody: 'Livo vous préviendra quand une échéance approche.'
   },
   nl: {
@@ -91,6 +99,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: 'over {n} dagen', months: 'over {n} maanden', years: 'over {n} jaar', dueOn: 'uiterlijk {date}', clock: ' uur',
     many: '{n} deadlines vragen je aandacht', more: '… en nog {n}',
     soon: 'Begint over {n} minuten · {time}', soon1: 'Begint over 1 minuut · {time}', now: 'Nu · {time}',
+    dailyTitle: 'Jouw vraag van de dag 💡',
     testTitle: '✓ Herinneringen staan aan', testBody: 'Livo laat van zich horen als een deadline dichterbij komt.'
   },
   pt: {
@@ -98,6 +107,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: 'daqui a {n} dias', months: 'daqui a {n} meses', years: 'daqui a {n} anos', dueOn: 'vence em {date}', clock: '',
     many: '{n} prazos precisam da sua atenção', more: '… e mais {n}',
     soon: 'Começa daqui a {n} minutos · {time}', soon1: 'Começa daqui a 1 minuto · {time}', now: 'Agora · {time}',
+    dailyTitle: 'A sua pergunta do dia 💡',
     testTitle: '✓ Lembretes ativos', testBody: 'O Livo avisa quando um prazo se aproximar.'
   },
   tr: {
@@ -105,6 +115,7 @@ const TEXT: Record<string, Record<string, string>> = {
     days: '{n} gün sonra', months: '{n} ay sonra', years: '{n} yıl sonra', dueOn: 'son tarih {date}', clock: '',
     many: '{n} tarih ilgini bekliyor', more: '… ve {n} tane daha',
     soon: '{n} dakika sonra başlıyor · {time}', soon1: '1 dakika sonra başlıyor · {time}', now: 'Şimdi · {time}',
+    dailyTitle: 'Günün sorusu 💡',
     testTitle: '✓ Hatırlatmalar açık', testBody: 'Bir tarih yaklaştığında Livo haber verir.'
   },
   pl: {
@@ -113,6 +124,7 @@ const TEXT: Record<string, Record<string, string>> = {
     dueOn: 'termin {date}', clock: '',
     many: '{n} terminów wymaga twojej uwagi', 'many.few': '{n} terminy wymagają twojej uwagi', more: '… i {n} więcej',
     soon: 'Zaczyna się za {n} minut · {time}', 'soon.few': 'Zaczyna się za {n} minuty · {time}', soon1: 'Zaczyna się za 1 minutę · {time}', now: 'Teraz · {time}',
+    dailyTitle: 'Twoje pytanie dnia 💡',
     testTitle: '✓ Przypomnienia są włączone', testBody: 'Livo da znać, gdy zbliży się termin.'
   }
 };
@@ -129,7 +141,7 @@ function tx(lang: string | undefined, key: string, vars: Record<string, string |
 }
 type Deadline = { id: string; user_id: string; title: string; due: string; due_time: string | null; lead_days: number; notified_for: string | null };
 type SoonRow = { id: string; user_id: string; title: string; due: string; due_time: string; remind_min: number; tz: string | null; time_notified_for: string | null };
-type Payload = { title: string; body: string; tag: string; url: string; urgency?: string };
+type Payload = { title: string; body: string; tag: string; url: string; urgency?: string; ttl?: number };
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } });
@@ -245,7 +257,7 @@ async function sendPush(target: Sub, payload: Payload): Promise<number> {
         Authorization: await vapidAuthorization(target.endpoint),
         'Content-Encoding': 'aes128gcm',
         'Content-Type': 'application/octet-stream',
-        TTL: String(payload.urgency === 'high' ? 3600 : TTL_SECONDS),
+        TTL: String(payload.ttl ?? (payload.urgency === 'high' ? 3600 : TTL_SECONDS)),
         Urgency: payload.urgency === 'high' ? 'high' : 'normal'
       },
       body
@@ -975,6 +987,69 @@ async function runPlusNotices(today: string) {
   return { notices, pushes, mails };
 }
 
+// --- Frage des Tages als Nachricht (freiwillig, pro Gerät in der App einzuschalten) ------
+// Nur die App weiß, welche Frage als Nächstes dran ist: sie hält den Text in daily_q aktuell, ohne Frage bleibt das Feld
+// leer und es kommt nichts. Verschickt wird genau zur gewählten Stunde in der Zeitzone des Geräts, höchstens einmal am Tag
+// (daily_sent_on, den setzt auch die App, sobald die Frage beantwortet ist) und nur, wenn die App in den letzten
+// 7 Tagen geöffnet wurde (daily_seen_on): wer nicht mehr reagiert, bekommt nicht ewig weiter Nachrichten.
+type DailySub = Sub & { daily_hour: number; daily_tz: string | null; daily_q: string | null; daily_sent_on: string | null; daily_seen_on: string | null };
+const DAILY_COLUMNS = `${SUB_COLUMNS}, daily_hour, daily_tz, daily_q, daily_sent_on, daily_seen_on`;
+const DAILY_PAUSE_DAYS = 7;
+const DAILY_TTL_SECONDS = 4 * 3600; // Handy aus: am Abend noch nachliefern, aber nicht erst am nächsten Morgen
+
+// Stunde und Datum gerade jetzt in der Zeitzone des Geräts; unbekannte Zeitzone: deutsche Zeit
+function zonedNow(now: Date, tz: string | null): { hour: number; date: string } {
+  let zone = tz || 'Europe/Berlin';
+  try { new Intl.DateTimeFormat('en-US', { timeZone: zone }); } catch { zone = 'Europe/Berlin'; }
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: zone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit'
+  }).formatToParts(now);
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+  return { hour: Number(get('hour')), date: `${get('year')}-${get('month')}-${get('day')}` };
+}
+function dailyDue(row: DailySub, now: Date): boolean {
+  const local = zonedNow(now, row.daily_tz);
+  if (local.hour !== row.daily_hour) return false;
+  if (row.daily_sent_on && row.daily_sent_on >= local.date) return false;
+  return !!row.daily_seen_on && daysBetween(row.daily_seen_on, local.date) <= DAILY_PAUSE_DAYS;
+}
+// Gleiche Regel wie canEdit() in der App: vorbei ist es nur, wenn die Testphase abgelaufen ist und es kein Livo Plus gibt.
+// Wer noch keine Frist angelegt hat, hat keine Testphase gestartet und bekommt die Frage trotzdem (anders als eligibleUsers).
+async function expiredUsers(userIds: string[], today: string): Promise<Set<string>> {
+  const expired = new Set<string>();
+  for (let i = 0; i < userIds.length; i += 100) {
+    const part = userIds.slice(i, i + 100);
+    const [usage, plans] = await Promise.all([
+      supabase.from('usage').select('user_id, trial_started').in('user_id', part),
+      supabase.from('plans').select('user_id').in('user_id', part).gte('plus_until', today)
+    ]);
+    if (usage.error) throw usage.error;
+    if (plans.error) throw plans.error;
+    const plus = new Set((plans.data ?? []).map((row) => row.user_id));
+    for (const row of usage.data ?? []) {
+      if (row.trial_started && row.trial_started < addDays(today, -TRIAL_DAYS) && !plus.has(row.user_id)) expired.add(row.user_id);
+    }
+  }
+  return expired;
+}
+async function runDaily() {
+  const now = new Date();
+  const rows = await fetchAll<DailySub>((a, b) => supabase.from('push_subscriptions').select(DAILY_COLUMNS)
+    .not('daily_hour', 'is', null).not('daily_q', 'is', null).order('endpoint').range(a, b));
+  const due = rows.filter((row) => dailyDue(row, now));
+  if (!due.length) return { daily: 0 };
+  const expired = await expiredUsers([...new Set(due.map((row) => row.user_id))], berlinToday());
+  let sent = 0;
+  for (const row of due) {
+    if (expired.has(row.user_id)) continue;
+    const delivered = await deliver([row], { title: tx(row.lang, 'dailyTitle'), body: row.daily_q ?? '', tag: 'livo-day', url: APP_URL, ttl: DAILY_TTL_SECONDS });
+    if (!delivered) continue;
+    sent++;
+    await supabase.from('push_subscriptions').update({ daily_sent_on: zonedNow(now, row.daily_tz).date }).eq('endpoint', row.endpoint);
+  }
+  return { daily: sent };
+}
+
 function errorText(error: unknown): string {
   return String((error as { message?: string })?.message ?? error);
 }
@@ -991,11 +1066,11 @@ Deno.serve(async (request) => {
     return json({ error: 'Invalid request.' }, 400);
   }
 
-  if (body.action === 'run' || body.action === 'soon') {
+  if (body.action === 'run' || body.action === 'soon' || body.action === 'daily') {
     if (!CRON_SECRET || request.headers.get('x-cron-secret') !== CRON_SECRET) return json({ error: 'Not allowed.' }, 401);
-    if (body.action === 'soon') {
+    if (body.action === 'soon' || body.action === 'daily') {
       try {
-        return json(await runSoon());
+        return json(await (body.action === 'soon' ? runSoon() : runDaily()));
       } catch (error) {
         return json({ error: errorText(error) }, 500);
       }

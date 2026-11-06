@@ -9,6 +9,7 @@ var isStandalone = window.matchMedia("(display-mode: standalone)").matches || na
 // "on" | "off" | "blocked" | "ios-install" (iPhone: erst zum Home-Bildschirm) | "unsupported" | "" (unbekannt)
 var pushState = "";
 var swReg = null;
+var pushEndpoint = ""; // die eigene Zeile in push_subscriptions (Frage des Tages als Nachricht, daily.js)
 
 function base64UrlToBytes(s) {
   var b64 = s.replace(/-/g, "+").replace(/_/g, "/");
@@ -66,6 +67,8 @@ async function saveSubscription(sub) {
     { onConflict: "endpoint" }
   );
   if (r.error) throw r.error;
+  pushEndpoint = j.endpoint;
+  dayPushLast = ""; // möglicherweise eine neue Zeile: beim nächsten Anzeigen die Einstellung neu schreiben (dayPushSync)
 }
 
 // Muss direkt aus dem Tippen kommen, sonst fragt Safari nicht nach der Erlaubnis
@@ -104,6 +107,7 @@ async function disablePush() {
     }
   } catch (e) { return false; }
   pushState = "off";
+  dayPushForget();
   return true;
 }
 
@@ -131,6 +135,6 @@ function pushHTML() {
   if (pushState === "ios-install") return '<div class="pushinfo">' + t("push.ios") + '</div>';
   if (pushState === "blocked") return '<div class="pushinfo">' + t("push.blocked") + '</div>';
   if (pushState === "unsupported") return '<div class="pushinfo">' + t("push.unsupported") + '</div>';
-  if (pushState === "on") return '<p class="quota">' + t("push.on") + ' · <button type="button" class="linkbtn" data-act="pushoff">' + t("push.turnOff") + '</button></p>';
+  if (pushState === "on") return '<p class="quota">' + t("push.on") + ' · <button type="button" class="linkbtn" data-act="pushoff">' + t("push.turnOff") + '</button></p>' + dayPushLineHTML();
   return "";
 }

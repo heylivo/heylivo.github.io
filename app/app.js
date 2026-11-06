@@ -345,6 +345,7 @@ document.addEventListener("visibilitychange", function () {
 });
 function render() {
   renderedDay = fmt(new Date());
+  dayPushSync();
   var list = document.getElementById("list"), controls = document.getElementById("controls"), stat = document.getElementById("status");
   renderNote();
   document.getElementById("inapp").innerHTML = inappHTML();
@@ -357,8 +358,8 @@ function render() {
   // mit großer Schrift mehr als den halben Bildschirm.
   controls.innerHTML = canEdit() ? voicebarHTML() : "";
   // Demo: nichts gespeichert, kein Konto, kein Plus - keine Symbole (zum Ansehen der Gestaltung: &icons=1,
-  // dann auch die Glocke "Erinnern" wie bei ausgeschalteten Erinnerungen)
-  if (DEMO && params.get("icons") && !pushState) pushState = "off";
+  // dann auch die Glocke "Erinnern" wie bei ausgeschalteten Erinnerungen, mit &pushon=1 wie bei eingeschalteten)
+  if (DEMO && params.get("icons") && !pushState) pushState = params.get("pushon") ? "on" : "off";
   stat.innerHTML = DEMO && !params.get("icons") ? "" : infoHTML();
   var html = (dayHTML() || tipHTML()) + todayHTML(all) + (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
@@ -1392,11 +1393,10 @@ document.addEventListener("click", function (e) {
     });
     return;
   }
-  // Ausschalten über die Glocke (wenn sie an sind) oder den Link darunter - immer mit Rückfrage
-  if (act === "pushoff" || (act === "info" && id === "push" && pushState === "on")) {
-    if (act === "info") infoTab = "push";
-    // Abbrechen: an bleibt an, unter der Glocke steht dann "Erinnerungen sind an"
-    if (!confirm(t("push.offConfirm"))) { if (act === "info") document.getElementById("status").innerHTML = infoHTML(); return; }
+  // Ausschalten über den Link unter der Glocke, immer mit Rückfrage. Die Glocke selbst klappt nur den Bereich auf
+  // (setInfoTab): dort steht auch die Frage des Tages als Nachricht.
+  if (act === "pushoff") {
+    if (!confirm(t("push.offConfirm"))) return;
     el.disabled = true;
     disablePush().then(function (ok) {
       render();
@@ -1541,6 +1541,7 @@ async function start() {
   else if (show.indexOf("form:") === 0) showNew(show.slice(5));
   else if (show === "item" && items.length) showItem(sortedItems()[0].id);
   else if (show === "account") showAccount();
+  else if (show === "daypush") dayPushShow();
   else if (show === "signin") showAccount("signin");
   else if (show === "howto") showHowto();
   else if (show === "year") showYear();

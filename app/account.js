@@ -251,6 +251,7 @@ async function signOutHere() {
       await sub.unsubscribe();
     }
   } catch (e) { /* abmelden geht trotzdem */ }
+  dayPushForget();
   // Nur hier: der Standard "global" würde das Konto auch auf allen anderen Geräten abmelden
   await sb.auth.signOut({ scope: "local" });
   location.reload(); // danach bekommt der Browser wieder ein neues anonymes Konto
