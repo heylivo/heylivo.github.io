@@ -280,6 +280,26 @@ dd { margin: 0; font-weight: 600; }
 .tipbox small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.4; }
 .tipbox-x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; }
 .tipbox-x:hover { background: rgba(255,255,255,.7); }
+/* Frage des Tages (daily.js): gleicher Grund wie "Schon gewusst?" */
+.day { position: relative; margin: 14px 0 0; padding: 14px; border: 1px solid #d3dcfb; border-radius: 16px; background: linear-gradient(135deg, #e3f6fe 0%, #eaf0ff 50%, #f2e9fe 100%); }
+.day-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-right: 26px; font-size: 12.5px; font-weight: 800; color: var(--brand-dark); }
+.day-streak { padding: 2px 8px; border-radius: 999px; background: #fff; color: #b45309; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.day-q { margin-top: 8px; font-size: 16px; font-weight: 800; line-height: 1.3; }
+.day-hint { margin-top: 4px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.day-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.day-btn { flex: 1 1 auto; padding: 10px 8px; border: 1px solid #d3dcfb; border-radius: 12px; background: #fff; color: var(--brand-dark); font: inherit; font-size: 13px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.day-btn.main { border-color: transparent; background: var(--brand); color: #fff; }
+.day-bar { margin-top: 12px; height: 6px; overflow: hidden; border-radius: 99px; background: #fff; }
+.day-bar i { display: block; height: 100%; border-radius: 99px; background: var(--brand); }
+.day-foot { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.day-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.day-opt { padding: 12px 6px; border: 1.5px solid #d3dcfb; border-radius: 12px; background: #fff; color: #0d1330; font: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; }
+.day-opt:disabled { cursor: default; color: #0d1330; }
+.day-opt.ok, .day-opt.ok:disabled { border-color: #18a058; background: #e7f7ee; color: #0f7a42; }
+.day-opt.no, .day-opt.no:disabled { border-color: #e5b4b4; background: #fdf1f1; color: #a33; }
+.day-res { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #fff; font-size: 13.5px; line-height: 1.4; }
+.day-mini { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 14px; font-size: 13px; }
+.day-mini span:first-child { flex: 1 1 60%; }
 /* Im Instagram-/Facebook-Browser: Hinweis "In Chrome öffnen" (gleiche Box wie der Tipp) */
 .inapp small + small { margin-top: 6px; }
 .inapp small b { display: inline; font-size: inherit; color: var(--ink); }

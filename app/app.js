@@ -348,7 +348,7 @@ function render() {
   var list = document.getElementById("list"), controls = document.getElementById("controls"), stat = document.getElementById("status");
   renderNote();
   document.getElementById("inapp").innerHTML = inappHTML();
-  if (!items.length) { controls.innerHTML = stat.innerHTML = ""; list.innerHTML = emptyHTML(); return; }
+  if (!items.length) { controls.innerHTML = stat.innerHTML = ""; list.innerHTML = dayHTML() + emptyHTML(); return; }
   var all = sortedItems();
   var now = all.filter(function (it) { return status(it).key !== "later"; });
   var later = all.filter(function (it) { return status(it).key === "later"; });
@@ -360,7 +360,7 @@ function render() {
   // dann auch die Glocke "Erinnern" wie bei ausgeschalteten Erinnerungen)
   if (DEMO && params.get("icons") && !pushState) pushState = "off";
   stat.innerHTML = DEMO && !params.get("icons") ? "" : infoHTML();
-  var html = tipHTML() + todayHTML(all) + (now.length
+  var html = (dayHTML() || tipHTML()) + todayHTML(all) + (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
     : '<div class="allgood">' + t("allgood") + '</div>');
   // Ohne "Alles im Blick" trotzdem der Knopf "Jahr im Blick"
@@ -1415,6 +1415,7 @@ document.addEventListener("click", function (e) {
   else if (act === "mycat") showMyCat();
   else if (act === "heroGo") heroGo();
   else if (act === "inappClose") { inappClosed = true; try { sessionStorage.setItem("livo.inapp", "x"); } catch (e) {} render(); }
+  else if (act.slice(0, 3) === "day") dayAct(act, el);
   else if (act === "tipClose") { tipClosed = true; try { localStorage.setItem("livo.tip1", "x"); } catch (e) {} render(); }
   else if (act === "todayWeek") { setFilter("week"); var sec = document.querySelector(".sec-row"); if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (act === "inAdd") addIncoming(el);
