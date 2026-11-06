@@ -345,11 +345,10 @@ document.addEventListener("visibilitychange", function () {
 });
 function render() {
   renderedDay = fmt(new Date());
-  dayPushSync();
   var list = document.getElementById("list"), controls = document.getElementById("controls"), stat = document.getElementById("status");
   renderNote();
   document.getElementById("inapp").innerHTML = inappHTML();
-  if (!items.length) { controls.innerHTML = stat.innerHTML = ""; list.innerHTML = dayHTML() + emptyHTML(); return; }
+  if (!items.length) { controls.innerHTML = stat.innerHTML = ""; list.innerHTML = emptyHTML(); return; }
   var all = sortedItems();
   var now = all.filter(function (it) { return status(it).key !== "later"; });
   var later = all.filter(function (it) { return status(it).key === "later"; });
@@ -358,10 +357,10 @@ function render() {
   // mit großer Schrift mehr als den halben Bildschirm.
   controls.innerHTML = canEdit() ? voicebarHTML() : "";
   // Demo: nichts gespeichert, kein Konto, kein Plus - keine Symbole (zum Ansehen der Gestaltung: &icons=1,
-  // dann auch die Glocke "Erinnern" wie bei ausgeschalteten Erinnerungen, mit &pushon=1 wie bei eingeschalteten)
-  if (DEMO && params.get("icons") && !pushState) pushState = params.get("pushon") ? "on" : "off";
+  // dann auch die Glocke "Erinnern" wie bei ausgeschalteten Erinnerungen)
+  if (DEMO && params.get("icons") && !pushState) pushState = "off";
   stat.innerHTML = DEMO && !params.get("icons") ? "" : infoHTML();
-  var html = (dayHTML() || tipHTML()) + todayHTML(all) + (now.length
+  var html = tipHTML() + todayHTML(all) + (now.length
     ? '<h2 class="sec sec-now">' + t("sec.now") + ' <span>' + now.length + '</span></h2>' + now.map(card).join("")
     : '<div class="allgood">' + t("allgood") + '</div>');
   // Ohne "Alles im Blick" trotzdem der Knopf "Jahr im Blick"
@@ -1232,7 +1231,7 @@ async function addIncoming(btn) {
   render();
   if (pushState !== "off") { closeSheet(); return toast(t("saved", { x: remindText(it) })); }
   // Erinnerungen sind noch aus: gleich hier einschalten lassen, sonst meldet sich Livo nie
-  openSheet('<h3>' + t("saved.plain") + '</h3><p class="hint">' + esc(t("in.push") + dayPushCardAdd()) + '</p>' +
+  openSheet('<h3>' + t("saved.plain") + '</h3><p class="hint">' + esc(t("in.push")) + '</p>' +
     '<button type="button" class="btn" data-act="push">' + t("push.card") + '</button>' +
     '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>');
 }
@@ -1384,20 +1383,20 @@ document.addEventListener("click", function (e) {
     if (act === "info") infoTab = "push";
     el.disabled = true;
     if (sheet.contains(el)) closeSheet(); // Knopf im Fenster nach einer geteilten Frist
-    enablePush().then(async function (ok) {
-      var daily = ok && (await dayPushAutoOn()); // die Frage des Tages kommt mit
+    enablePush().then(function (ok) {
       render();
-      toast(ok ? t(daily ? "day.pushOnToast" : "toast.pushOn") : pushState === "blocked" ? t("toast.pushBlocked") : t("toast.pushOff"));
+      toast(ok ? t("toast.pushOn") : pushState === "blocked" ? t("toast.pushBlocked") : t("toast.pushOff"));
     }, function () {
       render();
       toast(t("toast.retry"));
     });
     return;
   }
-  // Ausschalten über den Link unter der Glocke, immer mit Rückfrage. Die Glocke selbst klappt nur den Bereich auf
-  // (setInfoTab): dort steht auch die Frage des Tages als Nachricht.
-  if (act === "pushoff") {
-    if (!confirm(t("push.offConfirm"))) return;
+  // Ausschalten über die Glocke (wenn sie an sind) oder den Link darunter - immer mit Rückfrage
+  if (act === "pushoff" || (act === "info" && id === "push" && pushState === "on")) {
+    if (act === "info") infoTab = "push";
+    // Abbrechen: an bleibt an, unter der Glocke steht dann "Erinnerungen sind an"
+    if (!confirm(t("push.offConfirm"))) { if (act === "info") document.getElementById("status").innerHTML = infoHTML(); return; }
     el.disabled = true;
     disablePush().then(function (ok) {
       render();
@@ -1416,7 +1415,6 @@ document.addEventListener("click", function (e) {
   else if (act === "mycat") showMyCat();
   else if (act === "heroGo") heroGo();
   else if (act === "inappClose") { inappClosed = true; try { sessionStorage.setItem("livo.inapp", "x"); } catch (e) {} render(); }
-  else if (act.slice(0, 3) === "day") dayAct(act, el);
   else if (act === "tipClose") { tipClosed = true; try { localStorage.setItem("livo.tip1", "x"); } catch (e) {} render(); }
   else if (act === "todayWeek") { setFilter("week"); var sec = document.querySelector(".sec-row"); if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (act === "inAdd") addIncoming(el);
@@ -1542,7 +1540,6 @@ async function start() {
   else if (show.indexOf("form:") === 0) showNew(show.slice(5));
   else if (show === "item" && items.length) showItem(sortedItems()[0].id);
   else if (show === "account") showAccount();
-  else if (show === "daypush") dayPushShow();
   else if (show === "signin") showAccount("signin");
   else if (show === "howto") showHowto();
   else if (show === "year") showYear();
