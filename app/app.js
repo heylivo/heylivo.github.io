@@ -209,10 +209,19 @@ function voicebarHTML() {
 // klappt das Laden nicht, steht dort der bisherige Tipp. ?d= holt am neuen Tag auch neu ergänzte Texte.
 var tipData = null, tipFailed = false, tipClosedOn = "";
 try { tipClosedOn = localStorage.getItem("livo.tip2") || ""; } catch (e) {}
+// Tag -> Text. Im ersten Durchlauf gilt die Reihenfolge der Datei, jeder weitere mischt neu; innerhalb eines Durchlaufs kommt kein Text doppelt.
+function tipIndex(n, len) {
+  var i = ((n % len) + len) % len, round = Math.floor(n / len);
+  if (round <= 0) return i;
+  function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+  var step = (round * 97 + 1) % len;
+  while (gcd(step, len) !== 1) step = (step + 1) % len;
+  return (i * step + round * 31) % len;
+}
 function tipText() {
   if (!tipData) return tipFailed ? t("tip.text") : "";
-  var n = Math.round((fromISO(toISO(today())) - fromISO(tipData.start)) / 86400000), len = tipData.tips.length;
-  return tipData.tips[((n % len) + len) % len];
+  var n = Math.round((fromISO(toISO(today())) - fromISO(tipData.start)) / 86400000);
+  return tipData.tips[tipIndex(n, tipData.tips.length)];
 }
 function tipHTML() {
   var text = tipText();
