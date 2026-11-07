@@ -204,13 +204,35 @@ function voicebarHTML() {
     '<svg class="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg>' +
     '<svg class="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form></div>';
 }
-// "Schon gewusst?" über der Liste, bis man es mit × schließt (merkt sich nur dieser Browser)
-var tipClosed = false;
-try { tipClosed = localStorage.getItem("livo.tip1") === "x"; } catch (e) {}
+// "Schon gewusst?" über der Liste: jeden Tag ein neuer Text, für alle am selben Tag derselbe (tips/<Sprache>.json).
+// × schließt die Karte nur für heute (merkt sich nur dieser Browser). Die Texte kommen nach dem Öffnen, die App wartet nie darauf;
+// klappt das Laden nicht, steht dort der bisherige Tipp. ?d= holt am neuen Tag auch neu ergänzte Texte.
+var tipData = null, tipFailed = false, tipClosedOn = "";
+try { tipClosedOn = localStorage.getItem("livo.tip2") || ""; } catch (e) {}
+function tipText() {
+  if (!tipData) return tipFailed ? t("tip.text") : "";
+  var n = Math.round((fromISO(toISO(today())) - fromISO(tipData.start)) / 86400000), len = tipData.tips.length;
+  return tipData.tips[((n % len) + len) % len];
+}
 function tipHTML() {
-  return tipClosed ? "" : '<div class="tipbox"><span class="tipbox-ico" aria-hidden="true">✨</span>' +
-    '<div><b>' + esc(t("tip.title")) + '</b><small>' + esc(t("tip.text")) + '</small></div>' +
+  var text = tipText();
+  return !text || tipClosedOn === toISO(today()) ? "" : '<div class="tipbox"><span class="tipbox-ico" aria-hidden="true">✨</span>' +
+    '<div><b>' + esc(t("tip.title")) + '</b><small>' + esc(text) + '</small></div>' +
     '<button type="button" class="tipbox-x" data-act="tipClose" aria-label="' + esc(t("cancel")) + '">×</button></div>';
+}
+// Nur die Karte einsetzen, nicht alles neu aufbauen: Sonst ginge verloren, was gerade bei "Hey Livo" getippt wird.
+function tipReady() {
+  var list = document.getElementById("list");
+  if (items.length && !list.querySelector(".loading, .offline, .tipbox")) list.insertAdjacentHTML("afterbegin", tipHTML());
+}
+function loadTip() {
+  fetch("tips/" + LANG + ".json?d=" + toISO(today())).then(function (r) {
+    if (!r.ok) throw new Error("tips");
+    return r.json();
+  }).then(function (d) {
+    if (!d.start || !d.tips || !d.tips.length) throw new Error("tips");
+    tipData = d;
+  }).catch(function () { tipFailed = true; }).then(tipReady);
 }
 // Im Browser von Instagram/Facebook gibt es keine Erinnerungen (kein Push) - Hinweis, heylivo in Chrome bzw. Safari zu öffnen.
 // Android: Knopf mit intent://-Link zu Chrome. iPhone: Anleitung über "⋯" (dort gibt es keinen Link, der Safari öffnet).
@@ -1427,7 +1449,7 @@ document.addEventListener("click", function (e) {
   else if (act === "mycat") showMyCat();
   else if (act === "heroGo") heroGo();
   else if (act === "inappClose") { inappClosed = true; try { sessionStorage.setItem("livo.inapp", "x"); } catch (e) {} render(); }
-  else if (act === "tipClose") { tipClosed = true; try { localStorage.setItem("livo.tip1", "x"); } catch (e) {} render(); }
+  else if (act === "tipClose") { tipClosedOn = toISO(today()); try { localStorage.setItem("livo.tip2", tipClosedOn); } catch (e) {} var tipBox = document.querySelector(".tipbox"); if (tipBox) tipBox.remove(); }
   else if (act === "todayWeek") { setFilter("week"); var sec = document.querySelector(".sec-row"); if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (act === "inAdd") addIncoming(el);
   else if (act === "calcopy") copyText(calFeedUrl, t("toast.linkCopied"));
@@ -1524,6 +1546,7 @@ function setupLanguage() {
 async function start() {
   var list = document.getElementById("list");
   setupLanguage();
+  loadTip();
   if (DEMO) {
     seedDemo();
   } else {
