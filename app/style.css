@@ -152,7 +152,13 @@ main { padding-bottom: 24px; }
 }
 .card.st-late { border-left-color: var(--late); }
 .card.st-now { border-left-color: var(--now); }
-.ico { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--later-bg); font-size: 20px; }
+.ico { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--brand-soft); color: var(--brand); font-size: 20px; }
+/* Linien-Symbole (icons.js, Lucide): Farbe = Markenblau, Größe passend zur Schrift */
+.lu { flex: none; width: 1.1em; height: 1.1em; vertical-align: -0.18em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--brand); }
+.ico .lu { width: 22px; height: 22px; }
+.tipbox-ico .lu, .mic-ico .lu, .howto-ico .lu { width: 20px; height: 20px; }
+.mic .lu { width: 42px; height: 42px; color: #fff; vertical-align: middle; }
+.catedit .lu { width: 15px; height: 15px; color: var(--muted); }
 .txt { flex: 1; min-width: 0; }
 .txt b { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .txt small { color: var(--muted); font-size: 13px; }

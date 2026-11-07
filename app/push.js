@@ -125,7 +125,7 @@ async function sendTestPush() {
 function pushHTML() {
   if ((DEMO && !params.get("icons")) || !items.length || !canEdit()) return ""; // &icons=1: Gestaltung im Demo ansehen
   if (pushState === "off") {
-    return '<button type="button" class="pushcard" data-act="push"><span class="mic-ico">🔔</span>' +
+    return '<button type="button" class="pushcard" data-act="push"><span class="mic-ico">' + ico("bell") + '</span>' +
       '<span><b>' + t("push.card") + '</b><small>' + t("push.cardSub") + '</small></span></button>';
   }
   if (pushState === "ios-install") return '<div class="pushinfo">' + t("push.ios") + '</div>';

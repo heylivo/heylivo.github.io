@@ -188,8 +188,8 @@ function esc(s) {
 
 /* ---------- Nachschlagen ---------- */
 function find(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
-// Eigenes Symbol einer Vorlage (Geschenk 🎁), sonst das ihrer Kategorie
-function iconOf(it) { var tp = find(TEMPLATES, it.tpl); return tp && tp.icon ? tp.icon : find(CATEGORIES, tp ? tp.cat : "own").icon; }
+// Eigenes Symbol einer Vorlage (Geschenk), sonst das ihrer Kategorie - als Linien-Symbol (icons.js)
+function iconOf(it) { var tp = find(TEMPLATES, it.tpl); return ico(tp && tp.icon ? tp.icon : find(CATEGORIES, tp ? tp.cat : "own").icon); }
 function sortedItems() {
   return items.slice().sort(function (a, b) { return a.due < b.due ? -1 : a.due > b.due ? 1 : 0; });
 }
@@ -226,7 +226,7 @@ function tipText() {
 }
 function tipHTML() {
   var text = tipText();
-  return !text || tipClosedOn === toISO(today()) ? "" : '<div class="tipbox"><span class="tipbox-ico" aria-hidden="true">✨</span>' +
+  return !text || tipClosedOn === toISO(today()) ? "" : '<div class="tipbox"><span class="tipbox-ico" aria-hidden="true">' + ico("lightbulb") + '</span>' +
     '<div><b>' + esc(t("tip.title")) + '</b><small>' + esc(text) + '</small></div>' +
     '<button type="button" class="tipbox-x" data-act="tipClose" aria-label="' + esc(t("cancel")) + '">×</button></div>';
 }
@@ -264,7 +264,7 @@ function inappHTML() {
     : userEmail ? '<small>' + t("inapp.signinThere", { email: "<b>" + esc(userEmail) + "</b>" }) + '</small>' : "";
   var how = IN_APP_ANDROID ? '<a class="btn inapp-btn" href="' + esc(chromeLink()) + '">' + t("inapp.btn") + '</a>'
     : '<small>' + t("inapp.ios") + '</small>';
-  return '<div class="tipbox inapp"><span class="tipbox-ico" aria-hidden="true">🔔</span>' +
+  return '<div class="tipbox inapp"><span class="tipbox-ico" aria-hidden="true">' + ico("bell") + '</span>' +
     '<div><b>' + esc(t("inapp.title")) + '</b><small>' + t("inapp.text", { app: IN_APP }) + '</small>' + how + after + '</div>' +
     '<button type="button" class="tipbox-x" data-act="inappClose" aria-label="' + esc(t("cancel")) + '">×</button></div>';
 }
@@ -308,7 +308,7 @@ function todayHTML(all) {
     card(late ? "t-late" : "t-ok", late ? "late" : "ok", late, t("today.late"), "") +
     card("t-week", "week", week, t("today.week"), week ? "todayWeek" : "");
   if (next !== null) cards += card("t-next", "next", next, next === 0 ? t("today.nextToday") : t("today.next"), "");
-  return '<div class="todaybox"><div class="todaybox-head"><span aria-hidden="true">☀️</span><b>' + esc(t("today.title")) + '</b></div>' +
+  return '<div class="todaybox"><div class="todaybox-head">' + ico("sun") + '<b>' + esc(t("today.title")) + '</b></div>' +
     '<div class="tstats">' + cards + '</div></div>';
 }
 
@@ -500,7 +500,7 @@ function showYear() {
     }).join("") + '</p>' +
     (locked
       ? '<div class="ylock"><div class="ymonths" inert aria-hidden="true">' + months + '</div>' +
-        '<div class="ylockbox"><h4>🔒 ' + esc(t("year.lockTitle")) + '</h4>' +
+        '<div class="ylockbox"><h4>' + ico("lock") + ' ' + esc(t("year.lockTitle")) + '</h4>' +
         '<p>' + (upcoming ? t("year.lockText", { c: t("year.count", { n: upcoming }) }) : esc(t("year.lockEmpty"))) + '</p>' +
         '<button type="button" class="btn" data-act="plus">' + esc(t("year.lockBtn")) + '</button></div></div>' +
         '<div class="ydetail" id="ydetail"><button type="button" class="btn light" data-act="close">OK</button></div>'
@@ -619,18 +619,18 @@ function closeSheet() {
 
 function showPicker() {
   var html = '<h3>' + t("picker.title") + '</h3>' +
-    '<button type="button" class="btn light" data-act="voice">' + t("picker.voice") + '</button>';
+    '<button type="button" class="btn light" data-act="voice">' + ico("mic") + " " + t("picker.voice") + '</button>';
   var visible = visibleTemplates();
   function tplBtn(tp) { return '<button type="button" class="tpl" data-tpl="' + tp.id + '">' + esc(tplTitle(tp)) + '</button>'; }
   function catHead(c) {
-    return '<div class="cat">' + c.icon + " " + esc(catName(c)) +
-      (c.id === "mine" ? ' <button type="button" class="catedit" data-act="mycat" aria-label="' + esc(t("mycat.rename")) + '" title="' + esc(t("mycat.rename")) + '">✏️</button>' : "") + '</div>';
+    return '<div class="cat">' + ico(c.icon) + " " + esc(catName(c)) +
+      (c.id === "mine" ? ' <button type="button" class="catedit" data-act="mycat" aria-label="' + esc(t("mycat.rename")) + '" title="' + esc(t("mycat.rename")) + '">' + ico("pencil") + '</button>' : "") + '</div>';
   }
   CATEGORIES.forEach(function (c) {
     var list = visible.filter(function (tp) { return tp.cat === c.id || tp.also === c.id; });
     if (!list.length || c.id === "mine") return;
     if (c.id === "own") {
-      // "Eigene" und die eigene Kategorie nebeneinander: links "Eigene Frist", rechts z. B. "⭐ George" mit ihrer
+      // "Eigene" und die eigene Kategorie nebeneinander: links "Eigene Frist", rechts z. B. "George" (Stern) mit ihrer
       // Unterkategorie - Überschriften und Knöpfe je auf einer Linie. Noch keine eigene Kategorie: rechts "+ anlegen"
       var mine = find(CATEGORIES, "mine"), mineTpl = find(TEMPLATES, "meine");
       html += MY_CAT.cat
@@ -645,7 +645,7 @@ function showPicker() {
 
 // Eigene Kategorie anlegen oder umbenennen: genau eine Kategorie mit einer Unterkategorie
 function showMyCat() {
-  openSheet('<h3>⭐ ' + t(MY_CAT.cat ? "mycat.rename" : "mycat.new") + '</h3><form id="frm" novalidate>' +
+  openSheet('<h3>' + ico("star") + ' ' + t(MY_CAT.cat ? "mycat.rename" : "mycat.new") + '</h3><form id="frm" novalidate>' +
     '<p class="hint">' + esc(t("mycat.hint")) + '</p>' +
     '<label class="field"><span>' + t("mycat.cat") + '</span><input name="cat" maxlength="40" value="' + esc(MY_CAT.cat) + '" placeholder="' + esc(t("mycat.catPh")) + '"></label>' +
     '<label class="field"><span>' + t("mycat.sub") + '</span><input name="sub" maxlength="40" value="' + esc(MY_CAT.sub) + '" placeholder="' + esc(t("mycat.subPh")) + '"></label>' +
@@ -685,10 +685,10 @@ function stopListening() {
 }
 
 function showVoice() {
-  openSheet('<h3>🎤 Hey Livo</h3>' +
+  openSheet('<h3>' + ico("mic") + ' Hey Livo</h3>' +
     '<p class="muted">' + esc(t("voice.intro")) + '</p>' +
     (Recognition
-      ? '<button type="button" class="mic" id="micBtn" aria-label="' + esc(t("voice.speak")) + '">🎤</button>'
+      ? '<button type="button" class="mic" id="micBtn" aria-label="' + esc(t("voice.speak")) + '">' + ico("mic") + '</button>'
       : '<p class="hint">' + esc(t("voice.unsupported")) + '</p>') +
     '<p class="heard" id="heard"></p>' +
     '<form class="sayform" id="sayForm"><input name="say" type="text" placeholder="' + esc(t("voice.type")) + '" autocomplete="off">' +
@@ -974,7 +974,7 @@ function readItemForm(form, it) {
 
 function showDraft(d, said) {
   var tp = find(TEMPLATES, d.tpl), hint = tplHint(tp);
-  openSheet('<h3>' + find(CATEGORIES, tp.cat).icon + ' ' + t("draft.title") + '</h3>' +
+  openSheet('<h3>' + ico(find(CATEGORIES, tp.cat).icon) + ' ' + t("draft.title") + '</h3>' +
     '<p class="said">' + esc(quote(said)) + '</p>' +
     itemFormHTML(d, {
       intro: (d.due ? "" : '<p class="err">' + t("draft.noDate") + '</p>') + (hint ? '<p class="hint">' + esc(hint) + '</p>' : ""),
@@ -1067,7 +1067,7 @@ function showFollow(it, list, okText) {
   document.getElementById("toast").hidden = true; // eine alte Meldung darf die Vorschläge nicht verdecken
   openSheet('<h3>' + t("saved.plain") + '</h3>' +
     '<p class="fsaved">' + esc(it.title) + " · " + esc(t("dl.remind")) + " " + esc(remindText(it)) + '</p>' +
-    '<div class="follow-head">💡 ' + esc(t("follow.head")) + '</div>' +
+    '<div class="follow-head">' + ico("lightbulb") + ' ' + esc(t("follow.head")) + '</div>' +
     list.map(followCardHTML).join("") +
     '<button type="button" class="btn light" data-act="followDone">' + t("follow.done") + '</button>');
 }
@@ -1134,7 +1134,7 @@ function showNew(tid) {
   var tp = find(TEMPLATES, tid);
   if (!tp) return;
   var hint = tplHint(tp);
-  openSheet('<h3>' + find(CATEGORIES, tp.cat).icon + " " + esc(tplTitle(tp)) + '</h3><form id="frm" novalidate>' +
+  openSheet('<h3>' + ico(find(CATEGORIES, tp.cat).icon) + " " + esc(tplTitle(tp)) + '</h3><form id="frm" novalidate>' +
     (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") + guideLinkHTML(tp) +
     tp.fields.map(function (f) { return fieldHTML(tp, f); }).join("") +
     noteHTML("") +
@@ -1366,7 +1366,7 @@ async function addIncoming(btn) {
 // Im Demo zeigen die Knöpfe auf den Beispiel-Kalender.
 var calFeedUrl = "";
 function calendarHTML() {
-  return '<div class="calbox" id="calBox"><h4>📅 ' + esc(t("cal.title")) + '</h4>' +
+  return '<div class="calbox" id="calBox"><h4>' + ico("calendar") + ' ' + esc(t("cal.title")) + '</h4>' +
     '<p class="muted">' + esc(t("cal.intro")) + '</p>' +
     '<div id="calLinks"><p class="muted">' + esc(t("loading")) + '</p></div></div>';
 }

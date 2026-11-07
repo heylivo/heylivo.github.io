@@ -9,17 +9,18 @@
 // only: Vorlage nur in dieser Sprache (deutsche Regeln wie Kfz-Versicherung bis 30.11.).
 // Die Texte stehen unten in TPL_TEXT, je Sprache.
 
+// icon = Name eines Linien-Symbols aus icons.js (Lucide)
 var CATEGORIES = [
-  { id: "doc", icon: "🪪" },
-  { id: "car", icon: "🚗" },
-  { id: "contract", icon: "📄" },
-  { id: "health", icon: "🩺" },
-  { id: "family", icon: "👪" },
-  { id: "travel", icon: "✈️" },
-  { id: "money", icon: "💶" },
-  { id: "appt", icon: "📌" },
-  { id: "own", icon: "📝" },
-  { id: "mine", icon: "⭐" } // die eine eigene Kategorie des Nutzers (MY_CAT), nur wenn angelegt
+  { id: "doc", icon: "id-card" },
+  { id: "car", icon: "car-front" },
+  { id: "contract", icon: "file-text" },
+  { id: "health", icon: "stethoscope" },
+  { id: "family", icon: "users" },
+  { id: "travel", icon: "plane" },
+  { id: "money", icon: "wallet" },
+  { id: "appt", icon: "calendar-check" },
+  { id: "own", icon: "pencil" },
+  { id: "mine", icon: "star" } // die eine eigene Kategorie des Nutzers (MY_CAT), nur wenn angelegt
 ];
 
 // Eigene Kategorie mit genau einer Unterkategorie, z. B. "George Kalender" / "Meine wichtigen Termine".
@@ -120,7 +121,7 @@ var TEMPLATES = [
   { id: "hochzeitstag", cat: "family", lead: 7, fields: [{ key: "date", type: "date" }], compute: yearly },
   // Nur als Vorschlag nach einem Geburtstag oder Hochzeitstag ("Livo denkt mit", FOLLOW in app.js),
   // nicht in der Auswahl. Fällig 5 Tage vor dem Tag, Erinnerung 5 Tage davor.
-  { id: "geschenk", cat: "family", icon: "🎁", hidden: true, lead: 5, fields: [{ key: "date", type: "date" }], compute: dated },
+  { id: "geschenk", cat: "family", icon: "gift", hidden: true, lead: 5, fields: [{ key: "date", type: "date" }], compute: dated },
   {
     id: "kinderarzt", cat: "family", lead: 7,
     fields: [{ key: "who", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated

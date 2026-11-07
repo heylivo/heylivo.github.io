@@ -66,10 +66,10 @@ function renderNote() {
 
 // "So funktioniert's": vier kurze Schritte, darunter Anmelden
 function showHowto() {
-  var icons = ["📝", "🔔", "📱", "🔒"];
+  var icons = ["pencil", "bell", "smartphone", "lock"];
   openSheet('<h3>' + t("how.title") + '</h3><ol class="howto">' +
     icons.map(function (ic, i) {
-      return '<li><span class="howto-ico">' + ic + '</span><span><b>' + t("how." + (i + 1) + "t") + '</b>' + t("how." + (i + 1)) + '</span></li>';
+      return '<li><span class="howto-ico">' + ico(ic) + '</span><span><b>' + t("how." + (i + 1) + "t") + '</b>' + t("how." + (i + 1)) + '</span></li>';
     }).join("") + '</ol>' +
     '<p class="muted">' + t("how.signin") + '</p>' +
     '<button type="button" class="btn" data-act="signin">' + t("acc.signin") + '</button>' +
@@ -88,7 +88,7 @@ function showAccount(mode) {
 function showEmail(hint) {
   var signin = accFlow.mode === "signin";
   if (!hint && signin && items.length && canEdit()) hint = t("acc.carry", { n: items.length });
-  openSheet('<h3>' + (signin ? t("acc.signin") : "🔒 " + t("acc.secure")) + '</h3>' +
+  openSheet('<h3>' + (signin ? t("acc.signin") : ico("lock") + " " + t("acc.secure")) + '</h3>' +
     '<p class="muted">' + t(signin ? "acc.signinIntro" : "acc.secureIntro") + '</p>' +
     (hint ? '<p class="hint">' + hint + '</p>' : "") +
     '<form id="accForm" novalidate><label class="field"><span>' + t("acc.email") + '</span>' +
@@ -234,7 +234,7 @@ async function signedIn(user, carry, carryToken) {
 }
 
 function showAccountInfo() {
-  openSheet('<h3>🔒 ' + t("acc.infoTitle") + '</h3>' +
+  openSheet('<h3>' + ico("lock") + ' ' + t("acc.infoTitle") + '</h3>' +
     '<p class="muted">' + t("acc.info", { email: "<b>" + esc(userEmail) + "</b>" }) + '</p>' +
     '<p class="hint">' + t("acc.otherDevice") + '</p>' +
     '<button type="button" class="btn light" data-act="close">OK</button>' +
