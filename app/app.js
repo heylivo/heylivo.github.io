@@ -27,13 +27,16 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 
 var TIME_ZONE = (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Berlin"; } catch (e) { return "Europe/Berlin"; } })();
 
+var NOTE_MAX = 500;
 function toRow(it) {
   var row = {
     tpl: it.tpl || "eigene", title: it.title, due: it.due, due_time: it.time || null,
     // Endzeit (Spalte aus 0012_time_end.sql) nur zusammen mit einer Uhrzeit
     due_time_end: it.time && it.timeEnd ? it.timeEnd : null,
     every_months: it.every || 0, every_days: it.everyDays || 0, from_done: it.from === "done", lead_days: it.lead, renew: !!it.renew,
-    remind_min: it.time && it.remindMin ? it.remindMin : null, tz: TIME_ZONE
+    remind_min: it.time && it.remindMin ? it.remindMin : null, tz: TIME_ZONE,
+    // Notiz (Spalte aus 0020_note.sql)
+    note: it.note ? it.note.slice(0, NOTE_MAX) : null
   };
   // Letzter Tag eines Zeitraums (Spalte aus 0018_due_end.sql) - nur bei Urlaubstagen, damit alle anderen
   // Fristen auch ohne die Spalte gespeichert werden können
@@ -45,7 +48,7 @@ function fromRow(r) {
     id: r.id, tpl: r.tpl, title: r.title, due: r.due, time: r.due_time ? r.due_time.slice(0, 5) : "",
     timeEnd: r.due_time && r.due_time_end ? r.due_time_end.slice(0, 5) : "",
     every: r.every_months, everyDays: r.every_days || 0, from: r.from_done ? "done" : "due", lead: r.lead_days, renew: r.renew,
-    remindMin: r.remind_min || 0, end: r.due_end || ""
+    remindMin: r.remind_min || 0, end: r.due_end || "", note: r.note || ""
   };
 }
 async function signIn() {
@@ -781,6 +784,10 @@ function soonText(min) {
   if (min === 60) return t("soon.hour");
   return min > 60 ? t("soon.hours", { n: min / 60 }) : t("soon.min", { n: min });
 }
+// Freiwillige Notiz zu jeder Frist. Bleibt in der App: nicht in Erinnerungen, Teilen-Links und Kalender.
+function noteHTML(note) {
+  return '<label class="field"><span>' + t("form.note") + opt() + '</span><textarea name="note" rows="2" maxlength="' + NOTE_MAX + '" placeholder="' + esc(t("form.notePh")) + '">' + esc(note || "") + '</textarea></label>';
+}
 // Eigenes Textfeld statt type="time": Die Android-Uhrzeitauswahl versteckt bei Samsung im
 // Tastatur-Modus den Knopf "Set". Man tippt "2030" auf der Zahlentastatur, daraus wird 20:30.
 function timeHTML(time, remindMin, timeEnd) {
@@ -894,8 +901,9 @@ function itemFormHTML(it, opts) {
     '<label class="field"><span>' + t("form.what") + '</span><input name="title" type="text" value="' + esc(it.title) + '"></label>' +
     '<label class="field"><span>' + (it.end ? t("form.from") : opts.dateLabel || t("form.due")) + '</span><input name="due" type="date" value="' + esc(it.due) + '"></label>' +
     // Zeitraum: letzter Tag statt Uhrzeit
-    (it.end ? '<label class="field"><span>' + t("form.until") + '</span><input name="end" type="date" value="' + esc(it.end) + '"></label>' +
-      '<div hidden>' + timeHTML("", undefined) + '</div>' : timeHTML(it.time, it.remindMin, it.timeEnd)) +
+    (it.end ? '<label class="field"><span>' + t("form.until") + '</span><input name="end" type="date" value="' + esc(it.end) + '"></label>' : "") +
+    noteHTML(it.note) +
+    (it.end ? '<div hidden>' + timeHTML("", undefined) + '</div>' : timeHTML(it.time, it.remindMin, it.timeEnd)) +
     // ein Zeitraum wiederholt sich nicht (beim Erledigen würde sonst nur der erste Tag weiterrücken)
     (it.end ? '<div hidden>' + repeatHTML(it) + '</div>' : repeatHTML(it)) +
     leadHTML(it.lead) +
@@ -928,6 +936,7 @@ function readItemForm(form, it) {
   it.every = rep.every;
   it.everyDays = rep.everyDays;
   it.lead = readLead(form, it.lead);
+  it.note = form.elements.note.value.trim();
   return true;
 }
 
@@ -1016,6 +1025,7 @@ function showNew(tid) {
   openSheet('<h3>' + find(CATEGORIES, tp.cat).icon + " " + esc(tplTitle(tp)) + '</h3><form id="frm" novalidate>' +
     (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") + guideLinkHTML(tp) +
     tp.fields.map(function (f) { return fieldHTML(tp, f); }).join("") +
+    noteHTML("") +
     // Zeitraum (Urlaubstage): ganze Tage, keine Uhrzeit
     (tp.range ? '<div hidden>' + timeHTML("", undefined) + '</div>' : timeHTML("", undefined)) +
     leadHTML(tp.lead) +
@@ -1034,6 +1044,7 @@ function showNew(tid) {
       var end = parseTime(form.elements.timeEnd.value);
       it.timeEnd = it.time && end && end > it.time ? end : "";
       it.remindMin = readSoon(form);
+      it.note = form.elements.note.value.trim();
     }
     return it;
   }
@@ -1068,7 +1079,8 @@ function showItem(id) {
     '<dl><dt>' + t(it.end ? "dl.range" : "dl.due") + '</dt><dd>' + esc(dueText(it)) + '</dd>' +
     '<dt>' + t("dl.remind") + '</dt><dd>' + esc(t("dl.remindVal", { n: it.lead, x: remindText(it) })) + '</dd>' +
     (it.time && it.remindMin ? '<dt>' + t("dl.soon") + '</dt><dd>' + esc(soonText(it.remindMin)) + '</dd>' : "") +
-    '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it)) + '</dd></dl>' +
+    '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it)) + '</dd>' +
+    (it.note ? '<dt>' + t("form.note") + '</dt><dd class="dd-note">' + esc(it.note) + '</dd>' : "") + '</dl>' +
     (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") + guideLinkHTML(tp) +
     (canEdit()
       ? '<button type="button" class="btn" data-act="done" data-id="' + it.id + '">' + main + '</button>' +
