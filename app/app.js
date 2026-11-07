@@ -188,8 +188,13 @@ function esc(s) {
 
 /* ---------- Nachschlagen ---------- */
 function find(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
-// Eigenes Symbol einer Vorlage (Geschenk), sonst das ihrer Kategorie - als Linien-Symbol (icons.js)
-function iconOf(it) { var tp = find(TEMPLATES, it.tpl); return ico(tp && tp.icon ? tp.icon : find(CATEGORIES, tp ? tp.cat : "own").icon); }
+// Symbol einer Kategorie in ihrer Farbe (tone in templates.js -> .t-c / .t-b / .t-p in style.css)
+function catIco(c) { return ico(c.icon, "t-" + c.tone); }
+function catOf(it) { var tp = find(TEMPLATES, it.tpl); return find(CATEGORIES, tp ? tp.cat : "own"); }
+// Eigenes Symbol einer Vorlage (Geschenk), sonst das ihrer Kategorie - immer in der Farbe der Kategorie
+function iconOf(it) { var tp = find(TEMPLATES, it.tpl), c = catOf(it); return ico(tp && tp.icon ? tp.icon : c.icon, "t-" + c.tone); }
+// Kästchen hinter dem Symbol: helle Fläche in der Farbe der Kategorie
+function icoBox(it) { return '<span class="ico t-' + catOf(it).tone + '">' + iconOf(it) + '</span>'; }
 function sortedItems() {
   return items.slice().sort(function (a, b) { return a.due < b.due ? -1 : a.due > b.due ? 1 : 0; });
 }
@@ -584,7 +589,7 @@ function card(it) {
   var sub = it.end ? dueText(it) : t("card.due", { x: dueText(it) });
   if (it.tpl === "meine" && MY_CAT.cat) sub = MY_CAT.cat + " · " + sub; // eigene Kategorie, z. B. "George Kalender"
   return '<button type="button" class="card st-' + s.key + '" data-open="' + it.id + '">' +
-    '<span class="ico">' + iconOf(it) + '</span>' +
+    icoBox(it) +
     '<span class="txt"><b>' + esc(it.title) + '</b><small>' + esc(sub) + '</small></span>' +
     '<span class="pill">' + esc(pillText(s)) + '</span><span class="chev" aria-hidden="true">›</span></button>';
 }
@@ -623,7 +628,7 @@ function showPicker() {
   var visible = visibleTemplates();
   function tplBtn(tp) { return '<button type="button" class="tpl" data-tpl="' + tp.id + '">' + esc(tplTitle(tp)) + '</button>'; }
   function catHead(c) {
-    return '<div class="cat">' + ico(c.icon) + " " + esc(catName(c)) +
+    return '<div class="cat">' + catIco(c) + " " + esc(catName(c)) +
       (c.id === "mine" ? ' <button type="button" class="catedit" data-act="mycat" aria-label="' + esc(t("mycat.rename")) + '" title="' + esc(t("mycat.rename")) + '">' + ico("pencil") + '</button>' : "") + '</div>';
   }
   CATEGORIES.forEach(function (c) {
@@ -974,7 +979,7 @@ function readItemForm(form, it) {
 
 function showDraft(d, said) {
   var tp = find(TEMPLATES, d.tpl), hint = tplHint(tp);
-  openSheet('<h3>' + ico(find(CATEGORIES, tp.cat).icon) + ' ' + t("draft.title") + '</h3>' +
+  openSheet('<h3>' + catIco(find(CATEGORIES, tp.cat)) + ' ' + t("draft.title") + '</h3>' +
     '<p class="said">' + esc(quote(said)) + '</p>' +
     itemFormHTML(d, {
       intro: (d.due ? "" : '<p class="err">' + t("draft.noDate") + '</p>') + (hint ? '<p class="hint">' + esc(hint) + '</p>' : ""),
@@ -1058,7 +1063,7 @@ function followCardHTML(s, i) {
   }
   var f = s.item;
   return '<div class="fcard"><p>' + esc(t("follow." + s.key)) + '</p>' +
-    '<div class="fitem"><span class="ico">' + iconOf(f) + '</span><div><b>' + esc(f.title) + '</b><small>' +
+    '<div class="fitem">' + icoBox(f) + '<div><b>' + esc(f.title) + '</b><small>' +
     t("preview", { due: esc(dueText(f)), remind: esc(remindText(f)), every: esc(everyText(f)) }) + '</small></div></div>' +
     '<button type="button" class="btn" data-act="follow" data-id="' + i + '">' + t("follow.add") + '</button></div>';
 }
@@ -1134,7 +1139,7 @@ function showNew(tid) {
   var tp = find(TEMPLATES, tid);
   if (!tp) return;
   var hint = tplHint(tp);
-  openSheet('<h3>' + ico(find(CATEGORIES, tp.cat).icon) + " " + esc(tplTitle(tp)) + '</h3><form id="frm" novalidate>' +
+  openSheet('<h3>' + catIco(find(CATEGORIES, tp.cat)) + " " + esc(tplTitle(tp)) + '</h3><form id="frm" novalidate>' +
     (hint ? '<p class="hint">' + esc(hint) + '</p>' : "") + guideLinkHTML(tp) +
     tp.fields.map(function (f) { return fieldHTML(tp, f); }).join("") +
     noteHTML("") +
@@ -1187,7 +1192,7 @@ function showItem(id) {
   if (!it) return;
   var s = status(it), tp = find(TEMPLATES, it.tpl), hint = tp ? tplHint(tp) : "";
   var main = repeats(it) ? t("done.next") : it.renew ? t("done.renew") : t("done");
-  openSheet('<div class="st-' + s.key + '"><div class="d-head"><span class="ico">' + iconOf(it) + '</span><div><h3>' + esc(it.title) + '</h3>' +
+  openSheet('<div class="st-' + s.key + '"><div class="d-head">' + icoBox(it) + '<div><h3>' + esc(it.title) + '</h3>' +
     '<span class="pill">' + esc(pillText(s)) + '</span></div></div>' +
     '<dl><dt>' + t(it.end ? "dl.range" : "dl.due") + '</dt><dd>' + esc(dueText(it)) + '</dd>' +
     '<dt>' + t("dl.remind") + '</dt><dd>' + esc(t("dl.remindVal", { n: it.lead, x: remindText(it) })) + '</dd>' +
@@ -1337,7 +1342,7 @@ function showIncoming(it) {
   var have = items.some(function (x) { return x.title === it.title && x.due === it.due && (x.time || "") === it.time; });
   var past = it.due < toISO(today());
   openSheet('<p class="muted">' + esc(t("in.title")) + '</p>' +
-    '<div class="d-head"><span class="ico">' + iconOf(it) + '</span><div><h3>' + esc(it.title) + '</h3></div></div>' +
+    '<div class="d-head">' + icoBox(it) + '<div><h3>' + esc(it.title) + '</h3></div></div>' +
     '<dl><dt>' + t("dl.due") + '</dt><dd>' + esc(dueText(it)) + '</dd>' +
     (past ? "" : '<dt>' + t("dl.remind") + '</dt><dd>' + esc(t("dl.remindVal", { n: it.lead, x: remindText(it) })) + '</dd>') +
     (repeats(it) ? '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it)) + '</dd>' : "") + '</dl>' +

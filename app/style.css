@@ -156,6 +156,12 @@ main { padding-bottom: 24px; }
 /* Linien-Symbole (icons.js, Lucide): Farbe = Markenblau, Größe passend zur Schrift */
 .lu { flex: none; width: 1.1em; height: 1.1em; vertical-align: -0.18em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--brand); }
 .ico .lu { width: 22px; height: 22px; }
+/* Kategorie-Farben: Livo Cyan / Livo Blue / Livo Purple (tone in templates.js) */
+.t-c { --tone: #0cb3f7; --tone-soft: #e2f6fe; }
+.t-b { --tone: #286ff8; --tone-soft: #e8f0fe; }
+.t-p { --tone: #763cf7; --tone-soft: #efe9fe; }
+.lu.t-c, .lu.t-b, .lu.t-p { color: var(--tone); }
+.ico.t-c, .ico.t-b, .ico.t-p { background: var(--tone-soft); }
 .tipbox-ico .lu, .mic-ico .lu, .howto-ico .lu { width: 20px; height: 20px; }
 .mic .lu { width: 42px; height: 42px; color: #fff; vertical-align: middle; }
 .catedit .lu { width: 15px; height: 15px; color: var(--muted); }
