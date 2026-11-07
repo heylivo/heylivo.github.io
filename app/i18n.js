@@ -76,6 +76,8 @@ var TXT = {
     "form.err": "Bitte trag ein, was es ist und ein gültiges Datum.", "form.errFields": "Bitte fülle die Pflichtfelder mit einem gültigen Datum aus.", "form.errTime": "Bitte die Uhrzeit so eintragen: 20:30.", "form.timePh": "z. B. 20:30 oder 2030",
     "draft.title": "Habe ich das richtig verstanden?", "draft.noDate": "Das Datum habe ich nicht verstanden – bitte unten eintragen.", "draft.again": "Nochmal sagen",
     "saved": "Gespeichert ✓ Erinnerung {x}", "saved.plain": "Gespeichert ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Livo denkt mit", "follow.gift": "Soll Livo dich auch an das Geschenk erinnern?", "follow.checkin": "Fliegst du? Dann erinnert dich Livo am Tag vorher an den Online-Check-in.", "follow.doc": "Ist dein Reisepass oder Ausweis noch lange genug gültig? Trag ihn ein – Livo erinnert dich rechtzeitig.", "follow.add": "+ Auch eintragen", "follow.added": "Eingetragen ✓", "follow.done": "Fertig",
     "preview": "Fällig am <b>{due}</b> · Erinnerung <b>{remind}</b> · {every}", "preview.empty": "Fällig am … – bitte die Felder ausfüllen.",
     "done.next": "Erledigt – nächster Termin", "done.renew": "Erneuert – neues Datum eintragen", "done": "Erledigt",
     "dl.due": "Fällig am", "dl.remind": "Erinnerung", "dl.remindVal": "{n} Tage vorher ({x})", "dl.remindVal.one": "1 Tag vorher ({x})", "dl.soon": "Kurz vorher", "dl.every": "Wiederholung",
@@ -199,6 +201,8 @@ var TXT = {
     "form.err": "Please enter what it is and a valid date.", "form.errFields": "Please fill in the required fields with a valid date.", "form.errTime": "Please enter the time like this: 20:30.", "form.timePh": "e.g. 20:30 or 2030",
     "draft.title": "Did I get that right?", "draft.noDate": "I didn't catch the date – please enter it below.", "draft.again": "Say it again",
     "saved": "Saved ✓ Reminder {x}", "saved.plain": "Saved ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Livo thinks ahead", "follow.gift": "Want Livo to remind you about the present, too?", "follow.checkin": "Flying? Livo can remind you about online check-in the day before.", "follow.doc": "Is your passport or ID card valid for long enough? Add it – Livo will remind you in good time.", "follow.add": "+ Add this too", "follow.added": "Added ✓", "follow.done": "Done",
     "preview": "Due <b>{due}</b> · Reminder <b>{remind}</b> · {every}", "preview.empty": "Due … – please fill in the fields.",
     "done.next": "Done – next date", "done.renew": "Renewed – enter new date", "done": "Done",
     "dl.due": "Due on", "dl.remind": "Reminder", "dl.remindVal": "{n} days before ({x})", "dl.remindVal.one": "1 day before ({x})", "dl.soon": "Shortly before", "dl.every": "Repeats",
@@ -322,6 +326,8 @@ var TXT = {
     "form.err": "Inserisci cosa è e una data valida.", "form.errFields": "Compila i campi obbligatori con una data valida.", "form.errTime": "Inserisci l'ora così: 20:30.", "form.timePh": "es. 20:30 o 2030",
     "draft.title": "Ho capito bene?", "draft.noDate": "Non ho capito la data – inseriscila qui sotto.", "draft.again": "Ripeti",
     "saved": "Salvato ✓ Promemoria {x}", "saved.plain": "Salvato ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Livo pensa in anticipo", "follow.gift": "Vuoi che Livo ti ricordi anche il regalo?", "follow.checkin": "Prendi l'aereo? Livo ti ricorda il check-in online il giorno prima.", "follow.doc": "Il passaporto o la carta d'identità sono validi abbastanza a lungo? Aggiungili – Livo ti avvisa in tempo.", "follow.add": "+ Aggiungi anche questo", "follow.added": "Aggiunto ✓", "follow.done": "Fatto",
     "preview": "Scade il <b>{due}</b> · Promemoria <b>{remind}</b> · {every}", "preview.empty": "Scade il … – compila i campi.",
     "done.next": "Fatto – prossima data", "done.renew": "Rinnovato – inserisci la nuova data", "done": "Fatto",
     "dl.due": "Scade il", "dl.remind": "Promemoria", "dl.remindVal": "{n} giorni prima ({x})", "dl.remindVal.one": "1 giorno prima ({x})", "dl.soon": "Poco prima", "dl.every": "Ripetizione",
@@ -445,6 +451,8 @@ var TXT = {
     "form.err": "Γράψε τι είναι και μια σωστή ημερομηνία.", "form.errFields": "Συμπλήρωσε τα υποχρεωτικά πεδία με σωστή ημερομηνία.", "form.errTime": "Γράψε την ώρα έτσι: 20:30.", "form.timePh": "π.χ. 20:30 ή 2030",
     "draft.title": "Το κατάλαβα σωστά;", "draft.noDate": "Δεν κατάλαβα την ημερομηνία – συμπλήρωσέ την παρακάτω.", "draft.again": "Πες το ξανά",
     "saved": "Αποθηκεύτηκε ✓ Υπενθύμιση {x}", "saved.plain": "Αποθηκεύτηκε ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Το Livo σκέφτεται μπροστά", "follow.gift": "Να σου θυμίσει το Livo και το δώρο;", "follow.checkin": "Πετάς; Το Livo σού θυμίζει το online check-in την προηγούμενη μέρα.", "follow.doc": "Το διαβατήριο ή η ταυτότητά σου ισχύει για αρκετό καιρό ακόμα; Πρόσθεσέ το – το Livo θα σου το θυμίσει έγκαιρα.", "follow.add": "+ Πρόσθεσέ το κι αυτό", "follow.added": "Προστέθηκε ✓", "follow.done": "Τέλος",
     "preview": "Λήγει <b>{due}</b> · Υπενθύμιση <b>{remind}</b> · {every}", "preview.empty": "Λήγει … – συμπλήρωσε τα πεδία.",
     "done.next": "Έγινε – επόμενη ημερομηνία", "done.renew": "Ανανεώθηκε – νέα ημερομηνία", "done": "Έγινε",
     "dl.due": "Λήγει", "dl.remind": "Υπενθύμιση", "dl.remindVal": "{n} μέρες πριν ({x})", "dl.remindVal.one": "1 μέρα πριν ({x})", "dl.soon": "Λίγο πριν", "dl.every": "Επανάληψη",
@@ -568,6 +576,8 @@ var TXT = {
     "form.err": "Escribe qué es y una fecha válida.", "form.errFields": "Rellena los campos obligatorios con una fecha válida.", "form.errTime": "Escribe la hora así: 20:30.", "form.timePh": "p. ej. 20:30 o 2030",
     "draft.title": "¿Lo he entendido bien?", "draft.noDate": "No he entendido la fecha – escríbela abajo.", "draft.again": "Decirlo otra vez",
     "saved": "Guardado ✓ Aviso {x}", "saved.plain": "Guardado ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Livo se adelanta", "follow.gift": "¿Quieres que Livo también te recuerde el regalo?", "follow.checkin": "¿Vas en avión? Livo te recuerda el check-in online el día anterior.", "follow.doc": "¿Tu pasaporte o DNI sigue siendo válido el tiempo suficiente? Añádelo y Livo te avisará a tiempo.", "follow.add": "+ Añadir también", "follow.added": "Añadido ✓", "follow.done": "Listo",
     "preview": "Vence el <b>{due}</b> · Aviso <b>{remind}</b> · {every}", "preview.empty": "Vence el … – rellena los campos.",
     "done.next": "Hecho – siguiente fecha", "done.renew": "Renovado – nueva fecha", "done": "Hecho",
     "dl.due": "Vence el", "dl.remind": "Aviso", "dl.remindVal": "{n} días antes ({x})", "dl.remindVal.one": "1 día antes ({x})", "dl.soon": "Poco antes", "dl.every": "Repetición",
@@ -691,6 +701,8 @@ var TXT = {
     "form.err": "Indiquez ce que c'est et une date valide.", "form.errFields": "Remplissez les champs obligatoires avec une date valide.", "form.errTime": "Indiquez l'heure ainsi : 20:30.", "form.timePh": "ex. : 20:30 ou 2030",
     "draft.title": "J'ai bien compris ?", "draft.noDate": "Je n'ai pas compris la date – indiquez-la ci-dessous.", "draft.again": "Redire",
     "saved": "Enregistré ✓ Rappel {x}", "saved.plain": "Enregistré ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Livo anticipe", "follow.gift": "Livo doit-il aussi vous rappeler le cadeau ?", "follow.checkin": "Vous prenez l'avion ? Livo vous rappelle l'enregistrement en ligne la veille.", "follow.doc": "Votre passeport ou votre carte d'identité est-il encore valable assez longtemps ? Ajoutez-le – Livo vous prévient à temps.", "follow.add": "+ Ajouter aussi", "follow.added": "Ajouté ✓", "follow.done": "Terminé",
     "preview": "Échéance le <b>{due}</b> · Rappel <b>{remind}</b> · {every}", "preview.empty": "Échéance le … – remplissez les champs.",
     "done.next": "Fait – prochaine date", "done.renew": "Renouvelé – nouvelle date", "done": "Fait",
     "dl.due": "Échéance", "dl.remind": "Rappel", "dl.remindVal": "{n} jours avant ({x})", "dl.remindVal.one": "1 jour avant ({x})", "dl.soon": "Peu avant", "dl.every": "Répétition",
@@ -814,6 +826,8 @@ var TXT = {
     "form.err": "Vul in wat het is en een geldige datum.", "form.errFields": "Vul de verplichte velden in met een geldige datum.", "form.errTime": "Vul de tijd zo in: 20:30.", "form.timePh": "bijv. 20:30 of 2030",
     "draft.title": "Heb ik het goed begrepen?", "draft.noDate": "De datum heb ik niet begrepen – vul hem hieronder in.", "draft.again": "Nog eens zeggen",
     "saved": "Opgeslagen ✓ Herinnering {x}", "saved.plain": "Opgeslagen ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Livo denkt mee", "follow.gift": "Zal Livo je ook aan het cadeau herinneren?", "follow.checkin": "Ga je vliegen? Livo herinnert je de dag ervoor aan online inchecken.", "follow.doc": "Is je paspoort of identiteitskaart nog lang genoeg geldig? Voeg hem toe – Livo herinnert je op tijd.", "follow.add": "+ Ook toevoegen", "follow.added": "Toegevoegd ✓", "follow.done": "Klaar",
     "preview": "Uiterlijk <b>{due}</b> · Herinnering <b>{remind}</b> · {every}", "preview.empty": "Uiterlijk … – vul de velden in.",
     "done.next": "Gedaan – volgende datum", "done.renew": "Verlengd – nieuwe datum invullen", "done": "Gedaan",
     "dl.due": "Uiterlijk", "dl.remind": "Herinnering", "dl.remindVal": "{n} dagen van tevoren ({x})", "dl.remindVal.one": "1 dag van tevoren ({x})", "dl.soon": "Kort van tevoren", "dl.every": "Herhalen",
@@ -937,6 +951,8 @@ var TXT = {
     "form.err": "Indique o que é e uma data válida.", "form.errFields": "Preencha os campos obrigatórios com uma data válida.", "form.errTime": "Escreva a hora assim: 20:30.", "form.timePh": "ex.: 20:30 ou 2030",
     "draft.title": "Percebi bem?", "draft.noDate": "Não percebi a data – indique-a abaixo.", "draft.again": "Dizer outra vez",
     "saved": "Guardado ✓ Lembrete {x}", "saved.plain": "Guardado ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "O Livo antecipa-se", "follow.gift": "Quer que o Livo também o lembre do presente?", "follow.checkin": "Vai viajar de avião? O Livo lembra-o do check-in online na véspera.", "follow.doc": "O seu passaporte ou cartão de cidadão ainda é válido durante tempo suficiente? Adicione-o – o Livo avisa-o a tempo.", "follow.add": "+ Adicionar também", "follow.added": "Adicionado ✓", "follow.done": "Concluído",
     "preview": "Vence em <b>{due}</b> · Lembrete <b>{remind}</b> · {every}", "preview.empty": "Vence em … – preencha os campos.",
     "done.next": "Feito – próxima data", "done.renew": "Renovado – nova data", "done": "Feito",
     "dl.due": "Vence em", "dl.remind": "Lembrete", "dl.remindVal": "{n} dias antes ({x})", "dl.remindVal.one": "1 dia antes ({x})", "dl.soon": "Pouco antes", "dl.every": "Repetição",
@@ -1060,6 +1076,8 @@ var TXT = {
     "form.err": "Ne olduğunu ve geçerli bir tarih gir.", "form.errFields": "Zorunlu alanları geçerli bir tarihle doldur.", "form.errTime": "Saati şöyle yaz: 20:30.", "form.timePh": "örn. 20:30 veya 2030",
     "draft.title": "Doğru anladım mı?", "draft.noDate": "Tarihi anlayamadım – lütfen aşağıya gir.", "draft.again": "Tekrar söyle",
     "saved": "Kaydedildi ✓ Hatırlatma {x}", "saved.plain": "Kaydedildi ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Livo önceden düşünür", "follow.gift": "Livo sana hediyeyi de hatırlatsın mı?", "follow.checkin": "Uçakla mı gidiyorsun? Livo bir gün önce online check-in'i hatırlatır.", "follow.doc": "Pasaportun veya kimlik kartın yeterince uzun süre geçerli mi? Ekle – Livo zamanında hatırlatır.", "follow.add": "+ Bunu da ekle", "follow.added": "Eklendi ✓", "follow.done": "Tamam",
     "preview": "Son tarih <b>{due}</b> · Hatırlatma <b>{remind}</b> · {every}", "preview.empty": "Son tarih … – lütfen alanları doldur.",
     "done.next": "Tamam – sonraki tarih", "done.renew": "Yenilendi – yeni tarihi gir", "done": "Tamam",
     "dl.due": "Son tarih", "dl.remind": "Hatırlatma", "dl.remindVal": "{n} gün önce ({x})", "dl.remindVal.one": "1 gün önce ({x})", "dl.soon": "Hemen öncesinde", "dl.every": "Tekrar",
@@ -1185,6 +1203,8 @@ var TXT = {
     "form.err": "Wpisz, co to jest, i poprawną datę.", "form.errFields": "Wypełnij wymagane pola poprawną datą.", "form.errTime": "Wpisz godzinę tak: 20:30.", "form.timePh": "np. 20:30 lub 2030",
     "draft.title": "Czy dobrze to rozumiem?", "draft.noDate": "Nie rozumiem daty – wpisz ją poniżej.", "draft.again": "Powiedz jeszcze raz",
     "saved": "Zapisano ✓ Przypomnienie {x}", "saved.plain": "Zapisano ✓",
+    // Livo denkt mit: Vorschlag nach dem Speichern (Geschenk, Check-in, Pass)
+    "follow.head": "Livo myśli naprzód", "follow.gift": "Czy Livo ma ci też przypomnieć o prezencie?", "follow.checkin": "Lecisz samolotem? Livo przypomni ci dzień wcześniej o odprawie online.", "follow.doc": "Czy twój paszport lub dowód jest ważny wystarczająco długo? Dodaj go – Livo przypomni ci na czas.", "follow.add": "+ Dodaj też to", "follow.added": "Dodano ✓", "follow.done": "Gotowe",
     "preview": "Termin <b>{due}</b> · Przypomnienie <b>{remind}</b> · {every}", "preview.empty": "Termin … – wypełnij pola.",
     "done.next": "Zrobione – następny termin", "done.renew": "Odnowione – wpisz nową datę", "done": "Zrobione",
     "dl.due": "Termin", "dl.remind": "Przypomnienie", "dl.remindVal": "{n} dni wcześniej ({x})", "dl.remindVal.one": "1 dzień wcześniej ({x})", "dl.soon": "Tuż przed", "dl.every": "Powtarzanie",

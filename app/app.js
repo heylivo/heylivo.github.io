@@ -188,7 +188,8 @@ function esc(s) {
 
 /* ---------- Nachschlagen ---------- */
 function find(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
-function iconOf(it) { var tp = find(TEMPLATES, it.tpl); return find(CATEGORIES, tp ? tp.cat : "own").icon; }
+// Eigenes Symbol einer Vorlage (Geschenk 🎁), sonst das ihrer Kategorie
+function iconOf(it) { var tp = find(TEMPLATES, it.tpl); return tp && tp.icon ? tp.icon : find(CATEGORIES, tp ? tp.cat : "own").icon; }
 function sortedItems() {
   return items.slice().sort(function (a, b) { return a.due < b.due ? -1 : a.due > b.due ? 1 : 0; });
 }
@@ -991,19 +992,99 @@ function showDraft(d, said) {
 
 // Wartet auf das Speichern; bei Erfolg Blatt zu, sonst Fehler im Formular.
 // share: neue Frist - die Meldung bekommt den Knopf "Teilen" (WhatsApp, Viber …)
-async function saving(form, promise, okText, share) {
+// what: Ziel, Name usw. aus dem Formular der Vorlage (für den Titel eines Vorschlags)
+async function saving(form, promise, okText, share, what) {
   var btn = form.querySelector("[type=submit]");
   btn.disabled = true;
   btn.textContent = t("saving");
   try {
     var saved = await promise;
-    closeSheet(); render();
+    // Neue Frist: passt ein nächster Schritt dazu, fragt Livo gleich nach ("Livo denkt mit").
+    // Ein Fehler dabei darf das Speichern nicht als gescheitert melden.
+    var next = [];
+    try { if (share && saved) next = followFor(saved, what); } catch (e) { next = []; }
+    render();
+    if (next.length) return showFollow(saved, next, okText);
+    closeSheet();
     toast(okText, share && saved ? saved.id : "");
   } catch (err) {
     document.getElementById("err").textContent = errText(err);
     btn.disabled = false;
     btn.textContent = t("save");
   }
+}
+
+/* ---------- Livo denkt mit: Vorschläge nach dem Speichern ---------- */
+// Nach einer neuen Frist aus diesen Vorlagen schlägt Livo den nächsten Schritt vor:
+// gift / checkin = eine zweite Frist zum Antippen, doc = Reisepass oder Ausweis eintragen
+// (nur, solange noch keiner eingetragen ist). Nicht beim Bearbeiten, Erneuern oder bei geteilten Fristen.
+var FOLLOW = { geburtstag: ["gift"], hochzeitstag: ["gift"], reise: ["checkin", "doc"] };
+var GIFT_DAYS = 5;    // das Geschenk ist 5 Tage vor dem Tag fällig (Erinnerung: lead der Vorlage davor)
+var followNow = null; // { item, list, ok } - die gerade gezeigten Vorschläge
+function followFor(it, what) {
+  var out = [];
+  (FOLLOW[it.tpl] || []).forEach(function (key) {
+    if (key === "doc") {
+      if (!items.some(function (x) { return x.tpl === "reisepass" || x.tpl === "personalausweis" || x.tpl === "kinderpass"; })) out.push({ key: key });
+      return;
+    }
+    var f = followItem(key, it, what);
+    if (f) out.push({ key: key, item: f });
+  });
+  return out;
+}
+// Die vorgeschlagene Frist - oder null, wenn ihr Tag schon vorbei ist oder es sie schon gibt
+function followItem(key, it, what) {
+  var tp = find(TEMPLATES, key === "gift" ? "geschenk" : "checkin"), f;
+  if (key === "gift") {
+    if (it.everyDays) return null; // nur zu jährlichen oder einmaligen Tagen
+    f = { title: tplName(tp, { what: it.title }), due: toISO(addDays(fromISO(it.due), -GIFT_DAYS)), every: it.every || 0 };
+  } else {
+    // Aus Hey Livo kommt nur der Titel; ohne Ziel ("Reise / Urlaub") heißt es einfach "Online-Check-in"
+    if (what == null) what = it.title === tplName(find(TEMPLATES, it.tpl), {}) ? "" : it.title;
+    f = { title: tplName(tp, { what: what }), due: it.due, every: 0 };
+  }
+  f.tpl = tp.id; f.lead = tp.lead; f.everyDays = 0; f.time = ""; f.from = "due"; f.renew = false; f.note = "";
+  if (f.due < toISO(today())) return null;
+  if (items.some(function (x) { return x.tpl === f.tpl && (x.due === f.due || x.title === f.title); })) return null;
+  return f;
+}
+function followCardHTML(s, i) {
+  if (s.key === "doc") {
+    return '<div class="fcard"><p>' + esc(t("follow.doc")) + '</p><div class="fbtns">' +
+      ["reisepass", "personalausweis"].map(function (id) {
+        return '<button type="button" class="btn light" data-act="followTpl" data-id="' + id + '">+ ' + esc(tplTitle(find(TEMPLATES, id))) + '</button>';
+      }).join("") + '</div></div>';
+  }
+  var f = s.item;
+  return '<div class="fcard"><p>' + esc(t("follow." + s.key)) + '</p>' +
+    '<div class="fitem"><span class="ico">' + iconOf(f) + '</span><div><b>' + esc(f.title) + '</b><small>' +
+    t("preview", { due: esc(dueText(f)), remind: esc(remindText(f)), every: esc(everyText(f)) }) + '</small></div></div>' +
+    '<button type="button" class="btn" data-act="follow" data-id="' + i + '">' + t("follow.add") + '</button></div>';
+}
+function showFollow(it, list, okText) {
+  followNow = { item: it, list: list, ok: okText };
+  document.getElementById("toast").hidden = true; // eine alte Meldung darf die Vorschläge nicht verdecken
+  openSheet('<h3>' + t("saved.plain") + '</h3>' +
+    '<p class="fsaved">' + esc(it.title) + " · " + esc(t("dl.remind")) + " " + esc(remindText(it)) + '</p>' +
+    '<div class="follow-head">💡 ' + esc(t("follow.head")) + '</div>' +
+    list.map(followCardHTML).join("") +
+    '<button type="button" class="btn light" data-act="followDone">' + t("follow.done") + '</button>');
+}
+async function addFollow(btn, i) {
+  var s = followNow && followNow.list[+i];
+  if (!s || !s.item || s.added) return;
+  btn.disabled = true;
+  try { await addItem(s.item); } catch (e) { btn.disabled = false; toast(errText(e)); return; }
+  s.added = true;
+  btn.outerHTML = '<p class="fdone">' + t("follow.added") + '</p>';
+  render();
+}
+function followDone() {
+  var f = followNow;
+  followNow = null;
+  closeSheet();
+  if (f) toast(f.ok, f.item.id);
 }
 
 /* ---------- Neue Frist aus einer Vorlage ---------- */
@@ -1093,7 +1174,8 @@ function showNew(tid) {
     var it = current();
     if (!it) { document.getElementById("err").textContent = t("form.errFields"); return; }
     if (readTime(form) === null || readTimeEnd(form) === null) return;
-    saving(form, addItem(it), t("saved", { x: remindText(it) }), true);
+    var v = readValues(form, tp);
+    saving(form, addItem(it), t("saved", { x: remindText(it) }), true, v.what || v.who || "");
   });
   if (dayPick) prefillDay(tp, form);
   update();
@@ -1417,7 +1499,7 @@ document.addEventListener("click", function (e) {
   if (el.hasAttribute("data-open")) return showItem(el.getAttribute("data-open"));
   var act = el.getAttribute("data-act"), id = el.getAttribute("data-id");
   // Anlegen und Ändern nur in der Testphase oder mit Livo Plus (Löschen und Ansehen immer)
-  var changes = el.hasAttribute("data-tpl") || act === "add" || act === "voice" || act === "done" || act === "edit";
+  var changes = el.hasAttribute("data-tpl") || act === "add" || act === "voice" || act === "done" || act === "edit" || act === "follow" || act === "followTpl";
   if (act === "calendar") return showPlus("calendar");
   if (act === "plus" || (changes && !canEdit())) return showPlus();
   if (el.hasAttribute("data-tpl")) return showNew(el.getAttribute("data-tpl"));
@@ -1454,6 +1536,9 @@ document.addEventListener("click", function (e) {
   else if (act === "edit") showEdit(id, false);
   else if (act === "del") removeItem(id);
   else if (act === "share") showShare(id);
+  else if (act === "follow") addFollow(el, id);
+  else if (act === "followTpl") showNew(id);
+  else if (act === "followDone") followDone();
   else if (act === "shareOther") shareItem(id);
   else if (act === "mycat") showMyCat();
   else if (act === "heroGo") heroGo();

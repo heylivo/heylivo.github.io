@@ -218,6 +218,17 @@ main { padding-bottom: 24px; }
 .field input.code { padding-left: calc(12px + .35em); font-size: 26px; font-weight: 800; letter-spacing: .35em; text-align: center; }
 .hint { margin: 0 0 14px; padding: 10px 12px; border-radius: 12px; background: var(--brand-soft); color: #1e3a8a; font-size: 14px; }
 .preview { margin: 4px 0 14px; padding: 10px 12px; border-radius: 12px; background: var(--later-bg); font-size: 14px; }
+/* "Livo denkt mit": Vorschläge nach dem Speichern */
+.fsaved { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+.follow-head { margin: 18px 0 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.fcard { margin: 0 0 10px; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
+.fcard p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.45; }
+.fitem { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: var(--later-bg); font-size: 14px; }
+.fitem .ico { width: 36px; height: 36px; background: #fff; font-size: 18px; }
+.fitem small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.fbtns { display: flex; gap: 8px; }
+.fbtns .btn { margin-top: 0; padding: 12px 8px; font-size: 14px; }
+.fcard .fdone { margin: 0; padding: 10px 0 2px; color: #15803d; font-weight: 800; text-align: center; }
 .err { min-height: 1px; margin: 0 0 10px; color: var(--late); font-size: 14px; }
 .btn { display: block; width: 100%; padding: 14px; border: 0; border-radius: 14px; background: var(--brand); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 .btn:hover { background: var(--brand-dark); }

@@ -118,6 +118,9 @@ var TEMPLATES = [
     fields: [{ key: "who", type: "text", optional: true }, { key: "date", type: "date" }], compute: yearly
   },
   { id: "hochzeitstag", cat: "family", lead: 7, fields: [{ key: "date", type: "date" }], compute: yearly },
+  // Nur als Vorschlag nach einem Geburtstag oder Hochzeitstag ("Livo denkt mit", FOLLOW in app.js),
+  // nicht in der Auswahl. Fällig 5 Tage vor dem Tag, Erinnerung 5 Tage davor.
+  { id: "geschenk", cat: "family", icon: "🎁", hidden: true, lead: 5, fields: [{ key: "date", type: "date" }], compute: dated },
   {
     id: "kinderarzt", cat: "family", lead: 7,
     fields: [{ key: "who", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
@@ -227,6 +230,7 @@ var TPL_TEXT = {
     cat: { doc: "Ausweise & Dokumente", car: "Auto", contract: "Verträge & Versicherungen", health: "Gesundheit", family: "Familie & Kinder", travel: "Reisen & Urlaub", money: "Geld & Steuern", appt: "Termine", own: "Eigene" },
     geburtstag: { title: "Geburtstag", hint: "Livo erinnert dich jedes Jahr eine Woche vorher – Zeit genug für ein Geschenk.", labels: { who: "Wer hat Geburtstag?", date: "Geburtstag (das Jahr ist egal)" }, ph: { who: "z. B. Mama, Anna" }, name: "Geburtstag {what}", name0: "Geburtstag" },
     hochzeitstag: { title: "Hochzeitstag", hint: "Livo erinnert dich jedes Jahr eine Woche vorher.", labels: { date: "Hochzeitsdatum (das Jahr ist egal)" }, name0: "Hochzeitstag" },
+    geschenk: { title: "Geschenk besorgen", hint: "Livo erinnert dich 10 Tage vor dem großen Tag – genug Zeit, auch online zu bestellen.", name: "Geschenk – {what}", name0: "Geschenk besorgen" },
     kinderarzt: { title: "Kinderarzt (U-Untersuchung, Impfung)", hint: "Die U-Untersuchungen stehen im gelben Kinderuntersuchungsheft, die Impfungen im Impfpass – den Termin am besten früh ausmachen.", labels: { who: "Für wen?", date: "Termin am" }, ph: { who: "z. B. Lena" }, name: "Kinderarzt – {what}", name0: "Kinderarzt" },
     schule: { title: "Kita & Schule", hint: "Für Anmeldungen gibt es oft feste Fristen – lieber früh eintragen.", labels: { what: "Was?", date: "Datum" }, ph: { what: "z. B. Elternabend, Kita-Anmeldung" }, name: "{what}", name0: "Kita & Schule" },
     kinderpass: { title: "Ausweis / Pass (Kind)", hint: "Kinder brauchen für Reisen ein eigenes Dokument. Neue Ausweise rechtzeitig beantragen – das dauert einige Wochen.", labels: { who: "Für wen?", date: "Gültig bis" }, ph: { who: "z. B. Lena" }, name: "Ausweis / Pass – {what}", name0: "Ausweis / Pass (Kind)" },
@@ -283,6 +287,7 @@ var TPL_TEXT = {
     cat: { doc: "IDs & documents", car: "Car", contract: "Contracts & insurance", health: "Health", family: "Family & kids", travel: "Travel & holidays", money: "Money", appt: "Appointments", own: "Your own" },
     geburtstag: { title: "Birthday", hint: "Livo reminds you a week before, every year – plenty of time for a present.", labels: { who: "Whose birthday?", date: "Birthday (any year)" }, ph: { who: "e.g. Mum, Anna" }, name: "{what}'s birthday", name0: "Birthday" },
     hochzeitstag: { title: "Wedding anniversary", hint: "Livo reminds you a week before, every year.", labels: { date: "Wedding date (any year)" }, name0: "Wedding anniversary" },
+    geschenk: { title: "Get a present", hint: "Livo reminds you 10 days before the big day – enough time to order online, too.", name: "Present – {what}", name0: "Get a present" },
     kinderarzt: { title: "Paediatrician (check-up, vaccination)", hint: "Check-ups and vaccinations are listed in your child's health record – book appointments early.", labels: { who: "For whom?", date: "Appointment on" }, ph: { who: "e.g. Lena" }, name: "Paediatrician – {what}", name0: "Paediatrician" },
     schule: { title: "Nursery & school", hint: "Registrations often have fixed deadlines – better add them early.", labels: { what: "What?", date: "Date" }, ph: { what: "e.g. parents' evening" }, name: "{what}", name0: "Nursery & school" },
     kinderpass: { title: "Child's ID / passport", hint: "Children need their own document to travel. Apply for new documents in good time – it takes a few weeks.", labels: { who: "For whom?", date: "Valid until" }, ph: { who: "e.g. Lena" }, name: "ID / passport – {what}", name0: "Child's ID / passport" },
@@ -335,6 +340,7 @@ var TPL_TEXT = {
     cat: { doc: "Documenti", car: "Auto", contract: "Contratti e assicurazioni", health: "Salute", family: "Famiglia e bambini", travel: "Viaggi e vacanze", money: "Pagamenti", appt: "Appuntamenti", own: "Personalizzata" },
     geburtstag: { title: "Compleanno / onomastico", hint: "Livo ti avvisa ogni anno una settimana prima – c'è tempo per il regalo.", labels: { who: "Di chi è il compleanno?", date: "Data (l'anno non conta)" }, ph: { who: "es. mamma, Anna" }, name: "Compleanno di {what}", name0: "Compleanno" },
     hochzeitstag: { title: "Anniversario di matrimonio", hint: "Livo ti avvisa ogni anno una settimana prima.", labels: { date: "Data del matrimonio (l'anno non conta)" }, name0: "Anniversario di matrimonio" },
+    geschenk: { title: "Comprare il regalo", hint: "Livo ti avvisa 10 giorni prima del grande giorno – c'è tempo anche per ordinarlo online.", name: "Regalo – {what}", name0: "Comprare il regalo" },
     kinderarzt: { title: "Pediatra (controllo, vaccino)", hint: "Controlli e vaccini sono indicati nel libretto sanitario del bambino – prenota per tempo.", labels: { who: "Per chi?", date: "Appuntamento il" }, ph: { who: "es. Giulia" }, name: "Pediatra – {what}", name0: "Pediatra" },
     schule: { title: "Asilo e scuola", hint: "Le iscrizioni hanno spesso scadenze fisse – meglio segnarle presto.", labels: { what: "Cosa?", date: "Data" }, ph: { what: "es. colloquio con le maestre" }, name: "{what}", name0: "Asilo e scuola" },
     kinderpass: { title: "Documento / passaporto (bambino)", hint: "Per viaggiare i bambini hanno bisogno di un documento proprio. Richiedi i nuovi documenti per tempo – ci vogliono alcune settimane.", labels: { who: "Per chi?", date: "Valido fino al" }, ph: { who: "es. Giulia" }, name: "Documento – {what}", name0: "Documento / passaporto (bambino)" },
@@ -387,6 +393,7 @@ var TPL_TEXT = {
     cat: { doc: "Έγγραφα", car: "Αυτοκίνητο", contract: "Συμβόλαια & ασφάλειες", health: "Υγεία", family: "Οικογένεια & παιδιά", travel: "Ταξίδια & διακοπές", money: "Πληρωμές", appt: "Ραντεβού", own: "Δικές σου" },
     geburtstag: { title: "Γενέθλια / γιορτή", hint: "Το Livo σε ειδοποιεί κάθε χρόνο μία εβδομάδα πριν – έχεις χρόνο για δώρο.", labels: { who: "Ποιος γιορτάζει;", date: "Ημερομηνία (το έτος δεν παίζει ρόλο)" }, ph: { who: "π.χ. μαμά, Μαρία" }, name: "Γενέθλια – {what}", name0: "Γενέθλια" },
     hochzeitstag: { title: "Επέτειος γάμου", hint: "Το Livo σε ειδοποιεί κάθε χρόνο μία εβδομάδα πριν.", labels: { date: "Ημερομηνία γάμου (το έτος δεν παίζει ρόλο)" }, name0: "Επέτειος γάμου" },
+    geschenk: { title: "Αγορά δώρου", hint: "Το Livo σού θυμίζει 10 μέρες πριν από τη μεγάλη μέρα – προλαβαίνεις και να το παραγγείλεις online.", name: "Δώρο – {what}", name0: "Αγορά δώρου" },
     kinderarzt: { title: "Παιδίατρος (έλεγχος, εμβόλιο)", hint: "Οι έλεγχοι και τα εμβόλια γράφονται στο βιβλιάριο υγείας του παιδιού – κλείσε ραντεβού νωρίς.", labels: { who: "Για ποιον;", date: "Ραντεβού στις" }, ph: { who: "π.χ. Ελένη" }, name: "Παιδίατρος – {what}", name0: "Παιδίατρος" },
     schule: { title: "Παιδικός σταθμός & σχολείο", hint: "Οι εγγραφές έχουν συχνά σταθερές προθεσμίες – καλύτερα να τις καταχωρίσεις νωρίς.", labels: { what: "Τι;", date: "Ημερομηνία" }, ph: { what: "π.χ. συνάντηση γονέων" }, name: "{what}", name0: "Παιδικός σταθμός & σχολείο" },
     kinderpass: { title: "Ταυτότητα / διαβατήριο (παιδί)", hint: "Τα παιδιά χρειάζονται δικό τους έγγραφο για ταξίδια. Κάνε αίτηση για νέα έγγραφα έγκαιρα – χρειάζονται μερικές εβδομάδες.", labels: { who: "Για ποιον;", date: "Ισχύει έως" }, ph: { who: "π.χ. Ελένη" }, name: "Ταυτότητα / διαβατήριο – {what}", name0: "Ταυτότητα / διαβατήριο (παιδί)" },
@@ -439,6 +446,7 @@ var TPL_TEXT = {
     cat: { doc: "Documentos", car: "Coche", contract: "Contratos y seguros", health: "Salud", family: "Familia e hijos", travel: "Viajes y vacaciones", money: "Pagos", appt: "Citas", own: "Personalizado" },
     geburtstag: { title: "Cumpleaños", hint: "Livo te avisa cada año una semana antes – hay tiempo para el regalo.", labels: { who: "¿De quién es el cumpleaños?", date: "Cumpleaños (da igual el año)" }, ph: { who: "p. ej. mamá, Ana" }, name: "Cumpleaños de {what}", name0: "Cumpleaños" },
     hochzeitstag: { title: "Aniversario de boda", hint: "Livo te avisa cada año una semana antes.", labels: { date: "Fecha de la boda (da igual el año)" }, name0: "Aniversario de boda" },
+    geschenk: { title: "Comprar el regalo", hint: "Livo te avisa 10 días antes del gran día: hay tiempo para pedirlo online.", name: "Regalo – {what}", name0: "Comprar el regalo" },
     kinderarzt: { title: "Pediatra (revisión, vacuna)", hint: "Las revisiones y vacunas están en la cartilla de salud del niño – pide cita con tiempo.", labels: { who: "¿Para quién?", date: "Cita el" }, ph: { who: "p. ej. Lucía" }, name: "Pediatra – {what}", name0: "Pediatra" },
     schule: { title: "Guardería y colegio", hint: "Las inscripciones suelen tener plazos fijos – mejor anotarlas pronto.", labels: { what: "¿Qué?", date: "Fecha" }, ph: { what: "p. ej. reunión de padres" }, name: "{what}", name0: "Guardería y colegio" },
     kinderpass: { title: "DNI / pasaporte (niño)", hint: "Los niños necesitan su propio documento para viajar. Solicita los nuevos documentos con tiempo – tarda unas semanas.", labels: { who: "¿Para quién?", date: "Válido hasta" }, ph: { who: "p. ej. Lucía" }, name: "DNI / pasaporte – {what}", name0: "DNI / pasaporte (niño)" },
@@ -491,6 +499,7 @@ var TPL_TEXT = {
     cat: { doc: "Papiers d'identité", car: "Voiture", contract: "Contrats et assurances", health: "Santé", family: "Famille & enfants", travel: "Voyages & vacances", money: "Paiements", appt: "Rendez-vous", own: "Personnalisé" },
     geburtstag: { title: "Anniversaire", hint: "Livo vous prévient chaque année une semaine avant – le temps de trouver un cadeau.", labels: { who: "L'anniversaire de qui ?", date: "Date d'anniversaire (peu importe l'année)" }, ph: { who: "p. ex. maman, Léa" }, name: "Anniversaire de {what}", name0: "Anniversaire" },
     hochzeitstag: { title: "Anniversaire de mariage", hint: "Livo vous prévient chaque année une semaine avant.", labels: { date: "Date du mariage (peu importe l'année)" }, name0: "Anniversaire de mariage" },
+    geschenk: { title: "Acheter le cadeau", hint: "Livo vous prévient 10 jours avant le grand jour – assez de temps pour commander en ligne.", name: "Cadeau – {what}", name0: "Acheter le cadeau" },
     kinderarzt: { title: "Pédiatre (visite, vaccin)", hint: "Les visites et les vaccins figurent dans le carnet de santé de l'enfant – prenez rendez-vous tôt.", labels: { who: "Pour qui ?", date: "Rendez-vous le" }, ph: { who: "p. ex. Léa" }, name: "Pédiatre – {what}", name0: "Pédiatre" },
     schule: { title: "Crèche & école", hint: "Les inscriptions ont souvent des dates limites – mieux vaut les noter tôt.", labels: { what: "Quoi ?", date: "Date" }, ph: { what: "p. ex. réunion parents-profs" }, name: "{what}", name0: "Crèche & école" },
     kinderpass: { title: "Pièce d'identité / passeport (enfant)", hint: "Les enfants ont besoin de leur propre document pour voyager. Demandez les nouveaux documents à temps – cela prend quelques semaines.", labels: { who: "Pour qui ?", date: "Valable jusqu'au" }, ph: { who: "p. ex. Léa" }, name: "Identité / passeport – {what}", name0: "Pièce d'identité / passeport (enfant)" },
@@ -543,6 +552,7 @@ var TPL_TEXT = {
     cat: { doc: "Documenten", car: "Auto", contract: "Contracten & verzekeringen", health: "Gezondheid", family: "Gezin & kinderen", travel: "Reizen & vakantie", money: "Betalingen", appt: "Afspraken", own: "Eigen" },
     geburtstag: { title: "Verjaardag", hint: "Livo herinnert je elk jaar een week van tevoren – genoeg tijd voor een cadeau.", labels: { who: "Wie is er jarig?", date: "Verjaardag (het jaar maakt niet uit)" }, ph: { who: "bijv. mama, Emma" }, name: "Verjaardag {what}", name0: "Verjaardag" },
     hochzeitstag: { title: "Trouwdag", hint: "Livo herinnert je elk jaar een week van tevoren.", labels: { date: "Trouwdatum (het jaar maakt niet uit)" }, name0: "Trouwdag" },
+    geschenk: { title: "Cadeau kopen", hint: "Livo herinnert je 10 dagen voor de grote dag – genoeg tijd om ook online te bestellen.", name: "Cadeau – {what}", name0: "Cadeau kopen" },
     kinderarzt: { title: "Consultatiebureau / kinderarts", hint: "Controles en vaccinaties staan in het groeiboekje of het vaccinatieoverzicht – maak op tijd een afspraak.", labels: { who: "Voor wie?", date: "Afspraak op" }, ph: { who: "bijv. Emma" }, name: "Kinderarts – {what}", name0: "Kinderarts" },
     schule: { title: "Opvang & school", hint: "Voor inschrijvingen gelden vaak vaste termijnen – zet ze er op tijd in.", labels: { what: "Wat?", date: "Datum" }, ph: { what: "bijv. ouderavond" }, name: "{what}", name0: "Opvang & school" },
     kinderpass: { title: "ID / paspoort (kind)", hint: "Kinderen hebben een eigen reisdocument nodig. Vraag nieuwe documenten op tijd aan – dat duurt een paar weken.", labels: { who: "Voor wie?", date: "Geldig tot" }, ph: { who: "bijv. Emma" }, name: "ID / paspoort – {what}", name0: "ID / paspoort (kind)" },
@@ -595,6 +605,7 @@ var TPL_TEXT = {
     cat: { doc: "Documentos", car: "Carro", contract: "Contratos e seguros", health: "Saúde", family: "Família e filhos", travel: "Viagens e férias", money: "Pagamentos", appt: "Marcações", own: "Personalizado" },
     geburtstag: { title: "Aniversário", hint: "O Livo envia um lembrete todos os anos, uma semana antes – há tempo para o presente.", labels: { who: "De quem é o aniversário?", date: "Aniversário (o ano não importa)" }, ph: { who: "p. ex. mãe, Ana" }, name: "Aniversário de {what}", name0: "Aniversário" },
     hochzeitstag: { title: "Aniversário de casamento", hint: "O Livo envia um lembrete todos os anos, uma semana antes.", labels: { date: "Data do casamento (o ano não importa)" }, name0: "Aniversário de casamento" },
+    geschenk: { title: "Comprar o presente", hint: "O Livo avisa-o 10 dias antes do grande dia – há tempo para encomendar online.", name: "Presente – {what}", name0: "Comprar o presente" },
     kinderarzt: { title: "Pediatra (consulta, vacina)", hint: "As consultas e vacinas constam do boletim de saúde da criança – marque a consulta com antecedência.", labels: { who: "Para quem?", date: "Consulta a" }, ph: { who: "p. ex. Inês" }, name: "Pediatra – {what}", name0: "Pediatra" },
     schule: { title: "Creche e escola", hint: "As inscrições têm muitas vezes prazos fixos – é melhor registá-los cedo.", labels: { what: "O quê?", date: "Data" }, ph: { what: "p. ex. reunião de pais" }, name: "{what}", name0: "Creche e escola" },
     kinderpass: { title: "Documento / passaporte (criança)", hint: "As crianças precisam do seu próprio documento para viajar. Peça os novos documentos a tempo – demora algumas semanas.", labels: { who: "Para quem?", date: "Válido até" }, ph: { who: "p. ex. Inês" }, name: "Documento – {what}", name0: "Documento / passaporte (criança)" },
@@ -647,6 +658,7 @@ var TPL_TEXT = {
     cat: { doc: "Belgeler", car: "Araç", contract: "Sözleşmeler ve sigortalar", health: "Sağlık", family: "Aile & çocuklar", travel: "Seyahat & tatil", money: "Ödemeler", appt: "Randevular", own: "Kendi" },
     geburtstag: { title: "Doğum günü", hint: "Livo her yıl bir hafta önceden hatırlatır – hediye için zaman kalır.", labels: { who: "Kimin doğum günü?", date: "Doğum günü (yıl önemli değil)" }, ph: { who: "ör. annem, Ayşe" }, name: "{what} – doğum günü", name0: "Doğum günü" },
     hochzeitstag: { title: "Evlilik yıldönümü", hint: "Livo her yıl bir hafta önceden hatırlatır.", labels: { date: "Evlilik tarihi (yıl önemli değil)" }, name0: "Evlilik yıldönümü" },
+    geschenk: { title: "Hediye al", hint: "Livo büyük günden 10 gün önce hatırlatır – online sipariş için de zaman kalır.", name: "Hediye – {what}", name0: "Hediye al" },
     kinderarzt: { title: "Çocuk doktoru (kontrol, aşı)", hint: "Kontroller ve aşılar çocuğun aşı kartında yazar – randevuyu erken al.", labels: { who: "Kimin için?", date: "Randevu tarihi" }, ph: { who: "ör. Elif" }, name: "Çocuk doktoru – {what}", name0: "Çocuk doktoru" },
     schule: { title: "Kreş & okul", hint: "Kayıtların çoğu zaman sabit son tarihleri olur – erkenden ekle.", labels: { what: "Ne?", date: "Tarih" }, ph: { what: "ör. veli toplantısı" }, name: "{what}", name0: "Kreş & okul" },
     kinderpass: { title: "Kimlik / pasaport (çocuk)", hint: "Çocukların seyahat için kendi belgesi olmalı. Yeni belgeye zamanında başvur – birkaç hafta sürer.", labels: { who: "Kimin için?", date: "Geçerlilik tarihi" }, ph: { who: "ör. Elif" }, name: "Kimlik / pasaport – {what}", name0: "Kimlik / pasaport (çocuk)" },
@@ -699,6 +711,7 @@ var TPL_TEXT = {
     cat: { doc: "Dokumenty", car: "Samochód", contract: "Umowy i ubezpieczenia", health: "Zdrowie", family: "Rodzina i dzieci", travel: "Podróże i urlop", money: "Płatności", appt: "Wizyty i spotkania", own: "Własne" },
     geburtstag: { title: "Urodziny / imieniny", hint: "Livo przypomni co roku tydzień wcześniej – zdążysz z prezentem.", labels: { who: "Czyje urodziny?", date: "Data (rok nie ma znaczenia)" }, ph: { who: "np. mama, Ania" }, name: "Urodziny – {what}", name0: "Urodziny" },
     hochzeitstag: { title: "Rocznica ślubu", hint: "Livo przypomni co roku tydzień wcześniej.", labels: { date: "Data ślubu (rok nie ma znaczenia)" }, name0: "Rocznica ślubu" },
+    geschenk: { title: "Kupić prezent", hint: "Livo przypomni ci 10 dni przed wielkim dniem – zdążysz zamówić też online.", name: "Prezent – {what}", name0: "Kupić prezent" },
     kinderarzt: { title: "Pediatra (bilans, szczepienie)", hint: "Bilanse i szczepienia są w książeczce zdrowia dziecka – umów wizytę wcześniej.", labels: { who: "Dla kogo?", date: "Wizyta dnia" }, ph: { who: "np. Zosia" }, name: "Pediatra – {what}", name0: "Pediatra" },
     schule: { title: "Przedszkole i szkoła", hint: "Zapisy mają często stałe terminy – lepiej wpisz je wcześniej.", labels: { what: "Co?", date: "Data" }, ph: { what: "np. zebranie z rodzicami" }, name: "{what}", name0: "Przedszkole i szkoła" },
     kinderpass: { title: "Dowód / paszport (dziecko)", hint: "Dzieci potrzebują własnego dokumentu do podróży. Złóż wniosek o nowy dokument na czas – to trwa kilka tygodni.", labels: { who: "Dla kogo?", date: "Ważny do" }, ph: { who: "np. Zosia" }, name: "Dowód / paszport – {what}", name0: "Dowód / paszport (dziecko)" },
@@ -768,4 +781,4 @@ function tplName(tp, v) {
   return x.name0 || tplTitle(tp);
 }
 // Vorlagen, die es in der App-Sprache gibt
-function visibleTemplates() { return TEMPLATES.filter(function (tp) { return !tp.only || tp.only === LANG; }); }
+function visibleTemplates() { return TEMPLATES.filter(function (tp) { return !tp.hidden && (!tp.only || tp.only === LANG); }); }
