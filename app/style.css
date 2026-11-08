@@ -165,6 +165,8 @@ main { padding-bottom: 24px; }
 .tipbox-ico .lu, .mic-ico .lu, .howto-ico .lu { width: 20px; height: 20px; }
 .mic .lu { width: 42px; height: 42px; color: #fff; vertical-align: middle; }
 .catedit .lu { width: 15px; height: 15px; color: var(--muted); }
+/* Hinweis: zur selben Zeit steht schon etwas (clashHTML in app.js) */
+.clash { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--now-bg); color: var(--now); font-size: 14px; font-weight: 600; }
 .txt { flex: 1; min-width: 0; }
 .txt b { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .txt small { color: var(--muted); font-size: 13px; }

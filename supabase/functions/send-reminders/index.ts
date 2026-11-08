@@ -3,6 +3,8 @@
 //   Erinnert jeden Nutzer in der Testphase oder mit Livo Plus an alle Fristen, deren
 //   Erinnerungszeit erreicht ist (Fälligkeit minus lead_days) - einmal pro Fälligkeit
 //   (notified_for). Mehrere Fristen am selben Tag kommen als eine Nachricht.
+//   Dazu eine letzte Erinnerung kurz vor Ablauf (lastDays: ab 30 Tagen Vorlauf 7 Tage vorher, ab 3 Tagen
+//   1 Tag vorher), ebenfalls einmal pro Fälligkeit (last_notified_for, 0021_last_reminder.sql).
 //   Danach die Hinweise zum Ende der Testphase (7 Tage vorher, am letzten Tag, am Tag danach)
 //   per Push und an gesicherte Konten per E-Mail (Resend) - einmal pro Stufe (usage.trial_notice) -
 //   und die Hinweise vor dem Ablauf von Livo Plus (30 und 7 Tage vorher, am Tag danach),
@@ -48,7 +50,7 @@ const SUB_COLUMNS = 'endpoint, p256dh, auth_key, user_id, lang';
 const TEXT: Record<string, Record<string, string>> = {
   de: {
     today: 'heute fällig', tomorrow: 'morgen fällig', yesterday: 'seit gestern fällig', overdue: 'seit {n} Tagen fällig',
-    days: 'in {n} Tagen', months: 'in {n} Monaten', years: 'in {n} Jahren', dueOn: 'fällig am {date}', clock: ' Uhr',
+    days: 'in {n} Tagen', months: 'in {n} Monaten', years: 'in {n} Jahren', last: 'Letzte Erinnerung', dueOn: 'fällig am {date}', clock: ' Uhr',
     many: '{n} Fristen brauchen deine Aufmerksamkeit', more: '… und {n} weitere',
     soon: 'Beginnt in {n} Minuten · {time}', soon1: 'Beginnt in 1 Minute · {time}', now: 'Jetzt · {time}',
     dailyTitle: 'Deine Frage des Tages 💡',
@@ -56,7 +58,7 @@ const TEXT: Record<string, Record<string, string>> = {
   },
   en: {
     today: 'due today', tomorrow: 'due tomorrow', yesterday: 'overdue since yesterday', overdue: '{n} days overdue',
-    days: 'in {n} days', months: 'in {n} months', years: 'in {n} years', dueOn: 'due {date}', clock: '',
+    days: 'in {n} days', months: 'in {n} months', years: 'in {n} years', last: 'Last reminder', dueOn: 'due {date}', clock: '',
     many: '{n} deadlines need your attention', more: '… and {n} more',
     soon: 'Starts in {n} minutes · {time}', soon1: 'Starts in 1 minute · {time}', now: 'Now · {time}',
     dailyTitle: 'Your question of the day 💡',
@@ -64,7 +66,7 @@ const TEXT: Record<string, Record<string, string>> = {
   },
   it: {
     today: 'scade oggi', tomorrow: 'scade domani', yesterday: 'scaduto da ieri', overdue: 'scaduto da {n} giorni',
-    days: 'tra {n} giorni', months: 'tra {n} mesi', years: 'tra {n} anni', dueOn: 'scade il {date}', clock: '',
+    days: 'tra {n} giorni', months: 'tra {n} mesi', years: 'tra {n} anni', last: 'Ultimo promemoria', dueOn: 'scade il {date}', clock: '',
     many: '{n} scadenze richiedono la tua attenzione', more: '… e altre {n}',
     soon: 'Inizia tra {n} minuti · {time}', soon1: 'Inizia tra 1 minuto · {time}', now: 'Adesso · {time}',
     dailyTitle: 'La tua domanda del giorno 💡',
@@ -72,7 +74,7 @@ const TEXT: Record<string, Record<string, string>> = {
   },
   el: {
     today: 'λήγει σήμερα', tomorrow: 'λήγει αύριο', yesterday: 'έληξε χθες', overdue: 'έληξε πριν από {n} μέρες',
-    days: 'σε {n} μέρες', months: 'σε {n} μήνες', years: 'σε {n} χρόνια', dueOn: 'λήγει {date}', clock: '',
+    days: 'σε {n} μέρες', months: 'σε {n} μήνες', years: 'σε {n} χρόνια', last: 'Τελευταία υπενθύμιση', dueOn: 'λήγει {date}', clock: '',
     many: '{n} προθεσμίες θέλουν την προσοχή σου', more: '… και {n} ακόμα',
     soon: 'Ξεκινά σε {n} λεπτά · {time}', soon1: 'Ξεκινά σε 1 λεπτό · {time}', now: 'Τώρα · {time}',
     dailyTitle: 'Η ερώτηση της ημέρας 💡',
@@ -80,7 +82,7 @@ const TEXT: Record<string, Record<string, string>> = {
   },
   es: {
     today: 'vence hoy', tomorrow: 'vence mañana', yesterday: 'venció ayer', overdue: 'vencido hace {n} días',
-    days: 'en {n} días', months: 'en {n} meses', years: 'en {n} años', dueOn: 'vence el {date}', clock: '',
+    days: 'en {n} días', months: 'en {n} meses', years: 'en {n} años', last: 'Último aviso', dueOn: 'vence el {date}', clock: '',
     many: '{n} plazos necesitan tu atención', more: '… y {n} más',
     soon: 'Empieza en {n} minutos · {time}', soon1: 'Empieza en 1 minuto · {time}', now: 'Ahora · {time}',
     dailyTitle: 'Tu pregunta del día 💡',
@@ -88,7 +90,7 @@ const TEXT: Record<string, Record<string, string>> = {
   },
   fr: {
     today: "aujourd'hui", tomorrow: 'demain', yesterday: 'en retard depuis hier', overdue: 'en retard de {n} jours',
-    days: 'dans {n} jours', months: 'dans {n} mois', years: 'dans {n} ans', dueOn: 'échéance le {date}', clock: '',
+    days: 'dans {n} jours', months: 'dans {n} mois', years: 'dans {n} ans', last: 'Dernier rappel', dueOn: 'échéance le {date}', clock: '',
     many: '{n} échéances demandent votre attention', more: '… et {n} autres',
     soon: 'Commence dans {n} minutes · {time}', soon1: 'Commence dans 1 minute · {time}', now: 'Maintenant · {time}',
     dailyTitle: 'Votre question du jour 💡',
@@ -96,7 +98,7 @@ const TEXT: Record<string, Record<string, string>> = {
   },
   nl: {
     today: 'vandaag', tomorrow: 'morgen', yesterday: 'sinds gisteren verlopen', overdue: '{n} dagen te laat',
-    days: 'over {n} dagen', months: 'over {n} maanden', years: 'over {n} jaar', dueOn: 'uiterlijk {date}', clock: ' uur',
+    days: 'over {n} dagen', months: 'over {n} maanden', years: 'over {n} jaar', last: 'Laatste herinnering', dueOn: 'uiterlijk {date}', clock: ' uur',
     many: '{n} deadlines vragen je aandacht', more: '… en nog {n}',
     soon: 'Begint over {n} minuten · {time}', soon1: 'Begint over 1 minuut · {time}', now: 'Nu · {time}',
     dailyTitle: 'Jouw vraag van de dag 💡',
@@ -104,7 +106,7 @@ const TEXT: Record<string, Record<string, string>> = {
   },
   pt: {
     today: 'vence hoje', tomorrow: 'vence amanhã', yesterday: 'venceu ontem', overdue: 'atrasado há {n} dias',
-    days: 'daqui a {n} dias', months: 'daqui a {n} meses', years: 'daqui a {n} anos', dueOn: 'vence em {date}', clock: '',
+    days: 'daqui a {n} dias', months: 'daqui a {n} meses', years: 'daqui a {n} anos', last: 'Último lembrete', dueOn: 'vence em {date}', clock: '',
     many: '{n} prazos precisam da sua atenção', more: '… e mais {n}',
     soon: 'Começa daqui a {n} minutos · {time}', soon1: 'Começa daqui a 1 minuto · {time}', now: 'Agora · {time}',
     dailyTitle: 'A sua pergunta do dia 💡',
@@ -112,7 +114,7 @@ const TEXT: Record<string, Record<string, string>> = {
   },
   tr: {
     today: 'bugün', tomorrow: 'yarın', yesterday: 'dün geçti', overdue: '{n} gün geçti',
-    days: '{n} gün sonra', months: '{n} ay sonra', years: '{n} yıl sonra', dueOn: 'son tarih {date}', clock: '',
+    days: '{n} gün sonra', months: '{n} ay sonra', years: '{n} yıl sonra', last: 'Son hatırlatma', dueOn: 'son tarih {date}', clock: '',
     many: '{n} tarih ilgini bekliyor', more: '… ve {n} tane daha',
     soon: '{n} dakika sonra başlıyor · {time}', soon1: '1 dakika sonra başlıyor · {time}', now: 'Şimdi · {time}',
     dailyTitle: 'Günün sorusu 💡',
@@ -121,7 +123,7 @@ const TEXT: Record<string, Record<string, string>> = {
   pl: {
     today: 'dziś', tomorrow: 'jutro', yesterday: 'minął wczoraj', overdue: '{n} dni po terminie',
     days: 'za {n} dni', months: 'za {n} miesięcy', 'months.few': 'za {n} miesiące', years: 'za {n} lat', 'years.few': 'za {n} lata',
-    dueOn: 'termin {date}', clock: '',
+    last: 'Ostatnie przypomnienie', dueOn: 'termin {date}', clock: '',
     many: '{n} terminów wymaga twojej uwagi', 'many.few': '{n} terminy wymagają twojej uwagi', more: '… i {n} więcej',
     soon: 'Zaczyna się za {n} minut · {time}', 'soon.few': 'Zaczyna się za {n} minuty · {time}', soon1: 'Zaczyna się za 1 minutę · {time}', now: 'Teraz · {time}',
     dailyTitle: 'Twoje pytanie dnia 💡',
@@ -139,7 +141,9 @@ function tx(lang: string | undefined, key: string, vars: Record<string, string |
   const s = table[k] ?? TEXT.en[key] ?? key;
   return s.replace(/\{(\w+)\}/g, (m, name) => (vars[name] != null ? String(vars[name]) : m));
 }
-type Deadline = { id: string; user_id: string; title: string; due: string; due_time: string | null; lead_days: number; notified_for: string | null };
+type Deadline = { id: string; user_id: string; title: string; due: string; due_time: string | null; lead_days: number; notified_for: string | null; last_notified_for: string | null; last?: boolean };
+// Letzte Erinnerung: so viele Tage vor der Fälligkeit (0 = keine) - gleiche Regel wie lastDays in app/app.js
+function lastDays(lead: number): number { return lead >= 30 ? 7 : lead >= 3 ? 1 : 0; }
 type SoonRow = { id: string; user_id: string; title: string; due: string; due_time: string; remind_min: number; tz: string | null; time_notified_for: string | null };
 type Payload = { title: string; body: string; tag: string; url: string; urgency?: string; ttl?: number };
 
@@ -312,9 +316,10 @@ function messageFor(list: Deadline[], today: string, lang?: string): Payload {
     const d = list[0];
     const when = whenText(daysBetween(today, d.due), lang);
     const clock = d.due_time ? `, ${d.due_time.slice(0, 5)}${tx(lang, 'clock')}` : '';
+    const last = d.last ? `${tx(lang, 'last')} · ` : '';
     return {
       title: d.title,
-      body: `${when.charAt(0).toUpperCase()}${when.slice(1)} · ${tx(lang, 'dueOn', { date: fmt(d.due, lang) })}${clock}`,
+      body: `${last}${when.charAt(0).toUpperCase()}${when.slice(1)} · ${tx(lang, 'dueOn', { date: fmt(d.due, lang) })}${clock}`,
       tag: `livo-${d.id}`,
       url: APP_URL
     };
@@ -401,11 +406,17 @@ async function runReminders() {
   if (!eligible.size) return { today, users: 0, devices: 0, deadlines: 0 };
 
   const rows = await fetchAll<Deadline>((a, b) => supabase.from('deadlines')
-    .select('id, user_id, title, due, due_time, lead_days, notified_for')
+    .select('id, user_id, title, due, due_time, lead_days, notified_for, last_notified_for')
     .lte('due', addDays(today, 366)).order('id').range(a, b));
   const byUser = new Map<string, Deadline[]>();
   for (const row of rows) {
-    if (!eligible.has(row.user_id) || row.notified_for === row.due || addDays(row.due, -row.lead_days) > today) continue;
+    if (!eligible.has(row.user_id)) continue;
+    // Erste Erinnerung: ab Fälligkeit minus lead_days. Letzte: kurz vor Ablauf, nur nach der ersten und nicht mehr danach.
+    const ld = lastDays(row.lead_days);
+    const first = row.notified_for !== row.due && addDays(row.due, -row.lead_days) <= today;
+    row.last = !first && ld > 0 && row.notified_for === row.due && row.last_notified_for !== row.due &&
+      addDays(row.due, -ld) <= today && today <= row.due;
+    if (!first && !row.last) continue;
     byUser.set(row.user_id, [...(byUser.get(row.user_id) ?? []), row]);
   }
 
@@ -421,7 +432,12 @@ async function runReminders() {
     users++;
     devices += ok;
     deadlines += list.length;
-    await Promise.all(list.map((d) => supabase.from('deadlines').update({ notified_for: d.due }).eq('id', d.id)));
+    // Kommt die erste Erinnerung erst im Fenster der letzten (Frist spät eingetragen), gibt es keine zweite
+    await Promise.all(list.map((d) => supabase.from('deadlines').update(
+      d.last ? { last_notified_for: d.due }
+        : lastDays(d.lead_days) > 0 && daysBetween(today, d.due) <= lastDays(d.lead_days) ? { notified_for: d.due, last_notified_for: d.due }
+        : { notified_for: d.due }
+    ).eq('id', d.id)));
   }
   return { today, users, devices, deadlines };
 }

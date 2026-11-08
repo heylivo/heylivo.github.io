@@ -20,6 +20,7 @@ var CATEGORIES = [
   { id: "travel", icon: "plane", tone: "p" },
   { id: "money", icon: "wallet", tone: "c" },
   { id: "appt", icon: "calendar-check", tone: "b" },
+  { id: "life", icon: "house", tone: "c" },
   { id: "own", icon: "pencil", tone: "p" },
   { id: "mine", icon: "star", tone: "c" } // die eine eigene Kategorie des Nutzers (MY_CAT), nur wenn angelegt
 ];
@@ -205,6 +206,35 @@ var TEMPLATES = [
     fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
   },
 
+  // Alltag
+  {
+    // Online gekauft: meist 14 Tage Widerrufsrecht ab Erhalt der Ware, viele Shops geben 30 Tage.
+    // Ein gesagtes Datum in der Zukunft ist direkt der letzte Rückgabetag (dateMeans).
+    id: "rueckgabe", cat: "life", lead: 3, dateMeans: "start",
+    fields: [{ key: "what", type: "text", optional: true }, { key: "start", type: "date" }, { key: "days", type: "days", value: 14 }],
+    compute: function (v) { return { due: addDays(fromISO(v.start), months(v.days, 14)), every: 0 }; }
+  },
+  {
+    // Gewährleistung beim Händler meist 2 Jahre ab Kauf; eine Herstellergarantie steht im Garantieschein
+    id: "garantie", cat: "life", lead: 30, dateMeans: "start",
+    fields: [{ key: "what", type: "text", optional: true }, { key: "start", type: "date" }, { key: "term", type: "months", value: 24 }],
+    compute: function (v) { return { due: addMonths(fromISO(v.start), months(v.term, 24)), every: 0 }; }
+  },
+  {
+    id: "verliehen", cat: "life", lead: 3,
+    fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
+  },
+  {
+    // Auf Rückruf, Antwort, Erstattung oder Lieferung warten: Livo erinnert am Tag selbst ans Nachhaken
+    id: "nachhaken", cat: "life", lead: 0,
+    fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
+  },
+  {
+    // Deutschland: innerhalb von 2 Wochen nach dem Einzug anmelden (Bundesmeldegesetz § 17)
+    id: "umzug", cat: "life", lead: 10, only: "de", fields: [{ key: "date", type: "date" }],
+    compute: function (v) { return { due: addDays(fromISO(v.date), 14), every: 0 }; }
+  },
+
   // Eigene
   {
     id: "eigene", cat: "own", lead: 14,
@@ -229,7 +259,7 @@ var TEMPLATES = [
 // name = Titel mit {what} (Anbieter, Arzt, …), name0 = Titel ohne
 var TPL_TEXT = {
   de: {
-    cat: { doc: "Ausweise & Dokumente", car: "Auto", contract: "Verträge & Versicherungen", health: "Gesundheit", family: "Familie & Kinder", travel: "Reisen & Urlaub", money: "Geld & Steuern", appt: "Termine", own: "Eigene" },
+    cat: { doc: "Ausweise & Dokumente", car: "Auto", contract: "Verträge & Versicherungen", health: "Gesundheit", family: "Familie & Kinder", travel: "Reisen & Urlaub", money: "Geld & Steuern", appt: "Termine", life: "Alltag", own: "Eigene" },
     geburtstag: { title: "Geburtstag", hint: "Livo erinnert dich jedes Jahr eine Woche vorher – Zeit genug für ein Geschenk.", labels: { who: "Wer hat Geburtstag?", date: "Geburtstag (das Jahr ist egal)" }, ph: { who: "z. B. Mama, Anna" }, name: "Geburtstag {what}", name0: "Geburtstag" },
     hochzeitstag: { title: "Hochzeitstag", hint: "Livo erinnert dich jedes Jahr eine Woche vorher.", labels: { date: "Hochzeitsdatum (das Jahr ist egal)" }, name0: "Hochzeitstag" },
     geschenk: { title: "Geschenk besorgen", hint: "Livo erinnert dich 10 Tage vor dem großen Tag – genug Zeit, auch online zu bestellen.", name: "Geschenk – {what}", name0: "Geschenk besorgen" },
@@ -283,10 +313,15 @@ var TPL_TEXT = {
     behoerde: { title: "Behördentermin (Bürgeramt, Finanzamt …)", hint: "Ausweis und Unterlagen nicht vergessen. Viele Ämter vergeben Termine nur online – oft Wochen im Voraus.", labels: { what: "Welches Amt?", date: "Datum" }, ph: { what: "z. B. Bürgeramt" }, name: "Termin {what}", name0: "Behördentermin" },
     handwerker: { title: "Handwerker / Lieferung", hint: "Livo erinnert dich am Tag vorher – Zeit zum Aufräumen oder um den Zugang freizumachen.", labels: { what: "Wer / was?", date: "Datum" }, ph: { what: "z. B. Klempner, Sofa-Lieferung" }, name: "{what}", name0: "Handwerker / Lieferung" },
     friseur: { title: "Friseur / Beauty", labels: { what: "Wo?", date: "Datum" }, ph: { what: "z. B. Salon Anna" }, name: "Friseur – {what}", name0: "Friseur / Beauty" },
+    rueckgabe: { title: "Rückgabe / Widerruf", hint: "Online gekauft? In der EU kannst du meist 14 Tage ab Erhalt der Ware widerrufen, viele Shops geben 30 Tage. Livo erinnert dich rechtzeitig.", labels: { what: "Was?", start: "Erhalten am", days: "Rückgabefrist (Tage)" }, ph: { what: "z. B. Schuhe aus dem Online-Shop" }, name: "{what} – Rückgabe bis", name0: "Rückgabe – Frist endet" },
+    garantie: { title: "Garantie / Gewährleistung", hint: "Beim Händler hast du meist 2 Jahre Gewährleistung ab Kauf. Herstellergarantien können länger sein – das steht im Garantieschein. Kassenbon oder Rechnung gut aufheben.", labels: { what: "Was?", start: "Gekauft am", term: "Garantie (Monate)" }, ph: { what: "z. B. Waschmaschine" }, name: "Garantie {what} – endet", name0: "Garantie endet" },
+    verliehen: { title: "Verliehen / ausgeliehen", hint: "Bohrmaschine, Buch oder Geld: Trag ein, bis wann es zurück sein soll – Livo erinnert dich 3 Tage vorher.", labels: { what: "Was und an wen?", date: "Zurück bis" }, ph: { what: "z. B. Bohrmaschine an Tom" }, name: "{what} – zurück bis", name0: "Verliehen – zurück bis" },
+    nachhaken: { title: "Auf Antwort warten / nachhaken", hint: "Rückruf, Antwort vom Amt, Erstattung oder Lieferung: Trag ein, bis wann du etwas erwartest. Kommt nichts, erinnert dich Livo an diesem Tag ans Nachhaken.", labels: { what: "Worauf wartest du?", date: "Nachhaken am" }, ph: { what: "z. B. Rückruf vom Vermieter" }, name: "Nachhaken – {what}", name0: "Nachhaken" },
+    umzug: { title: "Umzug – Wohnsitz ummelden", hint: "In Deutschland musst du dich innerhalb von 2 Wochen nach dem Einzug beim Bürgeramt anmelden. Nimm die Wohnungsgeberbestätigung vom Vermieter mit. Termine sind oft knapp – am besten gleich buchen.", labels: { date: "Einzug am" }, name0: "Wohnsitz ummelden (Umzug)" },
     demo: { bill: "Stadtwerke", phone: "Telekom" }
   },
   en: {
-    cat: { doc: "IDs & documents", car: "Car", contract: "Contracts & insurance", health: "Health", family: "Family & kids", travel: "Travel & holidays", money: "Money", appt: "Appointments", own: "Your own" },
+    cat: { doc: "IDs & documents", car: "Car", contract: "Contracts & insurance", health: "Health", family: "Family & kids", travel: "Travel & holidays", money: "Money", appt: "Appointments", life: "Everyday", own: "Your own" },
     geburtstag: { title: "Birthday", hint: "Livo reminds you a week before, every year – plenty of time for a present.", labels: { who: "Whose birthday?", date: "Birthday (any year)" }, ph: { who: "e.g. Mum, Anna" }, name: "{what}'s birthday", name0: "Birthday" },
     hochzeitstag: { title: "Wedding anniversary", hint: "Livo reminds you a week before, every year.", labels: { date: "Wedding date (any year)" }, name0: "Wedding anniversary" },
     geschenk: { title: "Get a present", hint: "Livo reminds you 10 days before the big day – enough time to order online, too.", name: "Present – {what}", name0: "Get a present" },
@@ -336,10 +371,14 @@ var TPL_TEXT = {
     behoerde: { title: "Public office appointment", hint: "Don't forget your ID and documents. Many offices only give appointments online – often weeks ahead.", labels: { what: "Which office?", date: "Date" }, ph: { what: "e.g. Citizens' Office" }, name: "Appointment – {what}", name0: "Public office appointment" },
     handwerker: { title: "Tradesperson / delivery", hint: "Livo reminds you the day before – time to tidy up or clear the way.", labels: { what: "Who / what?", date: "Date" }, ph: { what: "e.g. plumber, sofa delivery" }, name: "{what}", name0: "Tradesperson / delivery" },
     friseur: { title: "Hairdresser / beauty", labels: { what: "Where?", date: "Date" }, ph: { what: "e.g. Salon Anna" }, name: "Hairdresser – {what}", name0: "Hairdresser / beauty" },
+    rueckgabe: { title: "Return a purchase", hint: "Bought online? You can usually cancel within 14 days of receiving the goods, and many shops allow 30 days. Livo reminds you in time.", labels: { what: "What?", start: "Received on", days: "Return window (days)" }, ph: { what: "e.g. shoes from an online shop" }, name: "{what} – return by", name0: "Return – window ends" },
+    garantie: { title: "Warranty", hint: "Many products come with a 2-year warranty from the date of purchase – the exact length is on the receipt or warranty card. Keep the receipt safe.", labels: { what: "What?", start: "Bought on", term: "Warranty (months)" }, ph: { what: "e.g. washing machine" }, name: "{what} warranty – ends", name0: "Warranty ends" },
+    verliehen: { title: "Lent / borrowed", hint: "A drill, a book or money: add when it should be back – Livo reminds you 3 days before.", labels: { what: "What and to whom?", date: "Back by" }, ph: { what: "e.g. drill to Tom" }, name: "{what} – back by", name0: "Lent – back by" },
+    nachhaken: { title: "Waiting for an answer", hint: "A callback, a reply from an office, a refund or a delivery: add when you expect it. If nothing comes, Livo reminds you to follow up that day.", labels: { what: "What are you waiting for?", date: "Follow up on" }, ph: { what: "e.g. callback from the landlord" }, name: "Follow up – {what}", name0: "Follow up" },
     demo: { bill: "Electricity", phone: "Vodafone" }
   },
   it: {
-    cat: { doc: "Documenti", car: "Auto", contract: "Contratti e assicurazioni", health: "Salute", family: "Famiglia e bambini", travel: "Viaggi e vacanze", money: "Pagamenti", appt: "Appuntamenti", own: "Personalizzata" },
+    cat: { doc: "Documenti", car: "Auto", contract: "Contratti e assicurazioni", health: "Salute", family: "Famiglia e bambini", travel: "Viaggi e vacanze", money: "Pagamenti", appt: "Appuntamenti", life: "Vita quotidiana", own: "Personalizzata" },
     geburtstag: { title: "Compleanno / onomastico", hint: "Livo ti avvisa ogni anno una settimana prima – c'è tempo per il regalo.", labels: { who: "Di chi è il compleanno?", date: "Data (l'anno non conta)" }, ph: { who: "es. mamma, Anna" }, name: "Compleanno di {what}", name0: "Compleanno" },
     hochzeitstag: { title: "Anniversario di matrimonio", hint: "Livo ti avvisa ogni anno una settimana prima.", labels: { date: "Data del matrimonio (l'anno non conta)" }, name0: "Anniversario di matrimonio" },
     geschenk: { title: "Comprare il regalo", hint: "Livo ti avvisa 10 giorni prima del grande giorno – c'è tempo anche per ordinarlo online.", name: "Regalo – {what}", name0: "Comprare il regalo" },
@@ -389,10 +428,14 @@ var TPL_TEXT = {
     behoerde: { title: "Appuntamento in un ufficio pubblico", hint: "Non dimenticare documento d'identità e documenti. Molti uffici danno appuntamenti solo online – spesso con settimane di anticipo.", labels: { what: "Quale ufficio?", date: "Data" }, ph: { what: "es. Anagrafe" }, name: "Appuntamento – {what}", name0: "Ufficio pubblico" },
     handwerker: { title: "Artigiano / consegna", hint: "Livo ti avvisa il giorno prima – il tempo per mettere in ordine o liberare l'accesso.", labels: { what: "Chi / cosa?", date: "Data" }, ph: { what: "es. idraulico, consegna divano" }, name: "{what}", name0: "Artigiano / consegna" },
     friseur: { title: "Parrucchiere / estetista", labels: { what: "Dove?", date: "Data" }, ph: { what: "es. Salone Anna" }, name: "Parrucchiere – {what}", name0: "Parrucchiere / estetista" },
+    rueckgabe: { title: "Reso / recesso", hint: "Acquistato online? Di solito puoi recedere entro 14 giorni dal ricevimento della merce, molti negozi concedono 30 giorni. Livo ti avvisa in tempo.", labels: { what: "Cosa?", start: "Ricevuto il", days: "Giorni per il reso" }, ph: { what: "es. scarpe ordinate online" }, name: "{what} – reso entro", name0: "Reso – scadenza" },
+    garantie: { title: "Garanzia", hint: "Molti prodotti hanno 2 anni di garanzia dall'acquisto – la durata esatta è sullo scontrino o sul certificato di garanzia. Conserva lo scontrino.", labels: { what: "Cosa?", start: "Acquistato il", term: "Garanzia (mesi)" }, ph: { what: "es. lavatrice" }, name: "Garanzia {what} – scade", name0: "Garanzia in scadenza" },
+    verliehen: { title: "Prestato / preso in prestito", hint: "Trapano, libro o soldi: indica entro quando deve tornare – Livo ti avvisa 3 giorni prima.", labels: { what: "Cosa e a chi?", date: "Da restituire entro" }, ph: { what: "es. trapano a Marco" }, name: "{what} – restituire entro", name0: "Prestito – restituire entro" },
+    nachhaken: { title: "In attesa di risposta", hint: "Una richiamata, la risposta di un ufficio, un rimborso o una consegna: indica entro quando te lo aspetti. Se non arriva nulla, Livo ti ricorda quel giorno di sollecitare.", labels: { what: "Cosa aspetti?", date: "Sollecitare il" }, ph: { what: "es. richiamata del padrone di casa" }, name: "Sollecitare – {what}", name0: "Sollecitare" },
     demo: { bill: "Luce", phone: "TIM" }
   },
   el: {
-    cat: { doc: "Έγγραφα", car: "Αυτοκίνητο", contract: "Συμβόλαια & ασφάλειες", health: "Υγεία", family: "Οικογένεια & παιδιά", travel: "Ταξίδια & διακοπές", money: "Πληρωμές", appt: "Ραντεβού", own: "Δικές σου" },
+    cat: { doc: "Έγγραφα", car: "Αυτοκίνητο", contract: "Συμβόλαια & ασφάλειες", health: "Υγεία", family: "Οικογένεια & παιδιά", travel: "Ταξίδια & διακοπές", money: "Πληρωμές", appt: "Ραντεβού", life: "Καθημερινά", own: "Δικές σου" },
     geburtstag: { title: "Γενέθλια / γιορτή", hint: "Το Livo σε ειδοποιεί κάθε χρόνο μία εβδομάδα πριν – έχεις χρόνο για δώρο.", labels: { who: "Ποιος γιορτάζει;", date: "Ημερομηνία (το έτος δεν παίζει ρόλο)" }, ph: { who: "π.χ. μαμά, Μαρία" }, name: "Γενέθλια – {what}", name0: "Γενέθλια" },
     hochzeitstag: { title: "Επέτειος γάμου", hint: "Το Livo σε ειδοποιεί κάθε χρόνο μία εβδομάδα πριν.", labels: { date: "Ημερομηνία γάμου (το έτος δεν παίζει ρόλο)" }, name0: "Επέτειος γάμου" },
     geschenk: { title: "Αγορά δώρου", hint: "Το Livo σού θυμίζει 10 μέρες πριν από τη μεγάλη μέρα – προλαβαίνεις και να το παραγγείλεις online.", name: "Δώρο – {what}", name0: "Αγορά δώρου" },
@@ -442,10 +485,14 @@ var TPL_TEXT = {
     behoerde: { title: "Ραντεβού σε δημόσια υπηρεσία", hint: "Μην ξεχάσεις ταυτότητα και δικαιολογητικά. Πολλές υπηρεσίες κλείνουν ραντεβού μόνο online – συχνά εβδομάδες πριν.", labels: { what: "Ποια υπηρεσία;", date: "Ημερομηνία" }, ph: { what: "π.χ. ΚΕΠ" }, name: "Ραντεβού – {what}", name0: "Δημόσια υπηρεσία" },
     handwerker: { title: "Τεχνίτης / παράδοση", hint: "Το Livo σού θυμίζει την προηγούμενη μέρα – χρόνος να τακτοποιήσεις ή να ελευθερώσεις την πρόσβαση.", labels: { what: "Ποιος / τι;", date: "Ημερομηνία" }, ph: { what: "π.χ. υδραυλικός, παράδοση καναπέ" }, name: "{what}", name0: "Τεχνίτης / παράδοση" },
     friseur: { title: "Κομμωτήριο / ομορφιά", labels: { what: "Πού;", date: "Ημερομηνία" }, ph: { what: "π.χ. Κομμωτήριο Άννα" }, name: "Κομμωτήριο – {what}", name0: "Κομμωτήριο / ομορφιά" },
+    rueckgabe: { title: "Επιστροφή αγοράς", hint: "Αγόρασες online; Συνήθως μπορείς να υπαναχωρήσεις μέσα σε 14 ημέρες από την παραλαβή, πολλά καταστήματα δίνουν 30. Το Livo σε ειδοποιεί έγκαιρα.", labels: { what: "Τι;", start: "Παραλαβή στις", days: "Προθεσμία επιστροφής (ημέρες)" }, ph: { what: "π.χ. παπούτσια από e-shop" }, name: "{what} – επιστροφή έως", name0: "Επιστροφή – λήξη προθεσμίας" },
+    garantie: { title: "Εγγύηση", hint: "Πολλά προϊόντα έχουν εγγύηση 2 ετών από την αγορά – η ακριβής διάρκεια αναγράφεται στην απόδειξη ή στο έντυπο εγγύησης. Κράτα την απόδειξη.", labels: { what: "Τι;", start: "Αγορά στις", term: "Εγγύηση (μήνες)" }, ph: { what: "π.χ. πλυντήριο" }, name: "Εγγύηση {what} – λήγει", name0: "Λήξη εγγύησης" },
+    verliehen: { title: "Δανεικά", hint: "Δράπανο, βιβλίο ή χρήματα: γράψε μέχρι πότε πρέπει να επιστραφούν – το Livo σε ειδοποιεί 3 ημέρες πριν.", labels: { what: "Τι και σε ποιον;", date: "Επιστροφή έως" }, ph: { what: "π.χ. δράπανο στον Νίκο" }, name: "{what} – επιστροφή έως", name0: "Δανεικό – επιστροφή έως" },
+    nachhaken: { title: "Αναμονή απάντησης", hint: "Επιστροφή κλήσης, απάντηση από υπηρεσία, επιστροφή χρημάτων ή παράδοση: γράψε πότε το περιμένεις. Αν δεν έρθει τίποτα, το Livo σου θυμίζει εκείνη τη μέρα να ρωτήσεις ξανά.", labels: { what: "Τι περιμένεις;", date: "Να ρωτήσω ξανά στις" }, ph: { what: "π.χ. τηλέφωνο από τον ιδιοκτήτη" }, name: "Να ρωτήσω ξανά – {what}", name0: "Να ρωτήσω ξανά" },
     demo: { bill: "ΔΕΗ", phone: "Cosmote" }
   },
   es: {
-    cat: { doc: "Documentos", car: "Coche", contract: "Contratos y seguros", health: "Salud", family: "Familia e hijos", travel: "Viajes y vacaciones", money: "Pagos", appt: "Citas", own: "Personalizado" },
+    cat: { doc: "Documentos", car: "Coche", contract: "Contratos y seguros", health: "Salud", family: "Familia e hijos", travel: "Viajes y vacaciones", money: "Pagos", appt: "Citas", life: "Día a día", own: "Personalizado" },
     geburtstag: { title: "Cumpleaños", hint: "Livo te avisa cada año una semana antes – hay tiempo para el regalo.", labels: { who: "¿De quién es el cumpleaños?", date: "Cumpleaños (da igual el año)" }, ph: { who: "p. ej. mamá, Ana" }, name: "Cumpleaños de {what}", name0: "Cumpleaños" },
     hochzeitstag: { title: "Aniversario de boda", hint: "Livo te avisa cada año una semana antes.", labels: { date: "Fecha de la boda (da igual el año)" }, name0: "Aniversario de boda" },
     geschenk: { title: "Comprar el regalo", hint: "Livo te avisa 10 días antes del gran día: hay tiempo para pedirlo online.", name: "Regalo – {what}", name0: "Comprar el regalo" },
@@ -495,10 +542,14 @@ var TPL_TEXT = {
     behoerde: { title: "Cita en la administración", hint: "No olvides el DNI y los documentos. Muchas oficinas solo dan cita online, a menudo con semanas de antelación.", labels: { what: "¿Qué oficina?", date: "Fecha" }, ph: { what: "p. ej. Ayuntamiento" }, name: "Cita – {what}", name0: "Cita en la administración" },
     handwerker: { title: "Técnico / entrega", hint: "Livo te avisa el día anterior: tiempo para ordenar o despejar el acceso.", labels: { what: "¿Quién / qué?", date: "Fecha" }, ph: { what: "p. ej. fontanero, entrega del sofá" }, name: "{what}", name0: "Técnico / entrega" },
     friseur: { title: "Peluquería / estética", labels: { what: "¿Dónde?", date: "Fecha" }, ph: { what: "p. ej. Salón Ana" }, name: "Peluquería – {what}", name0: "Peluquería / estética" },
+    rueckgabe: { title: "Devolución", hint: "¿Compra online? Normalmente puedes desistir en 14 días desde que recibes el pedido, y muchas tiendas dan 30. Livo te avisa a tiempo.", labels: { what: "¿Qué?", start: "Recibido el", days: "Plazo de devolución (días)" }, ph: { what: "p. ej. zapatos de una tienda online" }, name: "{what} – devolver hasta", name0: "Devolución – fin del plazo" },
+    garantie: { title: "Garantía", hint: "Muchos productos tienen 2 años de garantía desde la compra; la duración exacta figura en el tique o en el certificado de garantía. Guarda el tique.", labels: { what: "¿Qué?", start: "Comprado el", term: "Garantía (meses)" }, ph: { what: "p. ej. lavadora" }, name: "Garantía {what} – vence", name0: "Fin de la garantía" },
+    verliehen: { title: "Prestado", hint: "Un taladro, un libro o dinero: indica hasta cuándo debe volver; Livo te avisa 3 días antes.", labels: { what: "¿Qué y a quién?", date: "Devolver hasta" }, ph: { what: "p. ej. taladro a Juan" }, name: "{what} – devolver hasta", name0: "Préstamo – devolver hasta" },
+    nachhaken: { title: "Esperando respuesta", hint: "Una llamada, la respuesta de un organismo, un reembolso o una entrega: indica cuándo lo esperas. Si no llega nada, Livo te recuerda ese día que reclames.", labels: { what: "¿Qué esperas?", date: "Reclamar el" }, ph: { what: "p. ej. llamada del casero" }, name: "Reclamar – {what}", name0: "Reclamar" },
     demo: { bill: "Luz", phone: "Movistar" }
   },
   fr: {
-    cat: { doc: "Papiers d'identité", car: "Voiture", contract: "Contrats et assurances", health: "Santé", family: "Famille & enfants", travel: "Voyages & vacances", money: "Paiements", appt: "Rendez-vous", own: "Personnalisé" },
+    cat: { doc: "Papiers d'identité", car: "Voiture", contract: "Contrats et assurances", health: "Santé", family: "Famille & enfants", travel: "Voyages & vacances", money: "Paiements", appt: "Rendez-vous", life: "Au quotidien", own: "Personnalisé" },
     geburtstag: { title: "Anniversaire", hint: "Livo vous prévient chaque année une semaine avant – le temps de trouver un cadeau.", labels: { who: "L'anniversaire de qui ?", date: "Date d'anniversaire (peu importe l'année)" }, ph: { who: "p. ex. maman, Léa" }, name: "Anniversaire de {what}", name0: "Anniversaire" },
     hochzeitstag: { title: "Anniversaire de mariage", hint: "Livo vous prévient chaque année une semaine avant.", labels: { date: "Date du mariage (peu importe l'année)" }, name0: "Anniversaire de mariage" },
     geschenk: { title: "Acheter le cadeau", hint: "Livo vous prévient 10 jours avant le grand jour – assez de temps pour commander en ligne.", name: "Cadeau – {what}", name0: "Acheter le cadeau" },
@@ -548,10 +599,14 @@ var TPL_TEXT = {
     behoerde: { title: "Rendez-vous administratif", hint: "N'oubliez pas votre pièce d'identité et vos documents. Beaucoup d'administrations ne donnent rendez-vous qu'en ligne – souvent des semaines à l'avance.", labels: { what: "Quelle administration ?", date: "Date" }, ph: { what: "ex. mairie, préfecture" }, name: "Rendez-vous – {what}", name0: "Rendez-vous administratif" },
     handwerker: { title: "Artisan / livraison", hint: "Livo vous prévient la veille – le temps de ranger ou de dégager l'accès.", labels: { what: "Qui / quoi ?", date: "Date" }, ph: { what: "ex. plombier, livraison du canapé" }, name: "{what}", name0: "Artisan / livraison" },
     friseur: { title: "Coiffeur / beauté", labels: { what: "Où ?", date: "Date" }, ph: { what: "ex. Salon Anna" }, name: "Coiffeur – {what}", name0: "Coiffeur / beauté" },
+    rueckgabe: { title: "Retour d'un achat", hint: "Acheté en ligne ? Vous avez en général 14 jours après la réception pour vous rétracter, et beaucoup de boutiques en accordent 30. Livo vous prévient à temps.", labels: { what: "Quoi ?", start: "Reçu le", days: "Délai de retour (jours)" }, ph: { what: "ex. chaussures commandées en ligne" }, name: "{what} – retour jusqu'au", name0: "Retour – fin du délai" },
+    garantie: { title: "Garantie", hint: "Beaucoup de produits ont 2 ans de garantie à partir de l'achat – la durée exacte figure sur le ticket ou le bon de garantie. Gardez bien le ticket.", labels: { what: "Quoi ?", start: "Acheté le", term: "Garantie (mois)" }, ph: { what: "ex. lave-linge" }, name: "Garantie {what} – fin", name0: "Fin de la garantie" },
+    verliehen: { title: "Prêté / emprunté", hint: "Une perceuse, un livre ou de l'argent : indiquez quand il doit revenir – Livo vous prévient 3 jours avant.", labels: { what: "Quoi et à qui ?", date: "À rendre le" }, ph: { what: "ex. perceuse à Paul" }, name: "{what} – à rendre le", name0: "Prêt – à rendre le" },
+    nachhaken: { title: "En attente d'une réponse", hint: "Un rappel téléphonique, une réponse de l'administration, un remboursement ou une livraison : indiquez quand vous l'attendez. Si rien n'arrive, Livo vous rappelle ce jour-là de relancer.", labels: { what: "Qu'attendez-vous ?", date: "Relancer le" }, ph: { what: "ex. appel du propriétaire" }, name: "Relancer – {what}", name0: "Relancer" },
     demo: { bill: "Électricité", phone: "Orange" }
   },
   nl: {
-    cat: { doc: "Documenten", car: "Auto", contract: "Contracten & verzekeringen", health: "Gezondheid", family: "Gezin & kinderen", travel: "Reizen & vakantie", money: "Betalingen", appt: "Afspraken", own: "Eigen" },
+    cat: { doc: "Documenten", car: "Auto", contract: "Contracten & verzekeringen", health: "Gezondheid", family: "Gezin & kinderen", travel: "Reizen & vakantie", money: "Betalingen", appt: "Afspraken", life: "Dagelijks leven", own: "Eigen" },
     geburtstag: { title: "Verjaardag", hint: "Livo herinnert je elk jaar een week van tevoren – genoeg tijd voor een cadeau.", labels: { who: "Wie is er jarig?", date: "Verjaardag (het jaar maakt niet uit)" }, ph: { who: "bijv. mama, Emma" }, name: "Verjaardag {what}", name0: "Verjaardag" },
     hochzeitstag: { title: "Trouwdag", hint: "Livo herinnert je elk jaar een week van tevoren.", labels: { date: "Trouwdatum (het jaar maakt niet uit)" }, name0: "Trouwdag" },
     geschenk: { title: "Cadeau kopen", hint: "Livo herinnert je 10 dagen voor de grote dag – genoeg tijd om ook online te bestellen.", name: "Cadeau – {what}", name0: "Cadeau kopen" },
@@ -601,10 +656,14 @@ var TPL_TEXT = {
     behoerde: { title: "Afspraak bij gemeente / instantie", hint: "Vergeet je ID en papieren niet. Veel instanties geven alleen online afspraken – vaak weken van tevoren.", labels: { what: "Welke instantie?", date: "Datum" }, ph: { what: "bijv. gemeente" }, name: "Afspraak – {what}", name0: "Afspraak instantie" },
     handwerker: { title: "Monteur / levering", hint: "Livo herinnert je de dag ervoor – tijd om op te ruimen of de toegang vrij te maken.", labels: { what: "Wie / wat?", date: "Datum" }, ph: { what: "bijv. loodgieter, levering bank" }, name: "{what}", name0: "Monteur / levering" },
     friseur: { title: "Kapper / beauty", labels: { what: "Waar?", date: "Datum" }, ph: { what: "bijv. Salon Anna" }, name: "Kapper – {what}", name0: "Kapper / beauty" },
+    rueckgabe: { title: "Retourneren", hint: "Online gekocht? Meestal mag je binnen 14 dagen na ontvangst herroepen, en veel winkels geven 30 dagen. Livo herinnert je op tijd.", labels: { what: "Wat?", start: "Ontvangen op", days: "Retourtermijn (dagen)" }, ph: { what: "bijv. schoenen uit een webshop" }, name: "{what} – retour vóór", name0: "Retour – termijn eindigt" },
+    garantie: { title: "Garantie", hint: "Veel producten hebben 2 jaar garantie vanaf aankoop – de precieze duur staat op de kassabon of het garantiebewijs. Bewaar de bon goed.", labels: { what: "Wat?", start: "Gekocht op", term: "Garantie (maanden)" }, ph: { what: "bijv. wasmachine" }, name: "Garantie {what} – eindigt", name0: "Garantie eindigt" },
+    verliehen: { title: "Uitgeleend / geleend", hint: "Een boormachine, boek of geld: vul in wanneer het terug moet zijn – Livo herinnert je 3 dagen van tevoren.", labels: { what: "Wat en aan wie?", date: "Terug vóór" }, ph: { what: "bijv. boormachine aan Tom" }, name: "{what} – terug vóór", name0: "Uitgeleend – terug vóór" },
+    nachhaken: { title: "Wachten op antwoord", hint: "Terugbellen, antwoord van een instantie, terugbetaling of levering: vul in wanneer je het verwacht. Komt er niets, dan herinnert Livo je die dag eraan om na te vragen.", labels: { what: "Waar wacht je op?", date: "Navragen op" }, ph: { what: "bijv. terugbellen door de verhuurder" }, name: "Navragen – {what}", name0: "Navragen" },
     demo: { bill: "Energie", phone: "KPN" }
   },
   pt: {
-    cat: { doc: "Documentos", car: "Carro", contract: "Contratos e seguros", health: "Saúde", family: "Família e filhos", travel: "Viagens e férias", money: "Pagamentos", appt: "Marcações", own: "Personalizado" },
+    cat: { doc: "Documentos", car: "Carro", contract: "Contratos e seguros", health: "Saúde", family: "Família e filhos", travel: "Viagens e férias", money: "Pagamentos", appt: "Marcações", life: "Dia a dia", own: "Personalizado" },
     geburtstag: { title: "Aniversário", hint: "O Livo envia um lembrete todos os anos, uma semana antes – há tempo para o presente.", labels: { who: "De quem é o aniversário?", date: "Aniversário (o ano não importa)" }, ph: { who: "p. ex. mãe, Ana" }, name: "Aniversário de {what}", name0: "Aniversário" },
     hochzeitstag: { title: "Aniversário de casamento", hint: "O Livo envia um lembrete todos os anos, uma semana antes.", labels: { date: "Data do casamento (o ano não importa)" }, name0: "Aniversário de casamento" },
     geschenk: { title: "Comprar o presente", hint: "O Livo avisa-o 10 dias antes do grande dia – há tempo para encomendar online.", name: "Presente – {what}", name0: "Comprar o presente" },
@@ -654,10 +713,14 @@ var TPL_TEXT = {
     behoerde: { title: "Marcação num serviço público", hint: "Não se esqueça do documento de identificação e dos papéis. Muitos serviços só fazem marcações online – muitas vezes com semanas de antecedência.", labels: { what: "Que serviço?", date: "Data" }, ph: { what: "ex. Loja do Cidadão" }, name: "Marcação – {what}", name0: "Serviço público" },
     handwerker: { title: "Técnico / entrega", hint: "O Livo avisa-o na véspera – tempo para arrumar ou libertar o acesso.", labels: { what: "Quem / o quê?", date: "Data" }, ph: { what: "ex. canalizador, entrega do sofá" }, name: "{what}", name0: "Técnico / entrega" },
     friseur: { title: "Cabeleireiro / estética", labels: { what: "Onde?", date: "Data" }, ph: { what: "ex. Salão Ana" }, name: "Cabeleireiro – {what}", name0: "Cabeleireiro / estética" },
+    rueckgabe: { title: "Devolução", hint: "Comprou online? Normalmente pode desistir no prazo de 14 dias após a receção, e muitas lojas dão 30. O Livo avisa-o a tempo.", labels: { what: "O quê?", start: "Recebido em", days: "Prazo de devolução (dias)" }, ph: { what: "ex.: sapatos de uma loja online" }, name: "{what} – devolver até", name0: "Devolução – fim do prazo" },
+    garantie: { title: "Garantia", hint: "Muitos produtos têm 2 anos de garantia a partir da compra – a duração exata está no talão ou no certificado de garantia. Guarde bem o talão.", labels: { what: "O quê?", start: "Comprado em", term: "Garantia (meses)" }, ph: { what: "ex.: máquina de lavar" }, name: "Garantia {what} – termina", name0: "Fim da garantia" },
+    verliehen: { title: "Emprestado", hint: "Um berbequim, um livro ou dinheiro: indique até quando deve voltar – o Livo avisa-o 3 dias antes.", labels: { what: "O quê e a quem?", date: "Devolver até" }, ph: { what: "ex.: berbequim ao João" }, name: "{what} – devolver até", name0: "Empréstimo – devolver até" },
+    nachhaken: { title: "À espera de resposta", hint: "Uma chamada, a resposta de um serviço, um reembolso ou uma entrega: indique quando espera. Se nada chegar, o Livo lembra-o nesse dia de insistir.", labels: { what: "De que está à espera?", date: "Insistir em" }, ph: { what: "ex.: chamada do senhorio" }, name: "Insistir – {what}", name0: "Insistir" },
     demo: { bill: "Luz", phone: "MEO" }
   },
   tr: {
-    cat: { doc: "Belgeler", car: "Araç", contract: "Sözleşmeler ve sigortalar", health: "Sağlık", family: "Aile & çocuklar", travel: "Seyahat & tatil", money: "Ödemeler", appt: "Randevular", own: "Kendi" },
+    cat: { doc: "Belgeler", car: "Araç", contract: "Sözleşmeler ve sigortalar", health: "Sağlık", family: "Aile & çocuklar", travel: "Seyahat & tatil", money: "Ödemeler", appt: "Randevular", life: "Günlük hayat", own: "Kendi" },
     geburtstag: { title: "Doğum günü", hint: "Livo her yıl bir hafta önceden hatırlatır – hediye için zaman kalır.", labels: { who: "Kimin doğum günü?", date: "Doğum günü (yıl önemli değil)" }, ph: { who: "ör. annem, Ayşe" }, name: "{what} – doğum günü", name0: "Doğum günü" },
     hochzeitstag: { title: "Evlilik yıldönümü", hint: "Livo her yıl bir hafta önceden hatırlatır.", labels: { date: "Evlilik tarihi (yıl önemli değil)" }, name0: "Evlilik yıldönümü" },
     geschenk: { title: "Hediye al", hint: "Livo büyük günden 10 gün önce hatırlatır – online sipariş için de zaman kalır.", name: "Hediye – {what}", name0: "Hediye al" },
@@ -707,10 +770,14 @@ var TPL_TEXT = {
     behoerde: { title: "Resmi daire randevusu", hint: "Kimliğini ve belgelerini unutma. Birçok daire randevuyu sadece online verir – çoğu zaman haftalar önceden.", labels: { what: "Hangi daire?", date: "Tarih" }, ph: { what: "örn. nüfus müdürlüğü" }, name: "Randevu – {what}", name0: "Resmi daire randevusu" },
     handwerker: { title: "Usta / teslimat", hint: "Livo bir gün önce hatırlatır – ortalığı toplamak ya da yolu açmak için zamanın olur.", labels: { what: "Kim / ne?", date: "Tarih" }, ph: { what: "örn. tesisatçı, kanepe teslimatı" }, name: "{what}", name0: "Usta / teslimat" },
     friseur: { title: "Kuaför / güzellik", labels: { what: "Nerede?", date: "Tarih" }, ph: { what: "örn. Kuaför Ayşe" }, name: "Kuaför – {what}", name0: "Kuaför / güzellik" },
+    rueckgabe: { title: "İade", hint: "İnternetten mi aldın? Genellikle ürünü teslim aldıktan sonra 14 gün içinde cayma hakkın var, birçok mağaza 30 gün tanıyor. Livo seni zamanında uyarır.", labels: { what: "Ne?", start: "Teslim alındı", days: "İade süresi (gün)" }, ph: { what: "örn. internetten alınan ayakkabı" }, name: "{what} – son iade günü", name0: "İade – süre doluyor" },
+    garantie: { title: "Garanti", hint: "Birçok ürünün satın alma tarihinden itibaren 2 yıl garantisi vardır – kesin süre fişte veya garanti belgesinde yazar. Fişi sakla.", labels: { what: "Ne?", start: "Satın alındı", term: "Garanti (ay)" }, ph: { what: "örn. çamaşır makinesi" }, name: "{what} garantisi bitiyor", name0: "Garanti bitiyor" },
+    verliehen: { title: "Ödünç verilen", hint: "Matkap, kitap ya da para: ne zamana kadar geri gelmesi gerektiğini yaz – Livo 3 gün önce hatırlatır.", labels: { what: "Ne ve kime?", date: "Geri verilecek tarih" }, ph: { what: "örn. matkap – Ahmet" }, name: "{what} – geri dönüş", name0: "Ödünç – geri dönüş" },
+    nachhaken: { title: "Cevap bekleniyor", hint: "Geri arama, bir kurumdan yanıt, para iadesi ya da teslimat: ne zaman beklediğini yaz. Bir şey gelmezse Livo o gün takip etmeni hatırlatır.", labels: { what: "Ne bekliyorsun?", date: "Takip tarihi" }, ph: { what: "örn. ev sahibinden geri arama" }, name: "Takip et – {what}", name0: "Takip et" },
     demo: { bill: "Elektrik", phone: "Turkcell" }
   },
   pl: {
-    cat: { doc: "Dokumenty", car: "Samochód", contract: "Umowy i ubezpieczenia", health: "Zdrowie", family: "Rodzina i dzieci", travel: "Podróże i urlop", money: "Płatności", appt: "Wizyty i spotkania", own: "Własne" },
+    cat: { doc: "Dokumenty", car: "Samochód", contract: "Umowy i ubezpieczenia", health: "Zdrowie", family: "Rodzina i dzieci", travel: "Podróże i urlop", money: "Płatności", appt: "Wizyty i spotkania", life: "Na co dzień", own: "Własne" },
     geburtstag: { title: "Urodziny / imieniny", hint: "Livo przypomni co roku tydzień wcześniej – zdążysz z prezentem.", labels: { who: "Czyje urodziny?", date: "Data (rok nie ma znaczenia)" }, ph: { who: "np. mama, Ania" }, name: "Urodziny – {what}", name0: "Urodziny" },
     hochzeitstag: { title: "Rocznica ślubu", hint: "Livo przypomni co roku tydzień wcześniej.", labels: { date: "Data ślubu (rok nie ma znaczenia)" }, name0: "Rocznica ślubu" },
     geschenk: { title: "Kupić prezent", hint: "Livo przypomni ci 10 dni przed wielkim dniem – zdążysz zamówić też online.", name: "Prezent – {what}", name0: "Kupić prezent" },
@@ -760,6 +827,10 @@ var TPL_TEXT = {
     behoerde: { title: "Wizyta w urzędzie", hint: "Nie zapomnij dowodu i dokumentów. Wiele urzędów umawia wizyty tylko online – często z wyprzedzeniem kilku tygodni.", labels: { what: "Jaki urząd?", date: "Data" }, ph: { what: "np. urząd miasta" }, name: "Urząd – {what}", name0: "Wizyta w urzędzie" },
     handwerker: { title: "Fachowiec / dostawa", hint: "Livo przypomni ci dzień wcześniej – czas, by posprzątać albo zrobić przejście.", labels: { what: "Kto / co?", date: "Data" }, ph: { what: "np. hydraulik, dostawa sofy" }, name: "{what}", name0: "Fachowiec / dostawa" },
     friseur: { title: "Fryzjer / kosmetyczka", labels: { what: "Gdzie?", date: "Data" }, ph: { what: "np. Salon Anna" }, name: "Fryzjer – {what}", name0: "Fryzjer / kosmetyczka" },
+    rueckgabe: { title: "Zwrot zakupu", hint: "Kupione online? Zwykle możesz odstąpić od umowy w ciągu 14 dni od otrzymania towaru, a wiele sklepów daje 30 dni. Livo przypomni ci na czas.", labels: { what: "Co?", start: "Otrzymano", days: "Termin zwrotu (dni)" }, ph: { what: "np. buty ze sklepu internetowego" }, name: "{what} – zwrot do", name0: "Zwrot – koniec terminu" },
+    garantie: { title: "Gwarancja", hint: "Wiele produktów ma 2 lata gwarancji od zakupu – dokładny okres znajdziesz na paragonie lub w karcie gwarancyjnej. Zachowaj paragon.", labels: { what: "Co?", start: "Data zakupu", term: "Gwarancja (miesiące)" }, ph: { what: "np. pralka" }, name: "Gwarancja {what} – koniec", name0: "Koniec gwarancji" },
+    verliehen: { title: "Pożyczone", hint: "Wiertarka, książka albo pieniądze: wpisz, do kiedy mają wrócić – Livo przypomni ci 3 dni wcześniej.", labels: { what: "Co i komu?", date: "Zwrot do" }, ph: { what: "np. wiertarka dla Tomka" }, name: "{what} – zwrot do", name0: "Pożyczone – zwrot do" },
+    nachhaken: { title: "Czekam na odpowiedź", hint: "Oddzwonienie, odpowiedź z urzędu, zwrot pieniędzy albo dostawa: wpisz, do kiedy się tego spodziewasz. Jeśli nic nie przyjdzie, Livo przypomni ci tego dnia, żeby się upomnieć.", labels: { what: "Na co czekasz?", date: "Upomnieć się dnia" }, ph: { what: "np. telefon od właściciela mieszkania" }, name: "Upomnieć się – {what}", name0: "Upomnieć się" },
     demo: { bill: "Prąd", phone: "Orange" }
   }
 };

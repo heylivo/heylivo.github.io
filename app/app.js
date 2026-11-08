@@ -176,6 +176,14 @@ function dueText(it) {
   }
   return fmt(fromISO(it.due)) + (it.time ? ", " + it.time + (it.timeEnd ? "–" + it.timeEnd : "") + t("time.suffix") : "");
 }
+// Letzte Erinnerung kurz vor Ablauf - gleiche Regel wie lastDays in send-reminders:
+// bei langem Vorlauf (ab 30 Tagen) 7 Tage vorher, ab 3 Tagen 1 Tag vorher, sonst keine
+function lastDays(lead) { return lead >= 30 ? 7 : lead >= 3 ? 1 : 0; }
+function lastHTML(it) {
+  var n = lastDays(it.lead), at = n ? addDays(fromISO(it.due), -n) : null;
+  if (!at || at < today() || it.lead <= n) return "";
+  return '<dt>' + t("dl.last") + '</dt><dd>' + esc(t("dl.remindVal", { n: n, x: fmt(at) })) + '</dd>';
+}
 function remindText(it) {
   var r = addDays(fromISO(it.due), -it.lead);
   return r <= today() ? t("remind.now") : t("remind.from", { date: fmt(r) });
@@ -933,6 +941,41 @@ function readRepeat(form, quiet) {
   return { every: Math.min(n * (u === "y" ? 12 : 1), 240), everyDays: 0 };
 }
 
+/* ---------- Überschneidung: zur selben Zeit steht schon etwas ---------- */
+// Andere Fristen mit Uhrzeit am selben Tag, deren Zeiten sich überschneiden (ohne Endzeit zählt 1 Stunde).
+// Wiederholungen in Tagen (jeden Tag, jede Woche …) zählen an jedem ihrer Tage. Nur ein Hinweis, speichern geht trotzdem.
+function minutesOf(hm) { return parseInt(hm.slice(0, 2), 10) * 60 + parseInt(hm.slice(3, 5), 10); }
+function onDay(o, day) {
+  if (o.due === day) return true;
+  if (!(o.everyDays > 0) || o.end) return false;
+  var diff = Math.round((fromISO(day) - fromISO(o.due)) / 86400000);
+  return diff > 0 && diff % o.everyDays === 0;
+}
+function clashHTML(it) {
+  if (!it || !it.time || !it.due || it.end) return "";
+  var a = minutesOf(it.time), b = it.timeEnd ? minutesOf(it.timeEnd) : a + 60;
+  if (b <= a) b = a + 60;
+  var list = items.filter(function (o) {
+    if (o.id === it.id || !o.time || !onDay(o, it.due)) return false;
+    var c = minutesOf(o.time), d = o.timeEnd ? minutesOf(o.timeEnd) : c + 60;
+    return a < d && c < b;
+  });
+  if (!list.length) return "";
+  return '<p class="clash">' + esc(t("clash", { list: list.map(function (o) { return quote(o.title) + " (" + o.time + ")"; }).join(", ") })) + '</p>';
+}
+// Bestätigen und Bearbeiten: Hinweis beim Tippen aktualisieren
+function wireClash(form, base) {
+  function update() {
+    var end = parseTime(form.elements.timeEnd.value);
+    document.getElementById("clash").innerHTML = clashHTML({
+      id: base.id, due: form.elements.due.value, end: form.elements.end ? form.elements.end.value : "",
+      time: parseTime(form.elements.time.value) || "", timeEnd: end || ""
+    });
+  }
+  form.addEventListener("input", update);
+  update();
+}
+
 function itemFormHTML(it, opts) {
   return '<form id="frm" novalidate>' + (opts.intro || "") +
     '<label class="field"><span>' + t("form.what") + '</span><input name="title" type="text" value="' + esc(it.title) + '"></label>' +
@@ -944,7 +987,7 @@ function itemFormHTML(it, opts) {
     // ein Zeitraum wiederholt sich nicht (beim Erledigen würde sonst nur der erste Tag weiterrücken)
     (it.end ? '<div hidden>' + repeatHTML(it) + '</div>' : repeatHTML(it)) +
     leadHTML(it.lead) +
-    '<p class="err" id="err"></p><button class="btn" type="submit">' + t("save") + '</button>' + (opts.back || "") + '</form>';
+    '<div id="clash"></div><p class="err" id="err"></p><button class="btn" type="submit">' + t("save") + '</button>' + (opts.back || "") + '</form>';
 }
 // Liest das Formular in "it" ein; false, wenn Titel oder Datum fehlen
 function readItemForm(form, it) {
@@ -988,6 +1031,7 @@ function showDraft(d, said) {
   var form = document.getElementById("frm");
   wireTime(form);
   wireRepeat(form);
+  wireClash(form, d);
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!readItemForm(form, d)) return;
@@ -1101,8 +1145,8 @@ function fieldHTML(tp, f) {
     input = '<select name="' + f.key + '">' + f.options.map(function (o) {
       return '<option value="' + o[0] + '"' + (String(o[0]) === String(v) ? " selected" : "") + '>' + esc(o[1]) + '</option>';
     }).join("") + '</select>';
-  } else if (f.type === "months") {
-    input = '<input name="' + f.key + '" type="number" min="1" max="120" inputmode="numeric" value="' + esc(v) + '">';
+  } else if (f.type === "months" || f.type === "days") {
+    input = '<input name="' + f.key + '" type="number" min="1" max="' + (f.type === "days" ? 365 : 120) + '" inputmode="numeric" value="' + esc(v) + '">';
   } else {
     input = '<input name="' + f.key + '" type="' + f.type + '" value="' + esc(v) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : "") + '>';
   }
@@ -1146,7 +1190,7 @@ function showNew(tid) {
     // Zeitraum (Urlaubstage): ganze Tage, keine Uhrzeit
     (tp.range ? '<div hidden>' + timeHTML("", undefined) + '</div>' : timeHTML("", undefined)) +
     leadHTML(tp.lead) +
-    '<div class="preview" id="pv"></div><p class="err" id="err"></p>' +
+    '<div class="preview" id="pv"></div><div id="clash"></div><p class="err" id="err"></p>' +
     '<button class="btn" type="submit">' + t("save") + '</button>' +
     '<button class="btn light" type="button" data-act="add">' + t("back") + '</button></form>');
 
@@ -1171,6 +1215,7 @@ function showNew(tid) {
     // Zeitraum: "Zeitraum 21.12. – 06.01. …" statt "Fällig am …"
     if (it && it.end) pv = esc(t("dl.range")) + " " + pv.slice(pv.indexOf("<b>"));
     document.getElementById("pv").innerHTML = pv;
+    document.getElementById("clash").innerHTML = clashHTML(it);
   }
   form.addEventListener("input", update);
   form.addEventListener("submit", function (e) {
@@ -1195,7 +1240,8 @@ function showItem(id) {
   openSheet('<div class="st-' + s.key + '"><div class="d-head">' + icoBox(it) + '<div><h3>' + esc(it.title) + '</h3>' +
     '<span class="pill">' + esc(pillText(s)) + '</span></div></div>' +
     '<dl><dt>' + t(it.end ? "dl.range" : "dl.due") + '</dt><dd>' + esc(dueText(it)) + '</dd>' +
-    '<dt>' + t("dl.remind") + '</dt><dd>' + esc(t("dl.remindVal", { n: it.lead, x: remindText(it) })) + '</dd>' +
+    '<dt>' + t("dl.remind") + '</dt><dd>' + esc(it.lead ? t("dl.remindVal", { n: it.lead, x: remindText(it) }) : t("dl.remindDay") + " (" + remindText(it) + ")") + '</dd>' +
+    lastHTML(it) +
     (it.time && it.remindMin ? '<dt>' + t("dl.soon") + '</dt><dd>' + esc(soonText(it.remindMin)) + '</dd>' : "") +
     '<dt>' + t("dl.every") + '</dt><dd>' + esc(everyText(it)) + '</dd>' +
     (it.note ? '<dt>' + t("form.note") + '</dt><dd class="dd-note">' + esc(it.note) + '</dd>' : "") + '</dl>' +
@@ -1245,6 +1291,7 @@ function showEdit(id, renewing) {
   var form = document.getElementById("frm");
   wireTime(form);
   wireRepeat(form);
+  wireClash(form, it);
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     var before = Object.assign({}, it);

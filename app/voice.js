@@ -116,6 +116,12 @@ LEX.de = {
   // Reihenfolge zählt: Spezielles vor Allgemeinem (Zahnarzt vor Arzt, Kfz-Versicherung vor Versicherung).
   // Familie ganz vorn: "Kinderreisepass" enthält "reisepass", "Kinderarzt" enthält "arzt".
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["verliehen", "ausgeliehen", "geliehen", "verleihe", "zurückbekommen"]],
+    ["nachhaken", ["nachhaken", "nachfragen", "warte auf", "warten auf", "rückruf", "rückerstattung", "erstattung"]],
+    ["rueckgabe", ["zurückschicken", "zurücksenden", "rückgabe", "retoure", "widerruf", "umtausch"]],
+    ["garantie", ["garantie", "gewährleistung"]],
+    ["umzug", ["umzug", "ummelden", "umziehen", "ziehe um", "wohnsitz", "neue wohnung"]],
     ["kinderpass", ["kinderreisepass", "kinderpass", "kinderausweis", "kinderpersonalausweis"]],
     ["elterngeld", ["elterngeld"]],
     ["hochzeitstag", ["hochzeitstag", "jahrestag"]],
@@ -206,6 +212,11 @@ LEX.en = {
   pm: / (pm|in the afternoon|in the evening|tonight|this afternoon|this evening)(?= )/, am: / (am|in the morning|this morning)(?= )/,
   dueWords: /booster|due|next/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", [" lent ", "lent to", " lend ", "borrowed", "loaned"]],
+    ["nachhaken", ["follow up", "chase up", "waiting for", "call back", "callback", "hear back", "refund"]],
+    ["rueckgabe", ["send back", "send it back", "return the parcel", "return the package", "return the order", "return window", "return period", "return it"]],
+    ["garantie", ["warranty", "guarantee"]],
     ["kinderpass", ["child's passport", "childs passport", "child passport", "kid's passport", "kids passport", "son's passport", "daughter's passport", "child's id"]],
     ["hochzeitstag", ["wedding anniversary", "anniversary"]],
     ["geburtstag", ["birthday", "bday", "b-day"]],
@@ -291,6 +302,11 @@ LEX.it = {
   am: / (del mattino|di mattina|la mattina|mattina|stamattina|stamani|domattina|di notte|notte)(?= )/,
   dueWords: /richiamo|scade|scadenza|prossim/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["prestato", "prestata", "prestati", "in prestito"]],
+    ["nachhaken", ["sollecitare", "sollecito", "in attesa di", "aspetto una risposta", "aspetto risposta", "richiamata", "rimborso"]],
+    ["rueckgabe", [" reso ", "fare il reso", "restituire", "rimandare indietro", "recesso"]],
+    ["garantie", ["garanzia"]],
     ["kinderpass", ["passaporto del bambino", "passaporto della bambina", "passaporto di mio figlio", "passaporto di mia figlia", "carta d' identità del bambino", "carta d' identità di mio figlio", "carta d' identità di mia figlia"]],
     ["hochzeitstag", ["anniversario"]],
     ["geburtstag", ["compleanno", "onomastico"]],
@@ -397,6 +413,11 @@ LEX.el = {
   am: / (το πρωί|πρωί|τα ξημερώματα|ξημερώματα|τη νύχτα|νύχτα|π\.μ\.|πμ)(?= )/,
   dueWords: /αναμνηστικ|λήγει|λήξη|επόμεν/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["δάνεισα", "δανεικό", "δανεικά", "δανείστηκα"]],
+    ["nachhaken", ["περιμένω απάντηση", "να ρωτήσω ξανά", "επιστροφή χρημάτων", "να με πάρει τηλέφωνο"]],
+    ["rueckgabe", ["επιστροφή προϊόντος", "επιστροφή παραγγελίας", "να επιστρέψω", "υπαναχώρηση"]],
+    ["garantie", ["εγγύηση"]],
     ["kinderpass", ["διαβατήριο του παιδιού", "παιδικό διαβατήριο", "διαβατήριο της κόρης", "διαβατήριο του γιου", "ταυτότητα του παιδιού", "ταυτότητα της κόρης", "ταυτότητα του γιου"]],
     ["hochzeitstag", ["επέτειο"]],
     // "γιορτή " mit Leerzeichen: Namenstag, aber nicht "γιορτές" (Feiertage)
@@ -484,6 +505,11 @@ LEX.es = {
   am: / (de la mañana|por la mañana|en la mañana|esta mañana|de la madrugada|madrugada|am)(?= )/,
   dueWords: /refuerzo|vence|vencimiento|caduca|próxim|toca/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["presté", "prestado", "prestada", "me prestó"]],
+    ["nachhaken", ["reclamar", "esperando respuesta", "esperar respuesta", "espero respuesta", "reembolso", "que me llamen"]],
+    ["rueckgabe", ["devolver", "devolución", "desistimiento"]],
+    ["garantie", ["garantía"]],
     ["kinderpass", ["pasaporte del niño", "pasaporte de la niña", "pasaporte de mi hijo", "pasaporte de mi hija", "dni del niño", "dni de la niña", "dni de mi hijo", "dni de mi hija"]],
     ["hochzeitstag", ["aniversario"]],
     ["geburtstag", ["cumpleaños", "onomástica"]],
@@ -569,6 +595,11 @@ LEX.fr = {
   am: / (du matin|ce matin|le matin|matin|de la nuit|cette nuit)(?= )/,
   dueWords: /rappel|expire|échéance|prochain/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["prêté", "prêtée", "emprunté", "empruntée"]],
+    ["nachhaken", ["relancer", "relance", "en attente de", "attendre une réponse", "remboursement"]],
+    ["rueckgabe", ["renvoyer", "retourner le", "retourner la", "retourner les", "délai de retour", "rétractation", "retour colis", "retour du colis"]],
+    ["garantie", ["garantie"]],
     ["kinderpass", ["passeport de l' enfant", "passeport enfant", "passeport de mon fils", "passeport de ma fille", "carte d' identité de l' enfant", "carte d' identité de mon fils", "carte d' identité de ma fille"]],
     // Hochzeitstag vor Geburtstag: "anniversaire de mariage" enthält "anniversaire"
     ["hochzeitstag", ["anniversaire de mariage"]],
@@ -650,6 +681,11 @@ LEX.nl = {
   am: / ('s ochtends|'s morgens|vanochtend|vanmorgen|morgenochtend|morgenvroeg|in de ochtend|'s nachts|ochtend|vannacht)(?= )/,
   dueWords: /herhaling|verloopt|vervalt|volgende/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["uitgeleend", "geleend", "terugkrijgen"]],
+    ["nachhaken", ["navragen", "nabellen", "wachten op", "wacht op", "terugbellen", "terugbetaling"]],
+    ["rueckgabe", ["terugsturen", "retourneren", "retourzending", "herroeping", "bedenktijd"]],
+    ["garantie", ["garantie"]],
     ["kinderpass", ["kinderpaspoort", "paspoort van mijn kind", "paspoort van mijn zoon", "paspoort van mijn dochter", "id-kaart van mijn kind", "identiteitskaart van mijn kind"]],
     // Trouwdag vor Verjaardag: "huwelijksverjaardag" enthält "verjaardag"
     ["hochzeitstag", ["trouwdag", "huwelijksverjaardag", "trouwjubileum"]],
@@ -741,6 +777,11 @@ LEX.pt = {
   am: / (da manhã|de manhã|pela manhã|esta manhã|da madrugada|de madrugada)(?= )/,
   dueWords: /reforço|vence|expira|próxim|validade/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["emprestei", "emprestado", "emprestada", "emprestou"]],
+    ["nachhaken", ["insistir", "à espera de", "aguardar resposta", "reembolso", "ligar de volta"]],
+    ["rueckgabe", ["devolver", "devolução", "livre resolução"]],
+    ["garantie", ["garantia"]],
     ["kinderpass", ["passaporte do meu filho", "passaporte da minha filha", "passaporte da criança", "cartão de cidadão do meu filho", "cartão de cidadão da minha filha", "cartão de cidadão da criança"]],
     // Casamento vor Geburtstag: "aniversário de casamento" enthält "aniversário"
     ["hochzeitstag", ["aniversário de casamento"]],
@@ -828,6 +869,11 @@ LEX.tr = {
   am: / (sabah|sabahleyin|bu sabah|gece)(?= )/,
   dueWords: /hatırlatma|bitiyor|doluyor|sonraki|gelecek/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["ödünç", "borç verdim"]],
+    ["nachhaken", ["takip et", "cevap bekliyorum", "yanıt bekliyorum", "geri arama", "geri dönüş bekliyorum", "para iadesi"]],
+    ["rueckgabe", ["iade", "geri gönder", "cayma"]],
+    ["garantie", ["garanti"]],
     ["kinderpass", ["çocuğun pasaportu", "çocuk pasaportu", "oğlumun pasaportu", "kızımın pasaportu", "çocuğun kimliği", "oğlumun kimliği", "kızımın kimliği"]],
     ["hochzeitstag", ["evlilik yıldönümü", "yıldönümü"]],
     ["geburtstag", ["doğum günü", "doğumgünü"]],
@@ -924,6 +970,11 @@ LEX.pl = {
   am: / (rano|z rana|rankiem|przed południem|w nocy|nad ranem)(?= )/,
   dueWords: /dawk|przypominaj|wygasa|kończy|następn|kolejn/,
   keywords: [
+    // Alltag (vor allem anderen: "Garantie Handy" ist Garantie, nicht Handyvertrag)
+    ["verliehen", ["pożyczyłem", "pożyczyłam", "pożyczon", "pożyczył"]],
+    ["nachhaken", ["upomnieć się", "dopytać", "czekam na", "oddzwonić", "zwrot pieniędzy"]],
+    ["rueckgabe", ["zwrot", "zwrócić", "odesłać", "odstąpienie"]],
+    ["garantie", ["gwarancj", "rękojmi"]],
     ["kinderpass", ["paszport dziecka", "paszportu dziecka", "paszport syna", "paszport córki", "dowód dziecka", "dowodu dziecka", "dowód osobisty dziecka", "dowód syna", "dowód córki"]],
     ["hochzeitstag", ["rocznica ślubu", "rocznicę ślubu", "rocznicy ślubu"]],
     ["geburtstag", ["urodzin", "imienin"]],
@@ -1245,7 +1296,7 @@ function detectTemplate(text, L) {
 function draftFrom(text) {
   var L = lexFor(), tid = detectTemplate(text, L), x = extract(text, L);
   // Hier wird der gesprochene Rest zum Titel ("Geburtstag von Anna", "Elternabend Grundschule")
-  var FREE = ["rechnung", "arzttermin", "eigene", "geburtstag", "hochzeitstag", "kinderarzt", "schule", "kinderpass", "reise", "checkin", "storno"];
+  var FREE = ["rechnung", "arzttermin", "eigene", "rueckgabe", "garantie", "verliehen", "nachhaken", "geburtstag", "hochzeitstag", "kinderarzt", "schule", "kinderpass", "reise", "checkin", "storno"];
   // Ausweis, Abo, TÜV … wiederholen sich nie täglich oder wöchentlich: "jeden Montag Fitnessstudio" ist eine eigene Frist
   if (x.repeat && x.repeat.everyDays && FREE.indexOf(tid) < 0) tid = "eigene";
   var tp = find(TEMPLATES, tid), free = FREE.indexOf(tid) >= 0;
