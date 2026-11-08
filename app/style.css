@@ -217,6 +217,8 @@ main { padding-bottom: 24px; }
 }
 .grab { width: 42px; height: 5px; margin: 4px auto 10px; border-radius: 3px; background: var(--line); }
 .sheet h3 { margin: 4px 0 12px; font-size: 20px; }
+/* Zweizeilige Titel gleichmäßig umbrechen: kein "…)" oder "bis" allein in der zweiten Zeile (ältere Browser: tidyTitle) */
+.tpl, .sheet h3, .txt b, .fitem b { text-wrap: balance; }
 .cat { margin: 14px 0 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .tpls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 /* Eigene Kategorie: gestrichelter Knopf zum Anlegen, Stift zum Umbenennen neben dem Namen */

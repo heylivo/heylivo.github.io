@@ -152,6 +152,9 @@ LEX.de = {
     ["checkup", ["check-up", "checkup", "check up", "vorsorge"]],
     ["tetanus", ["tetanus", "impfung", "auffrisch"]],
     ["arzttermin", ["arzt", "ärztin", "doktor", " dr ", "praxis", "physio"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["kreditkarte", "girokarte", "bankkarte", "debitkarte", "ec-karte", "ec karte"]],
+    ["kredit", ["zinsbindung", "baufinanzierung", "anschlussfinanzierung", "darlehen", "kredit"]],
     ["rechnung", ["bezahlen", "überweisen", "überweisung", " zahlen "]]
   ],
   // Füllwörter, die nicht in den Titel gehören (mehrteilige zuerst)
@@ -243,6 +246,10 @@ LEX.en = {
     ["checkup", ["check-up", "checkup", "check up", "screening", "health check"]],
     ["tetanus", ["tetanus", "vaccination", "vaccine", "booster", " jab "]],
     ["arzttermin", ["doctor", " dr ", " gp ", "physio", "clinic", "hospital"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["credit card", "debit card", "bank card"]],
+    ["kredit", ["fixed rate", "remortgage", "mortgage", " loan "]],
+    ["abgabe", ["car tax", "road tax", "council tax", "property tax", "vehicle tax", " tax "]],
     ["rechnung", [" pay ", " rent ", "transfer"]]
   ],
   fillers: [
@@ -333,6 +340,10 @@ LEX.it = {
     ["abo", ["palestra", "abbonamento", "netflix", "spotify", "iscrizione"]],
     ["versicherung", ["assicurazion", "polizza"]],
     ["arzttermin", ["medico", "dottor", " dott", "visita", "fisioterap", "ospedale", "ambulatorio", "pediatra", "ginecolog", "oculista", "dermatolog"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["carta di credito", "carta di debito", "bancomat"]],
+    ["kredit", ["tasso fisso", "mutuo", "finanziamento"]],
+    ["abgabe", ["bollo auto", " imu ", " tari ", "tasse", "tassa", "imposta"]],
     ["rechnung", ["pagare", "bonifico", "affitto", " rata "]]
   ],
   fillers: [
@@ -446,6 +457,10 @@ LEX.el = {
     ["strom", ["ρεύμα", "ρεύματος", "ηλεκτρικ", "φυσικό αέριο", "αερίου", "ενέργεια", " δεη "]],
     ["abo", ["γυμναστήριο", "συνδρομή", "netflix", "spotify"]],
     ["arzttermin", ["γιατρ", "ιατρ", "παθολόγ", "καρδιολόγ", "γυναικολόγ", "παιδίατρ", "οφθαλμίατρ", "δερματολόγ", "φυσικοθεραπ", "νοσοκομείο", "κλινική"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["πιστωτική κάρτα", "χρεωστική κάρτα", "τραπεζική κάρτα"]],
+    ["kredit", ["σταθερό επιτόκιο", "στεγαστικό", "δάνειο"]],
+    ["abgabe", ["τέλη κυκλοφορίας", "ενφια", "εφορία", "φόρος", "φόρο"]],
     ["rechnung", ["πληρωμή", "πληρώσω", "πλήρωσε", "ενοίκιο", "νοίκι", "έμβασμα"]]
   ],
   fillers: [
@@ -536,6 +551,10 @@ LEX.es = {
     ["abo", ["gimnasio", "suscripción", "netflix", "spotify", "abono", "membresía", "cuota"]],
     ["versicherung", ["seguro", "póliza"]],
     ["arzttermin", ["médico", "médica", "doctor", "cita médica", "fisio", "clínica", "hospital", "consulta", "centro de salud", "pediatra", "ginecólog", "oculista", "dermatólog"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["tarjeta de crédito", "tarjeta de débito", "tarjeta bancaria"]],
+    ["kredit", ["tipo fijo", "hipoteca", "préstamo"]],
+    ["abgabe", ["impuesto de circulación", " ibi ", "impuesto", "hacienda"]],
     ["rechnung", [" pagar ", "transferencia", "alquiler"]]
   ],
   fillers: [
@@ -627,6 +646,10 @@ LEX.fr = {
     ["abo", ["salle de sport", "abonnement", "netflix", "spotify", "adhésion", " gym ", " sport "]],
     ["versicherung", ["assurance", "mutuelle"]],
     ["arzttermin", ["médecin", "docteur", " dr ", "kiné", "généraliste", "hôpital", "clinique", "cabinet", "ophtalmo", "gynéco", "dermato", "pédiatre"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["carte bancaire", "carte de crédit", "carte bleue"]],
+    ["kredit", ["taux fixe", "prêt immobilier", "crédit immobilier", "prêt bancaire"]],
+    ["abgabe", ["taxe foncière", "taxe", "impôt"]],
     ["rechnung", [" payer ", "virement", "loyer", " régler "]]
   ],
   fillers: [
@@ -713,6 +736,10 @@ LEX.nl = {
     ["abo", ["sportschool", "fitness", "abonnement", "netflix", "spotify", "lidmaatschap"]],
     ["versicherung", ["verzekering"]],
     ["arzttermin", ["dokter", "huisarts", " arts ", "specialist", "fysio", "ziekenhuis", "praktijk", " dr "]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["creditcard", "bankpas", "pinpas", "betaalpas"]],
+    ["kredit", ["rentevaste periode", "hypotheek", "lening"]],
+    ["abgabe", ["wegenbelasting", "motorrijtuigenbelasting", "belasting", "heffing"]],
     ["rechnung", [" betalen ", "overmaken", " huur "]]
   ],
   fillers: [
@@ -809,6 +836,10 @@ LEX.pt = {
     ["abo", ["ginásio", "academia", "assinatura", "subscrição", "netflix", "spotify", "mensalidade"]],
     ["versicherung", ["seguro"]],
     ["arzttermin", ["médico", "médica", "doutor", "doutora", "consulta", "fisioterap", "fisio", "clínica", "hospital", "centro de saúde", "pediatra", "ginecolog", "oftalmolog", "dermatolog"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["cartão de crédito", "cartão de débito", "cartão multibanco"]],
+    ["kredit", ["taxa fixa", "crédito habitação", "empréstimo"]],
+    ["abgabe", [" iuc ", " imi ", "imposto", "finanças"]],
     ["rechnung", [" pagar ", "transferência", " renda ", "aluguel"]]
   ],
   fillers: [
@@ -900,6 +931,10 @@ LEX.tr = {
     ["strom", ["elektrik", "doğalgaz", "doğal gaz", "enerji"]],
     ["abo", ["spor salonu", "üyelik", "abonelik", "netflix", "spotify", " gym "]],
     ["versicherung", ["sigorta", "kasko"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["kredi kartı", "banka kartı"]],
+    ["kredit", ["sabit faiz", "konut kredisi", "kredi"]],
+    ["abgabe", [" mtv ", "emlak vergisi", "vergi"]],
     ["rechnung", [" öde", "ödeme", " kira", "havale"]]
   ],
   fillers: [
@@ -1003,6 +1038,10 @@ LEX.pl = {
     ["abo", ["siłowni", "siłownia", "karnet", "subskrypcj", "netflix", "spotify", "członkostw"]],
     ["versicherung", ["ubezpieczeni", "polis", " oc ", " ac "]],
     ["arzttermin", ["lekarz", "lekark", "doktor", "przychodni", "szpital", "wizyt", "fizjoterap", "pediatr", "ginekolog", "okulist", "dermatolog"]],
+    // Geld (vor "bezahlen": "Kfz-Steuer zahlen" ist eine Steuer, keine Rechnung)
+    ["karte", ["karta kredytowa", "kartę kredytową", "karta płatnicza", "karta debetowa", "kredytow", "płatnicz", "debetow"]],
+    ["kredit", ["stałe oprocentowanie", "kredyt hipoteczny", "kredyt"]],
+    ["abgabe", ["podatek", "podatku"]],
     ["rechnung", ["zapłacić", "zapłać", "opłacić", "opłata", "przelew", "czynsz"]]
   ],
   fillers: [
@@ -1296,7 +1335,7 @@ function detectTemplate(text, L) {
 function draftFrom(text) {
   var L = lexFor(), tid = detectTemplate(text, L), x = extract(text, L);
   // Hier wird der gesprochene Rest zum Titel ("Geburtstag von Anna", "Elternabend Grundschule")
-  var FREE = ["rechnung", "arzttermin", "eigene", "rueckgabe", "garantie", "verliehen", "nachhaken", "geburtstag", "hochzeitstag", "kinderarzt", "schule", "kinderpass", "reise", "checkin", "storno"];
+  var FREE = ["rechnung", "arzttermin", "eigene", "rueckgabe", "garantie", "verliehen", "nachhaken", "abgabe", "kredit", "geburtstag", "hochzeitstag", "kinderarzt", "schule", "kinderpass", "reise", "checkin", "storno"];
   // Ausweis, Abo, TÜV … wiederholen sich nie täglich oder wöchentlich: "jeden Montag Fitnessstudio" ist eine eigene Frist
   if (x.repeat && x.repeat.everyDays && FREE.indexOf(tid) < 0) tid = "eigene";
   var tp = find(TEMPLATES, tid), free = FREE.indexOf(tid) >= 0;

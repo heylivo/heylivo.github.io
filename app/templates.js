@@ -187,6 +187,27 @@ var TEMPLATES = [
     id: "steuer", cat: "money", lead: 45, only: "de", fields: [],
     compute: function () { return { due: nextYearly(7, 31), every: 12 }; }
   },
+  {
+    // Steuern & Abgaben mit eigenem Datum (Kfz-Steuer, Grundsteuer, ENFIA …), vorbelegt jährlich.
+    // not: nicht auf Deutsch - dort steht an dieser Stelle die Steuererklärung (so hat jede Sprache 4 Vorlagen)
+    id: "abgabe", cat: "money", lead: 14, not: "de",
+    fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }, { key: "every", type: "repeat", value: "m12" }],
+    compute: function (v) {
+      var r = v.every && typeof v.every === "object" ? v.every : parseRepeatValue(v.every);
+      return { due: fromISO(v.date), every: r.every, everyDays: r.everyDays };
+    }
+  },
+  {
+    // Bank- oder Kreditkarte: gültig bis Ende des Monats auf der Karte. Erneuern wie bei Ausweisen (neues Datum).
+    id: "karte", cat: "money", lead: 30, renew: true,
+    fields: [{ key: "what", type: "text", optional: true }, { key: "month", type: "month" }],
+    compute: function (v) { return { due: endOfMonth(v.month), every: 0 }; }
+  },
+  {
+    // Ende der Zinsbindung (Baufinanzierung) oder Kreditlaufzeit: ein halbes Jahr vorher vergleichen
+    id: "kredit", cat: "money", lead: 180,
+    fields: [{ key: "what", type: "text", optional: true }, { key: "date", type: "date" }], compute: dated
+  },
 
   // Termine
   {
@@ -318,6 +339,8 @@ var TPL_TEXT = {
     verliehen: { title: "Verliehen / ausgeliehen", hint: "Bohrmaschine, Buch oder Geld: Trag ein, bis wann es zurück sein soll – Livo erinnert dich 3 Tage vorher.", labels: { what: "Was und an wen?", date: "Zurück bis" }, ph: { what: "z. B. Bohrmaschine an Tom" }, name: "{what} – zurück bis", name0: "Verliehen – zurück bis" },
     nachhaken: { title: "Auf Antwort warten / nachhaken", hint: "Rückruf, Antwort vom Amt, Erstattung oder Lieferung: Trag ein, bis wann du etwas erwartest. Kommt nichts, erinnert dich Livo an diesem Tag ans Nachhaken.", labels: { what: "Worauf wartest du?", date: "Nachhaken am" }, ph: { what: "z. B. Rückruf vom Vermieter" }, name: "Nachhaken – {what}", name0: "Nachhaken" },
     umzug: { title: "Umzug – Wohnsitz ummelden", hint: "In Deutschland musst du dich innerhalb von 2 Wochen nach dem Einzug beim Bürgeramt anmelden. Nimm die Wohnungsgeberbestätigung vom Vermieter mit. Termine sind oft knapp – am besten gleich buchen.", labels: { date: "Einzug am" }, name0: "Wohnsitz ummelden (Umzug)" },
+    karte: { title: "Bank- / Kreditkarte läuft ab", hint: "Die neue Karte schickt die Bank meist von selbst. Hinterleg sie danach bei Abos, Online-Shops und Apps – sonst schlagen Zahlungen fehl.", labels: { what: "Welche Karte?", month: "Gültig bis (Monat/Jahr auf der Karte)" }, ph: { what: "z. B. Visa, Girokarte", month: "z. B. 2028-03" }, name: "{what} – Karte läuft ab", name0: "Karte läuft ab" },
+    kredit: { title: "Kredit / Zinsbindung endet", hint: "Vor dem Ende der Zinsbindung lohnt sich ein Vergleich: Du kannst bei deiner Bank verlängern oder zu einer anderen wechseln. Livo erinnert dich ein halbes Jahr vorher.", labels: { what: "Welcher Kredit?", date: "Zinsbindung endet am" }, ph: { what: "z. B. Baufinanzierung" }, name: "{what} – Zinsbindung endet", name0: "Kredit – Zinsbindung endet" },
     demo: { bill: "Stadtwerke", phone: "Telekom" }
   },
   en: {
@@ -363,7 +386,7 @@ var TPL_TEXT = {
     reise: { title: "Trip / holiday", hint: "Livo reminds you 2 weeks before – time to sort out passport, luggage, pets, plants and post.", labels: { what: "Where to?", date: "Departure on" }, ph: { what: "e.g. Mallorca" }, name: "Trip – {what}", name0: "Trip / holiday" },
     urlaubstage: { title: "Days off", hint: "Add the days off you get from your employer. Livo counts the working days – without weekends and public holidays – and reminds you a week before.", labels: { what: "Name", date: "First day off", until: "Last day off" }, ph: { what: "e.g. Christmas break" }, name: "{what}", name0: "Days off" },
     checkin: { title: "Online check-in", hint: "Many airlines open online check-in 24 to 48 hours before departure. Livo reminds you the day before.", labels: { what: "Which flight?", date: "Departure on" }, ph: { what: "e.g. easyJet to Rome" }, name: "Check-in – {what}", name0: "Online check-in" },
-    storno: { title: "Free cancellation until", hint: "Many hotels and holiday rentals can only be cancelled free of charge up to a certain day. You'll find it in your booking confirmation.", labels: { what: "Which booking?", date: "Free cancellation until" }, ph: { what: "e.g. hotel in Rome" }, name: "{what} – free cancellation until", name0: "Booking – free cancellation until" },
+    storno: { title: "Free cancellation deadline", hint: "Many hotels and holiday rentals can only be cancelled free of charge up to a certain day. You'll find it in your booking confirmation.", labels: { what: "Which booking?", date: "Free cancellation until" }, ph: { what: "e.g. hotel in Rome" }, name: "{what} – free cancellation until", name0: "Booking – free cancellation until" },
     reiseimpfung: { title: "Travel vaccinations", hint: "Some vaccinations need several appointments. Ideally get advice from your GP or a travel clinic 6 to 8 weeks before you travel.", labels: { date: "Departure on" }, name0: "Travel vaccinations – see a doctor" },
     einreise: { title: "Travel authorisation / visa", hint: "Countries such as the USA (ESTA), Canada (eTA) and the UK (ETA) require an online travel authorisation before you travel. Depending on the country it's valid for 2 to 5 years – but it ends when your passport expires.", labels: { what: "For which country?", date: "Valid until" }, ph: { what: "e.g. ESTA USA" }, name: "{what} – valid until", name0: "Travel authorisation / visa" },
     reiseversicherung: { title: "Travel health insurance", hint: "Your regular health cover often pays only part of the costs abroad, or nothing – for example no repatriation. Check in good time that your cover is still running.", labels: { what: "Which insurance?", date: "Expires on" }, ph: { what: "e.g. annual travel insurance" }, name: "{what} – expires", name0: "Travel health insurance – expires" },
@@ -375,6 +398,9 @@ var TPL_TEXT = {
     garantie: { title: "Warranty", hint: "Many products come with a 2-year warranty from the date of purchase – the exact length is on the receipt or warranty card. Keep the receipt safe.", labels: { what: "What?", start: "Bought on", term: "Warranty (months)" }, ph: { what: "e.g. washing machine" }, name: "{what} warranty – ends", name0: "Warranty ends" },
     verliehen: { title: "Lent / borrowed", hint: "A drill, a book or money: add when it should be back – Livo reminds you 3 days before.", labels: { what: "What and to whom?", date: "Back by" }, ph: { what: "e.g. drill to Tom" }, name: "{what} – back by", name0: "Lent – back by" },
     nachhaken: { title: "Waiting for an answer", hint: "A callback, a reply from an office, a refund or a delivery: add when you expect it. If nothing comes, Livo reminds you to follow up that day.", labels: { what: "What are you waiting for?", date: "Follow up on" }, ph: { what: "e.g. callback from the landlord" }, name: "Follow up – {what}", name0: "Follow up" },
+    abgabe: { title: "Taxes & fees", hint: "Car tax, council tax, property tax or other yearly fees: add the due date – Livo reminds you in time, every year by default.", labels: { what: "Which tax or fee?", date: "Due on", every: "Repeats" }, ph: { what: "e.g. car tax, council tax" }, name: "{what}", name0: "Taxes & fees" },
+    karte: { title: "Bank / credit card expires", hint: "Your bank usually sends the new card by itself. Afterwards, update it in subscriptions, online shops and apps – otherwise payments fail.", labels: { what: "Which card?", month: "Valid until (month/year on the card)" }, ph: { what: "e.g. Visa, debit card", month: "e.g. 2028-03" }, name: "{what} – card expires", name0: "Card expires" },
+    kredit: { title: "Loan / fixed rate ends", hint: "Before your fixed rate ends, it pays to compare: you can stay with your bank or switch to another. Livo reminds you six months before.", labels: { what: "Which loan?", date: "Fixed rate ends on" }, ph: { what: "e.g. mortgage" }, name: "{what} – fixed rate ends", name0: "Loan – fixed rate ends" },
     demo: { bill: "Electricity", phone: "Vodafone" }
   },
   it: {
@@ -432,6 +458,9 @@ var TPL_TEXT = {
     garantie: { title: "Garanzia", hint: "Molti prodotti hanno 2 anni di garanzia dall'acquisto – la durata esatta è sullo scontrino o sul certificato di garanzia. Conserva lo scontrino.", labels: { what: "Cosa?", start: "Acquistato il", term: "Garanzia (mesi)" }, ph: { what: "es. lavatrice" }, name: "Garanzia {what} – scade", name0: "Garanzia in scadenza" },
     verliehen: { title: "Prestato / preso in prestito", hint: "Trapano, libro o soldi: indica entro quando deve tornare – Livo ti avvisa 3 giorni prima.", labels: { what: "Cosa e a chi?", date: "Da restituire entro" }, ph: { what: "es. trapano a Marco" }, name: "{what} – restituire entro", name0: "Prestito – restituire entro" },
     nachhaken: { title: "In attesa di risposta", hint: "Una richiamata, la risposta di un ufficio, un rimborso o una consegna: indica entro quando te lo aspetti. Se non arriva nulla, Livo ti ricorda quel giorno di sollecitare.", labels: { what: "Cosa aspetti?", date: "Sollecitare il" }, ph: { what: "es. richiamata del padrone di casa" }, name: "Sollecitare – {what}", name0: "Sollecitare" },
+    abgabe: { title: "Tasse e imposte", hint: "Bollo auto, IMU, TARI o altre tasse annuali: inserisci la scadenza – Livo ti avvisa in tempo, di solito ogni anno.", labels: { what: "Quale tassa?", date: "Scade il", every: "Ripetizione" }, ph: { what: "es. bollo auto, IMU" }, name: "{what}", name0: "Tasse e imposte" },
+    karte: { title: "Carta bancaria / di credito in scadenza", hint: "Di solito la banca invia da sola la nuova carta. Poi aggiornala negli abbonamenti, nei negozi online e nelle app – altrimenti i pagamenti non vanno a buon fine.", labels: { what: "Quale carta?", month: "Valida fino a (mese/anno sulla carta)" }, ph: { what: "es. Visa, bancomat", month: "es. 2028-03" }, name: "{what} – carta in scadenza", name0: "Carta in scadenza" },
+    kredit: { title: "Mutuo / fine del tasso fisso", hint: "Prima che finisca il tasso fisso conviene confrontare: puoi restare con la tua banca o cambiarla. Livo ti avvisa sei mesi prima.", labels: { what: "Quale finanziamento?", date: "Il tasso fisso finisce il" }, ph: { what: "es. mutuo casa" }, name: "{what} – fine del tasso fisso", name0: "Mutuo – fine del tasso fisso" },
     demo: { bill: "Luce", phone: "TIM" }
   },
   el: {
@@ -454,7 +483,7 @@ var TPL_TEXT = {
       name: "Συμβόλαιο {what} – λήξη δέσμευσης", name0: "Κινητό / internet – λήξη δέσμευσης"
     },
     versicherung: {
-      title: "Ασφάλεια (σπιτιού, αστική ευθύνη …)", hint: "Μέχρι αυτή τη μέρα πρέπει να φτάσει η καταγγελία στην ασφαλιστική. Αλλιώς το συμβόλαιο συνήθως ανανεώνεται για έναν χρόνο.",
+      title: "Ασφάλεια\u00a0(σπιτιού, αστική\u00a0ευθύνη\u00a0…)", hint: "Μέχρι αυτή τη μέρα πρέπει να φτάσει η καταγγελία στην ασφαλιστική. Αλλιώς το συμβόλαιο συνήθως ανανεώνεται για έναν χρόνο.",
       labels: { what: "Ποια ασφάλεια;", end: "Το συμβόλαιο λήγει στις", notice: "Προθεσμία καταγγελίας (μήνες)" }, ph: { what: "π.χ. ασφάλεια σπιτιού" },
       name: "{what} – τελευταία μέρα καταγγελίας", name0: "Ασφάλεια – τελευταία μέρα καταγγελίας"
     },
@@ -489,6 +518,9 @@ var TPL_TEXT = {
     garantie: { title: "Εγγύηση", hint: "Πολλά προϊόντα έχουν εγγύηση 2 ετών από την αγορά – η ακριβής διάρκεια αναγράφεται στην απόδειξη ή στο έντυπο εγγύησης. Κράτα την απόδειξη.", labels: { what: "Τι;", start: "Αγορά στις", term: "Εγγύηση (μήνες)" }, ph: { what: "π.χ. πλυντήριο" }, name: "Εγγύηση {what} – λήγει", name0: "Λήξη εγγύησης" },
     verliehen: { title: "Δανεικά", hint: "Δράπανο, βιβλίο ή χρήματα: γράψε μέχρι πότε πρέπει να επιστραφούν – το Livo σε ειδοποιεί 3 ημέρες πριν.", labels: { what: "Τι και σε ποιον;", date: "Επιστροφή έως" }, ph: { what: "π.χ. δράπανο στον Νίκο" }, name: "{what} – επιστροφή έως", name0: "Δανεικό – επιστροφή έως" },
     nachhaken: { title: "Αναμονή απάντησης", hint: "Επιστροφή κλήσης, απάντηση από υπηρεσία, επιστροφή χρημάτων ή παράδοση: γράψε πότε το περιμένεις. Αν δεν έρθει τίποτα, το Livo σου θυμίζει εκείνη τη μέρα να ρωτήσεις ξανά.", labels: { what: "Τι περιμένεις;", date: "Να ρωτήσω ξανά στις" }, ph: { what: "π.χ. τηλέφωνο από τον ιδιοκτήτη" }, name: "Να ρωτήσω ξανά – {what}", name0: "Να ρωτήσω ξανά" },
+    abgabe: { title: "Φόροι & τέλη", hint: "Τέλη κυκλοφορίας, ΕΝΦΙΑ ή άλλοι ετήσιοι φόροι: γράψε την προθεσμία – το Livo σε ειδοποιεί έγκαιρα, συνήθως κάθε χρόνο.", labels: { what: "Ποιος φόρος ή ποιο τέλος;", date: "Λήγει στις", every: "Επανάληψη" }, ph: { what: "π.χ. τέλη κυκλοφορίας, ΕΝΦΙΑ" }, name: "{what}", name0: "Φόροι & τέλη" },
+    karte: { title: "Τραπεζική / πιστωτική κάρτα λήγει", hint: "Η τράπεζα συνήθως στέλνει μόνη της τη νέα κάρτα. Μετά πέρασέ τη στις συνδρομές, στα e-shop και στις εφαρμογές – αλλιώς οι πληρωμές αποτυγχάνουν.", labels: { what: "Ποια κάρτα;", month: "Ισχύει έως (μήνας/έτος στην κάρτα)" }, ph: { what: "π.χ. Visa, χρεωστική", month: "π.χ. 2028-03" }, name: "{what} – λήξη κάρτας", name0: "Λήξη κάρτας" },
+    kredit: { title: "Δάνειο / λήξη σταθερού επιτοκίου", hint: "Πριν λήξει το σταθερό επιτόκιο, αξίζει να συγκρίνεις: μπορείς να μείνεις στην τράπεζά σου ή να αλλάξεις. Το Livo σε ειδοποιεί έξι μήνες πριν.", labels: { what: "Ποιο δάνειο;", date: "Το σταθερό επιτόκιο λήγει στις" }, ph: { what: "π.χ. στεγαστικό" }, name: "{what} – λήξη σταθερού επιτοκίου", name0: "Δάνειο – λήξη σταθερού επιτοκίου" },
     demo: { bill: "ΔΕΗ", phone: "Cosmote" }
   },
   es: {
@@ -546,6 +578,9 @@ var TPL_TEXT = {
     garantie: { title: "Garantía", hint: "Muchos productos tienen 2 años de garantía desde la compra; la duración exacta figura en el tique o en el certificado de garantía. Guarda el tique.", labels: { what: "¿Qué?", start: "Comprado el", term: "Garantía (meses)" }, ph: { what: "p. ej. lavadora" }, name: "Garantía {what} – vence", name0: "Fin de la garantía" },
     verliehen: { title: "Prestado", hint: "Un taladro, un libro o dinero: indica hasta cuándo debe volver; Livo te avisa 3 días antes.", labels: { what: "¿Qué y a quién?", date: "Devolver hasta" }, ph: { what: "p. ej. taladro a Juan" }, name: "{what} – devolver hasta", name0: "Préstamo – devolver hasta" },
     nachhaken: { title: "Esperando respuesta", hint: "Una llamada, la respuesta de un organismo, un reembolso o una entrega: indica cuándo lo esperas. Si no llega nada, Livo te recuerda ese día que reclames.", labels: { what: "¿Qué esperas?", date: "Reclamar el" }, ph: { what: "p. ej. llamada del casero" }, name: "Reclamar – {what}", name0: "Reclamar" },
+    abgabe: { title: "Impuestos y tasas", hint: "Impuesto de circulación, IBI u otras tasas anuales: indica la fecha límite; Livo te avisa a tiempo, normalmente cada año.", labels: { what: "¿Qué impuesto o tasa?", date: "Vence el", every: "Repetición" }, ph: { what: "p. ej. impuesto de circulación, IBI" }, name: "{what}", name0: "Impuestos y tasas" },
+    karte: { title: "Tarjeta bancaria / de crédito caduca", hint: "Normalmente el banco envía la nueva tarjeta solo. Después actualízala en suscripciones, tiendas online y apps; si no, los pagos fallan.", labels: { what: "¿Qué tarjeta?", month: "Válida hasta (mes/año de la tarjeta)" }, ph: { what: "p. ej. Visa, débito", month: "p. ej. 2028-03" }, name: "{what} – caduca la tarjeta", name0: "Caduca la tarjeta" },
+    kredit: { title: "Préstamo / fin del tipo fijo", hint: "Antes de que termine el tipo fijo conviene comparar: puedes seguir con tu banco o cambiar a otro. Livo te avisa seis meses antes.", labels: { what: "¿Qué préstamo?", date: "El tipo fijo termina el" }, ph: { what: "p. ej. hipoteca" }, name: "{what} – fin del tipo fijo", name0: "Préstamo – fin del tipo fijo" },
     demo: { bill: "Luz", phone: "Movistar" }
   },
   fr: {
@@ -603,6 +638,9 @@ var TPL_TEXT = {
     garantie: { title: "Garantie", hint: "Beaucoup de produits ont 2 ans de garantie à partir de l'achat – la durée exacte figure sur le ticket ou le bon de garantie. Gardez bien le ticket.", labels: { what: "Quoi ?", start: "Acheté le", term: "Garantie (mois)" }, ph: { what: "ex. lave-linge" }, name: "Garantie {what} – fin", name0: "Fin de la garantie" },
     verliehen: { title: "Prêté / emprunté", hint: "Une perceuse, un livre ou de l'argent : indiquez quand il doit revenir – Livo vous prévient 3 jours avant.", labels: { what: "Quoi et à qui ?", date: "À rendre le" }, ph: { what: "ex. perceuse à Paul" }, name: "{what} – à rendre le", name0: "Prêt – à rendre le" },
     nachhaken: { title: "En attente d'une réponse", hint: "Un rappel téléphonique, une réponse de l'administration, un remboursement ou une livraison : indiquez quand vous l'attendez. Si rien n'arrive, Livo vous rappelle ce jour-là de relancer.", labels: { what: "Qu'attendez-vous ?", date: "Relancer le" }, ph: { what: "ex. appel du propriétaire" }, name: "Relancer – {what}", name0: "Relancer" },
+    abgabe: { title: "Impôts et taxes", hint: "Taxe foncière ou autres taxes annuelles : indiquez la date limite – Livo vous prévient à temps, en général chaque année.", labels: { what: "Quel impôt ou quelle taxe ?", date: "À payer le", every: "Répétition" }, ph: { what: "ex. taxe foncière" }, name: "{what}", name0: "Impôts et taxes" },
+    karte: { title: "Carte bancaire qui expire", hint: "La banque envoie généralement la nouvelle carte d'elle-même. Mettez-la ensuite à jour dans vos abonnements, boutiques en ligne et applis – sinon les paiements échouent.", labels: { what: "Quelle carte ?", month: "Valable jusqu'à (mois/année sur la carte)" }, ph: { what: "ex. Visa, carte bleue", month: "ex. 2028-03" }, name: "{what} – carte qui expire", name0: "Carte qui expire" },
+    kredit: { title: "Prêt / fin du taux fixe", hint: "Avant la fin du taux fixe, comparez : vous pouvez rester dans votre banque ou en changer. Livo vous prévient six mois avant.", labels: { what: "Quel prêt ?", date: "Fin du taux fixe le" }, ph: { what: "ex. prêt immobilier" }, name: "{what} – fin du taux fixe", name0: "Prêt – fin du taux fixe" },
     demo: { bill: "Électricité", phone: "Orange" }
   },
   nl: {
@@ -660,6 +698,9 @@ var TPL_TEXT = {
     garantie: { title: "Garantie", hint: "Veel producten hebben 2 jaar garantie vanaf aankoop – de precieze duur staat op de kassabon of het garantiebewijs. Bewaar de bon goed.", labels: { what: "Wat?", start: "Gekocht op", term: "Garantie (maanden)" }, ph: { what: "bijv. wasmachine" }, name: "Garantie {what} – eindigt", name0: "Garantie eindigt" },
     verliehen: { title: "Uitgeleend / geleend", hint: "Een boormachine, boek of geld: vul in wanneer het terug moet zijn – Livo herinnert je 3 dagen van tevoren.", labels: { what: "Wat en aan wie?", date: "Terug vóór" }, ph: { what: "bijv. boormachine aan Tom" }, name: "{what} – terug vóór", name0: "Uitgeleend – terug vóór" },
     nachhaken: { title: "Wachten op antwoord", hint: "Terugbellen, antwoord van een instantie, terugbetaling of levering: vul in wanneer je het verwacht. Komt er niets, dan herinnert Livo je die dag eraan om na te vragen.", labels: { what: "Waar wacht je op?", date: "Navragen op" }, ph: { what: "bijv. terugbellen door de verhuurder" }, name: "Navragen – {what}", name0: "Navragen" },
+    abgabe: { title: "Belastingen & heffingen", hint: "Motorrijtuigenbelasting, gemeentelijke heffingen of andere jaarlijkse kosten: vul de datum in – Livo herinnert je op tijd, standaard elk jaar.", labels: { what: "Welke belasting of heffing?", date: "Betalen vóór", every: "Herhalen" }, ph: { what: "bijv. gemeentelijke belastingen" }, name: "{what}", name0: "Belastingen & heffingen" },
+    karte: { title: "Bankpas / creditcard verloopt", hint: "De bank stuurt de nieuwe pas meestal vanzelf. Pas daarna je gegevens aan bij abonnementen, webshops en apps – anders mislukken betalingen.", labels: { what: "Welke kaart?", month: "Geldig tot (maand/jaar op de kaart)" }, ph: { what: "bijv. Visa, bankpas", month: "bijv. 2028-03" }, name: "{what} – kaart verloopt", name0: "Kaart verloopt" },
+    kredit: { title: "Hypotheek / rentevaste periode eindigt", hint: "Voordat je rentevaste periode afloopt, loont vergelijken: je kunt bij je bank blijven of overstappen. Livo herinnert je een half jaar van tevoren.", labels: { what: "Welke lening?", date: "Rentevaste periode eindigt op" }, ph: { what: "bijv. hypotheek" }, name: "{what} – rentevaste periode eindigt", name0: "Rentevaste periode eindigt" },
     demo: { bill: "Energie", phone: "KPN" }
   },
   pt: {
@@ -717,6 +758,9 @@ var TPL_TEXT = {
     garantie: { title: "Garantia", hint: "Muitos produtos têm 2 anos de garantia a partir da compra – a duração exata está no talão ou no certificado de garantia. Guarde bem o talão.", labels: { what: "O quê?", start: "Comprado em", term: "Garantia (meses)" }, ph: { what: "ex.: máquina de lavar" }, name: "Garantia {what} – termina", name0: "Fim da garantia" },
     verliehen: { title: "Emprestado", hint: "Um berbequim, um livro ou dinheiro: indique até quando deve voltar – o Livo avisa-o 3 dias antes.", labels: { what: "O quê e a quem?", date: "Devolver até" }, ph: { what: "ex.: berbequim ao João" }, name: "{what} – devolver até", name0: "Empréstimo – devolver até" },
     nachhaken: { title: "À espera de resposta", hint: "Uma chamada, a resposta de um serviço, um reembolso ou uma entrega: indique quando espera. Se nada chegar, o Livo lembra-o nesse dia de insistir.", labels: { what: "De que está à espera?", date: "Insistir em" }, ph: { what: "ex.: chamada do senhorio" }, name: "Insistir – {what}", name0: "Insistir" },
+    abgabe: { title: "Impostos e taxas", hint: "IUC, IMI ou outras taxas anuais: indique a data limite – o Livo avisa-o a tempo, normalmente todos os anos.", labels: { what: "Que imposto ou taxa?", date: "Vence em", every: "Repetição" }, ph: { what: "ex.: IUC, IMI" }, name: "{what}", name0: "Impostos e taxas" },
+    karte: { title: "Cartão bancário / de crédito expira", hint: "Normalmente o banco envia o novo cartão sozinho. Depois atualize-o nas subscrições, lojas online e apps – caso contrário, os pagamentos falham.", labels: { what: "Que cartão?", month: "Válido até (mês/ano no cartão)" }, ph: { what: "ex.: Visa, multibanco", month: "ex.: 2028-03" }, name: "{what} – cartão expira", name0: "Cartão expira" },
+    kredit: { title: "Crédito / fim da taxa fixa", hint: "Antes de terminar a taxa fixa, vale a pena comparar: pode ficar no seu banco ou mudar para outro. O Livo avisa-o seis meses antes.", labels: { what: "Que crédito?", date: "A taxa fixa termina em" }, ph: { what: "ex.: crédito habitação" }, name: "{what} – fim da taxa fixa", name0: "Crédito – fim da taxa fixa" },
     demo: { bill: "Luz", phone: "MEO" }
   },
   tr: {
@@ -774,6 +818,9 @@ var TPL_TEXT = {
     garantie: { title: "Garanti", hint: "Birçok ürünün satın alma tarihinden itibaren 2 yıl garantisi vardır – kesin süre fişte veya garanti belgesinde yazar. Fişi sakla.", labels: { what: "Ne?", start: "Satın alındı", term: "Garanti (ay)" }, ph: { what: "örn. çamaşır makinesi" }, name: "{what} garantisi bitiyor", name0: "Garanti bitiyor" },
     verliehen: { title: "Ödünç verilen", hint: "Matkap, kitap ya da para: ne zamana kadar geri gelmesi gerektiğini yaz – Livo 3 gün önce hatırlatır.", labels: { what: "Ne ve kime?", date: "Geri verilecek tarih" }, ph: { what: "örn. matkap – Ahmet" }, name: "{what} – geri dönüş", name0: "Ödünç – geri dönüş" },
     nachhaken: { title: "Cevap bekleniyor", hint: "Geri arama, bir kurumdan yanıt, para iadesi ya da teslimat: ne zaman beklediğini yaz. Bir şey gelmezse Livo o gün takip etmeni hatırlatır.", labels: { what: "Ne bekliyorsun?", date: "Takip tarihi" }, ph: { what: "örn. ev sahibinden geri arama" }, name: "Takip et – {what}", name0: "Takip et" },
+    abgabe: { title: "Vergiler ve harçlar", hint: "MTV, emlak vergisi veya diğer yıllık ödemeler: son tarihi yaz – Livo seni zamanında, genellikle her yıl hatırlatır.", labels: { what: "Hangi vergi veya harç?", date: "Son ödeme tarihi", every: "Tekrar" }, ph: { what: "örn. MTV, emlak vergisi" }, name: "{what}", name0: "Vergiler ve harçlar" },
+    karte: { title: "Banka / kredi kartının süresi doluyor", hint: "Banka yeni kartı genellikle kendisi gönderir. Sonra abonelikler, online mağazalar ve uygulamalarda güncelle – yoksa ödemeler başarısız olur.", labels: { what: "Hangi kart?", month: "Son kullanma (karttaki ay/yıl)" }, ph: { what: "örn. Visa, banka kartı", month: "örn. 2028-03" }, name: "{what} – kartın süresi doluyor", name0: "Kartın süresi doluyor" },
+    kredit: { title: "Kredi / sabit faiz bitiyor", hint: "Sabit faiz dönemi bitmeden karşılaştırmak faydalı: bankanda kalabilir ya da başka bir bankaya geçebilirsin. Livo altı ay önce hatırlatır.", labels: { what: "Hangi kredi?", date: "Sabit faiz bitiş tarihi" }, ph: { what: "örn. konut kredisi" }, name: "{what} – sabit faiz bitiyor", name0: "Kredi – sabit faiz bitiyor" },
     demo: { bill: "Elektrik", phone: "Turkcell" }
   },
   pl: {
@@ -831,6 +878,9 @@ var TPL_TEXT = {
     garantie: { title: "Gwarancja", hint: "Wiele produktów ma 2 lata gwarancji od zakupu – dokładny okres znajdziesz na paragonie lub w karcie gwarancyjnej. Zachowaj paragon.", labels: { what: "Co?", start: "Data zakupu", term: "Gwarancja (miesiące)" }, ph: { what: "np. pralka" }, name: "Gwarancja {what} – koniec", name0: "Koniec gwarancji" },
     verliehen: { title: "Pożyczone", hint: "Wiertarka, książka albo pieniądze: wpisz, do kiedy mają wrócić – Livo przypomni ci 3 dni wcześniej.", labels: { what: "Co i komu?", date: "Zwrot do" }, ph: { what: "np. wiertarka dla Tomka" }, name: "{what} – zwrot do", name0: "Pożyczone – zwrot do" },
     nachhaken: { title: "Czekam na odpowiedź", hint: "Oddzwonienie, odpowiedź z urzędu, zwrot pieniędzy albo dostawa: wpisz, do kiedy się tego spodziewasz. Jeśli nic nie przyjdzie, Livo przypomni ci tego dnia, żeby się upomnieć.", labels: { what: "Na co czekasz?", date: "Upomnieć się dnia" }, ph: { what: "np. telefon od właściciela mieszkania" }, name: "Upomnieć się – {what}", name0: "Upomnieć się" },
+    abgabe: { title: "Podatki i opłaty", hint: "Podatek od nieruchomości lub inne roczne opłaty: wpisz termin – Livo przypomni ci na czas, zwykle co roku.", labels: { what: "Jaki podatek lub opłata?", date: "Termin płatności", every: "Powtarzanie" }, ph: { what: "np. podatek od nieruchomości" }, name: "{what}", name0: "Podatki i opłaty" },
+    karte: { title: "Karta płatnicza / kredytowa traci ważność", hint: "Bank zwykle sam przysyła nową kartę. Potem zaktualizuj ją w subskrypcjach, sklepach internetowych i aplikacjach – inaczej płatności nie przejdą.", labels: { what: "Która karta?", month: "Ważna do (miesiąc/rok na karcie)" }, ph: { what: "np. Visa, karta debetowa", month: "np. 2028-03" }, name: "{what} – karta traci ważność", name0: "Karta traci ważność" },
+    kredit: { title: "Kredyt / koniec stałego oprocentowania", hint: "Zanim skończy się stałe oprocentowanie, warto porównać oferty: możesz zostać w swoim banku albo go zmienić. Livo przypomni ci pół roku wcześniej.", labels: { what: "Który kredyt?", date: "Stałe oprocentowanie kończy się" }, ph: { what: "np. kredyt hipoteczny" }, name: "{what} – koniec stałego oprocentowania", name0: "Kredyt – koniec stałego oprocentowania" },
     demo: { bill: "Prąd", phone: "Orange" }
   }
 };
@@ -840,7 +890,10 @@ function tplText(tp) {
   if (tp.id === "meine") return Object.assign({}, tplText({ id: "eigene" }), { title: MY_CAT.sub });
   return (TPL_TEXT[LANG] && TPL_TEXT[LANG][tp.id]) || TPL_TEXT.de[tp.id] || {};
 }
-function tplTitle(tp) { return tplText(tp).title || tp.id; }
+// Zeilenumbruch: "…" und "/" nie am Anfang, sehr kurze Schlusswörter ("bis", "do", "gas") nie allein in der zweiten Zeile -
+// geschütztes Leerzeichen davor. Den Rest verteilt text-wrap: balance (style.css) gleichmäßig auf zwei Zeilen.
+function tidyTitle(s) { return String(s).replace(/ (…|\/)/g, "\u00a0$1").replace(/ (\S{1,4})$/, "\u00a0$1"); }
+function tplTitle(tp) { return tidyTitle(tplText(tp).title || tp.id); }
 function tplHint(tp) { return tplText(tp).hint || ""; }
 function fieldLabel(tp, f) { var x = tplText(tp); return (x.labels && x.labels[f.key]) || f.key; }
 function fieldPh(tp, f) { var x = tplText(tp); return (x.ph && x.ph[f.key]) || ""; }
@@ -851,7 +904,8 @@ function tplName(tp, v) {
   if (tp.id === "eigene" || tp.id === "meine") return v.title || tplTitle(tp);
   var x = tplText(tp), w = v.what || v.who;
   if (w && x.name) return x.name.replace("{what}", w);
-  return x.name0 || tplTitle(tp);
+  return x.name0 || x.title || tp.id; // ohne tidyTitle: der Titel wird gespeichert
 }
 // Vorlagen, die es in der App-Sprache gibt
-function visibleTemplates() { return TEMPLATES.filter(function (tp) { return !tp.hidden && (!tp.only || tp.only === LANG); }); }
+// only: nur in dieser Sprache, not: in dieser Sprache nicht
+function visibleTemplates() { return TEMPLATES.filter(function (tp) { return !tp.hidden && (!tp.only || tp.only === LANG) && tp.not !== LANG; }); }
