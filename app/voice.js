@@ -1131,19 +1131,21 @@ function validDay(y, m, d) {
   var dt = new Date(y, m - 1, d);
   return dt.getMonth() === m - 1 ? dt : null;
 }
-// Ohne Jahreszahl gilt immer das laufende Jahr ("03.10" = 03.10. dieses Jahres,
-// auch wenn der Tag vorbei ist); nur mit Jahr ("03.10.2027") ein anderes.
+// Ohne Jahreszahl zunächst das laufende Jahr. Ist der Tag schon vorbei, schiebt draftFrom ihn aufs
+// nächste Jahr (Regel des Nutzers vom 08.11.2026, ersetzt "immer das laufende Jahr" vom 12.10.2026).
+// Das Datum merkt sich deshalb, ob keine Jahreszahl genannt wurde (noYear).
 function yearOf(y) { return y ? (+y < 100 ? 2000 + +y : +y) : today().getFullYear(); }
+function markNoYear(dt, y) { if (dt && !y) dt.noYear = true; return dt; }
 // Tag + Monat
 function dayMonth(d, m, y) {
   if (!d || !m || m > 12) return null;
-  return validDay(yearOf(y), m, d);
+  return markNoYear(validDay(yearOf(y), m, d), y);
 }
 // "end" = letzter Tag, "start" = 1., "mid" = 15.
 function monthPart(m, y, part) {
   if (!m || m > 12) return null;
   var year = yearOf(y);
-  return part === "start" ? new Date(year, m - 1, 1) : part === "mid" ? new Date(year, m - 1, 15) : new Date(year, m, 0);
+  return markNoYear(part === "start" ? new Date(year, m - 1, 1) : part === "mid" ? new Date(year, m - 1, 15) : new Date(year, m, 0), y);
 }
 
 function extract(text, L) {
@@ -1222,12 +1224,13 @@ function extract(text, L) {
     if (m) { repeat = { every: 0, everyDays: 7 }; repWd = m[1]; cut(m[0], " " + m[1]); }
   }
 
+  var noYear = false; // Datum ohne genannte Jahreszahl (siehe markNoYear)
   function first(re, fn) {
     if (date) return;
     var mm = low.match(re);
     if (!mm) return;
     var d = fn(mm);
-    if (d && isDate(d)) { date = d; cut(mm[0]); }
+    if (d && isDate(d)) { date = d; noYear = !!d.noYear; cut(mm[0]); }
   }
   var PRE = L.pre || "", Y = "(?: " + (L.yJoin || "") + "(\\d{4}))?(?= )";
 
@@ -1300,7 +1303,7 @@ function extract(text, L) {
     while (date && date.getDay() !== L.weekdays[repWd]) date = addDays(date, 1);
   }
 
-  return { date: date, time: time, rest: cleanTitle(orig, L), repeat: repeat };
+  return { date: date, noYear: noYear, time: time, rest: cleanTitle(orig, L), repeat: repeat };
 }
 
 function cleanTitle(s, L) {
@@ -1352,6 +1355,12 @@ function draftFrom(text) {
     var now = new Date();
     x.date = addDays(today(), x.time && x.time <= pad(now.getHours()) + ":" + pad(now.getMinutes()) ? 1 : 0);
   }
+  // Ohne Jahreszahl und schon vorbei: das nächste Mal ("Rechnung am 1. März" im November = März nächsten Jahres).
+  // Nicht bei "letztes Mal" / Vertragsbeginn / Kauf (dateMeans): dort heißt ein vergangenes Datum genau das -
+  // außer der Satz sagt "fällig", "auffrischen", "nächste" (dann ist es der Termin selbst).
+  // Bei Wiederholungen nur, wenn sie jährlich sind ("jeden Montag ab 3. März" bleibt, wie es ist).
+  if (x.date && x.noYear && x.date < today() && (!x.repeat || x.repeat.every === 12) &&
+      (!tp.dateMeans || L.dueWords.test(lowerOf(text, L)))) x.date = addMonths(x.date, 12);
   // Werte für die Vorlage: das gesprochene Datum (oder heute) in jedes Datumsfeld
   var iso = toISO(x.date || today()), v = {};
   tp.fields.forEach(function (f) {
