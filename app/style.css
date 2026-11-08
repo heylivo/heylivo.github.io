@@ -116,16 +116,19 @@ main { padding-bottom: 24px; }
 /* nur Termine mit Uhrzeit: teilweise belegt (hellblau) */
 .yd.part { border-color: #9db6fb; background: #dbe6ff; color: var(--brand-dark); font-weight: 800; }
 .yd.late { border-color: var(--late); background: var(--late); color: #fff; font-weight: 800; }
+/* Urlaubstage (Zeitraum, z. B. Vorlage Urlaubstage): keine Frist, eigene Farbe in Livo Purple */
+.yd.vac { border-color: #c9b2fb; background: #efe9fe; color: #763cf7; font-weight: 800; }
 .yd.today { box-shadow: inset 0 0 0 2px var(--violet); }
 /* Feiertag: Zahl fett in Bernstein auf Hellgelb (reines Gelb wäre auf Weiß nicht lesbar).
    Liegt eine Frist darauf (blau/rot), bleibt die Farbe der Frist und der Feiertag ist ein kleiner Punkt oben rechts. */
 .yd.hol { position: relative; border-color: #fcd34d; background: #fef3c7; color: #b45309; font-weight: 800; }
 .yd.hol.past { border-color: transparent; background: none; color: #e7b56b; }
-.yd.hol.due, .yd.hol.part, .yd.hol.late { font-weight: 800; }
+.yd.hol.due, .yd.hol.part, .yd.hol.late, .yd.hol.vac { font-weight: 800; }
 .yd.hol.due { border-color: var(--brand); background: var(--brand); color: #fff; }
 .yd.hol.part { border-color: #9db6fb; background: #dbe6ff; color: var(--brand-dark); }
 .yd.hol.late { border-color: var(--late); background: var(--late); color: #fff; }
-.yd.hol.due::after, .yd.hol.part::after, .yd.hol.late::after { content: ""; position: absolute; top: 2px; right: 2px; width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; }
+.yd.hol.vac { border-color: #c9b2fb; background: #efe9fe; color: #763cf7; }
+.yd.hol.due::after, .yd.hol.part::after, .yd.hol.late::after, .yd.hol.vac::after { content: ""; position: absolute; top: 2px; right: 2px; width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; }
 .ydetail .yhol { margin: -4px 0 8px; color: #b45309; font-size: 14px; font-weight: 700; }
 /* Rahmen nach innen, damit der gewählte Tag nicht über die Nachbarn ragt */
 .yd.sel { box-shadow: inset 0 0 0 2px var(--ink), inset 0 0 0 3px #fff; }
@@ -423,5 +426,6 @@ a.brand { color: inherit; text-decoration: none; }
   .yd.hol.due { background: var(--brand); }
   .yd.hol.part { background: #dbe6ff; }
   .yd.hol.late { background: var(--late); }
+  .yd.vac, .yd.hol.vac { background: #efe9fe; }
   .ywd span { font-size: 9px; }
 }

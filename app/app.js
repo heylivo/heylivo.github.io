@@ -474,7 +474,7 @@ function showYear() {
   var wdFmt = new Intl.DateTimeFormat(LOCALE, { weekday: "narrow" });
   // Wochentage ab Montag (5.1.2026 ist ein Montag)
   var wds = [0, 1, 2, 3, 4, 5, 6].map(function (i) { return '<span>' + esc(wdFmt.format(new Date(2026, 0, 5 + i))) + '</span>'; }).join("");
-  var months = "";
+  var months = "", hasVac = false;
   for (var m = 0; m < 12; m++) {
     var first = addMonths(start, m), days = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
     var cells = "", count = 0, free = 0;
@@ -486,11 +486,15 @@ function showYear() {
       count += counted;
       if (iso >= todayIso) upcoming += counted;
       if (!list.length && iso >= todayIso) free++;
-      // nur Termine mit Uhrzeit = teilweise belegt (hellblau), sonst ganztägig belegt (blau)
-      var partly = list.length && list.every(function (it) { return it.time; });
+      // Urlaubstage (Zeitraum) sind keine Frist: eigene Farbe (lila), solange an dem Tag sonst nichts steht.
+      // Sonst zählt der Rest: nur Termine mit Uhrzeit = teilweise belegt (hellblau), sonst ganztägig belegt (blau)
+      var other = list.filter(function (it) { return !it.end; });
+      var vac = list.length > 0 && !other.length;
+      if (vac) hasVac = true;
+      var partly = other.length && other.every(function (it) { return it.time; });
       // vergangene Urlaubstage sind nicht "überfällig"
-      var late = iso < todayIso && list.some(function (it) { return !it.end; });
-      var cls = "yd" + (list.length ? (late ? " late" : partly ? " part" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "") + (hol[iso] ? " hol" : "");
+      var late = iso < todayIso && other.length > 0;
+      var cls = "yd" + (list.length ? (late ? " late" : vac ? " vac" : partly ? " part" : " due") : "") + (iso === todayIso ? " today" : "") + (iso < todayIso && !list.length ? " past" : "") + (hol[iso] ? " hol" : "");
       cells += '<button type="button" class="' + cls + '" data-act="yday" data-id="' + iso + '"' + (hol[iso] ? ' title="' + esc(hol[iso]) + '"' : "") + '>' + day + '</button>';
     }
     months += '<div class="ymonth"><h4>' + esc(monthFmt.format(first)) + '</h4>' +
@@ -508,7 +512,7 @@ function showYear() {
         return '<option value="' + c[0] + '"' + (c[0] === holidayCountry() ? " selected" : "") + '>' + esc(c[1]) + '</option>';
       }).join("") + '</select></label>') +
     // Punkt und Wort bleiben zusammen (sonst rutscht beim Umbruch z. B. der Ring von "heute" in die Zeile davor)
-    '<p class="ylegend">' + [["due", "year.legendDue"], ["part", "year.legendPart"], ["late", "year.legendLate"], ["today", "year.legendToday"], ["", "year.legendFree"]].concat(HOLIDAYS[holidayCountry()] ? [["hol", "year.legendHol"]] : []).map(function (l) {
+    '<p class="ylegend">' + [["due", "year.legendDue"], ["part", "year.legendPart"], ["late", "year.legendLate"], ["today", "year.legendToday"], ["", "year.legendFree"]].concat(hasVac ? [["vac", "year.legendVac"]] : [], HOLIDAYS[holidayCountry()] ? [["hol", "year.legendHol"]] : []).map(function (l) {
       return '<span class="ylg"><span class="yd ' + l[0] + '"></span>' + esc(t(l[1])) + '</span>';
     }).join("") + '</p>' +
     (locked
