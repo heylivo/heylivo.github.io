@@ -230,11 +230,11 @@
   footer p { margin: 2px 0 0; font-size: 13px; }
   footer nav { display: flex; flex-wrap: wrap; gap: 6px 14px; }
   footer nav a { color: var(--muted); text-decoration: none; white-space: nowrap; }
-  /* Instagram und TikTok: runde Symbole rechts unten, links neben Deutsch/English */
+  /* Instagram und TikTok: abgerundete Quadrate in Livo Blue rechts unten, links neben Deutsch/English */
   footer .fright { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
   footer .social { display: flex; gap: 10px; }
-  footer .social a { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--grad); color: #fff; box-shadow: 0 8px 18px -10px rgba(91,50,230,.7); transition: filter .2s, transform .2s; }
-  footer .social a:hover { color: #fff; filter: brightness(1.08); transform: translateY(-1px); }
+  footer .social a { display: grid; place-items: center; width: 36px; height: 36px; border: 2px solid currentColor; border-radius: 11px; background: #fff; color: #286ff8; transition: background .2s, transform .2s; }
+  footer .social a:hover { background: #f3f6ff; transform: translateY(-1px); }
   footer .social svg { width: 18px; height: 18px; }
 
   @media (max-width: 920px) {
