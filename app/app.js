@@ -1510,12 +1510,16 @@ function showGift(msg) {
     '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>');
 }
 function showGiftDone(already) {
+  // Noch keine Frist: Zuerst dorthin führen, ohne Frist bringt das Gratis-Jahr nichts (Wochenbericht 09.11.: 15 Besucher aus der Werbung, keine Frist).
+  // "Konto sichern" bleibt direkt darunter, der Hinweis dazu steht danach weiter in der Leiste unter "Konto".
+  var first = !items.length;
   openSheet('<h3>' + (already ? t("gift.already") : t("gift.title")) + '</h3>' +
     (plusUntil ? '<p class="hint">' + t("gift.done", { date: fmt(fromISO(plusUntil)) }) + '</p>' : "") +
+    (first ? '<button type="button" class="btn" data-act="add">' + t("gift.first") + '</button>' : "") +
     (userEmail
-      ? '<button type="button" class="btn" data-act="close">OK</button>'
+      ? '<button type="button" class="btn' + (first ? " light" : "") + '" data-act="close">' + (first ? t("gift.later") : "OK") + '</button>'
       : '<p class="muted">' + t("gift.secure") + '</p>' +
-        '<button type="button" class="btn" data-act="account">' + t("acc.secure") + '</button>' +
+        '<button type="button" class="btn' + (first ? " light" : "") + '" data-act="account">' + t("acc.secure") + '</button>' +
         '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>'));
 }
 async function redeemGift(btn) {

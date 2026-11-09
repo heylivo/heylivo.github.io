@@ -431,3 +431,5 @@ a.brand { color: inherit; text-decoration: none; }
   .yd.vac, .yd.hol.vac { background: #efe9fe; }
   .ywd span { font-size: 9px; }
 }
+/* Fenster nach dem Einlösen: Abstand zwischen "Erste Frist eintragen" und dem Hinweis zum Konto */
+#sheet .btn + .muted { margin-top: 14px; }
