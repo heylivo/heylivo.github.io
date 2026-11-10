@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#3062f9">
-<title>You say: later. heylivo reminds you. – Deadline app</title>
+<title>Deadline reminder app: ID, car inspection &amp; contracts | heylivo</title>
 <meta name="description" content="heylivo remembers your ID card, car inspection, insurance, contracts and doctor's appointments – and reminds you in time. Just say: “Hey Livo …”. Try it free for 30 days.">
 <!-- Link preview when sharing (WhatsApp, Viber, Facebook, Instagram) - no og:url, otherwise the services fold every ?ref=… link into one old preview -->
 <meta property="og:type" content="website">
@@ -19,6 +19,47 @@
 <link rel="alternate" hreflang="de" href="https://heylivo.com/">
 <link rel="alternate" hreflang="en" href="https://heylivo.com/en/">
 <link rel="alternate" hreflang="x-default" href="https://heylivo.com/en/">
+<!-- Für Google: wer heylivo anbietet und was die App kostet (Preis wie auf der Seite, 30 Tage Test sind kostenlos) -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://heylivo.com/#org",
+   "name": "heylivo",
+   "url": "https://heylivo.com/",
+   "logo": "https://heylivo.com/logo.png",
+   "sameAs": [
+    "https://www.facebook.com/heylivo",
+    "https://www.instagram.com/heylivo.app/",
+    "https://www.tiktok.com/@heylivo",
+    "https://www.youtube.com/@heylivoapp",
+    "https://www.pinterest.com/heylivo/"
+   ]
+  },
+  {
+   "@type": "SoftwareApplication",
+   "name": "heylivo",
+   "url": "https://heylivo.com/app/",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Web, Android, iOS",
+   "inLanguage": "en",
+   "description": "Deadline reminder app: reminds you in time about your ID, car inspection, insurance, contracts and appointments. Just say “Hey Livo …”.",
+   "publisher": {
+    "@id": "https://heylivo.com/#org"
+   },
+   "offers": {
+    "@type": "Offer",
+    "name": "Livo Plus",
+    "price": "11.99",
+    "priceCurrency": "EUR",
+    "description": "1 year of Livo Plus, pay once, no subscription. Try it free for 30 days first."
+   }
+  }
+ ]
+}
+</script>
 <link rel="icon" href="../icon.png" type="image/png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="preload" href="../fonts/caveat-600.woff2" as="font" type="font/woff2" crossorigin>
@@ -213,6 +254,16 @@
   .faq summary::after { content: "+"; flex: none; color: var(--violet); font-size: 22px; line-height: 1; }
   .faq details[open] summary::after { content: "–"; }
   .faq details p { margin: 0 0 18px; color: var(--muted); }
+  /* Ratgeber auf der Startseite: Karten mit Link, zwei Spalten, am Handy eine */
+  .guides { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 820px; margin: 0 auto; }
+  .guides a { display: block; padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; color: var(--ink); text-decoration: none; transition: border-color .2s, transform .2s; }
+  .guides a:hover { border-color: var(--lav-2); transform: translateY(-1px); }
+  .guides b { display: block; margin: 0 0 4px; font-size: 17px; line-height: 1.35; text-wrap: balance; }
+  .guides span { display: block; color: var(--muted); font-size: 15px; line-height: 1.45; }
+  .guides .gnow { display: inline-block; margin: 0 0 8px; padding: 2px 10px; border-radius: 999px; background: var(--lav); color: var(--violet); font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+  .guides-all { margin: 18px 0 0; }
+  .guides-all a { color: var(--violet); font-weight: 700; text-decoration: none; }
+  @media (max-width: 600px) { .guides { grid-template-columns: 1fr; } }
 
   /* Schluss */
   .final { padding: 0 0 64px; }
@@ -456,6 +507,15 @@
         <details><summary>Can I share my appointments with someone?</summary><p>Yes. You can share appointments with anyone via WhatsApp, Viber and other apps: open the reminder in the app and tap “Share”. Whoever gets the link taps it and saves the reminder with “Remind me” – no sign-up needed.</p></details>
         <details><summary>Does heylivo work on iPhone?</summary><p>Yes. To get reminders, tap “Share” in Safari, then “Add to Home Screen”, and open heylivo from the new icon.</p></details>
         <details><summary>How does “Hey Livo” work?</summary><p>Speech recognition is done by your browser (in Chrome, for example, via Google; in Safari via Apple). Livo only receives the recognised text and works out the type, date and time of the deadline. You check everything before it's saved. Livo understands 10 languages: English, German, Italian, Greek, Spanish, French, Dutch, Portuguese, Turkish and Polish.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="soft" id="guides">
+    <div class="wrap">
+      <div class="center"><p class="eyebrow">Guide</p><h2>Deadlines explained</h2></div>
+      <div class="guides">
+        <a href="deadlines-germany/"><b>Deadlines in Germany: the checklist for expats</b><span>Anmeldung within 14 days, residence permit, driving licence, TÜV, car insurance by 30 November and tax return.</span></a>
       </div>
     </div>
   </section>
