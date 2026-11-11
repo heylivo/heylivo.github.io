@@ -2,9 +2,9 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.heylivo.app",
+    "package_name": "com.heylivo.reminders",
     "sha256_cert_fingerprints": [
-      "18:2F:1E:30:1A:0E:FD:FB:FC:89:C9:8E:FD:27:C4:BB:76:67:06:A0:C6:D7:A5:14:A1:C3:83:90:91:DB:CC:8B"
+      "A6:29:D9:4F:AF:14:E5:AC:D0:D0:21:04:93:AD:E4:FA:0B:24:79:E9:46:0F:32:FC:D9:44:27:B6:80:70:AC:B4"
     ]
   }
 }]

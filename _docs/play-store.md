@@ -16,8 +16,7 @@ Keine Geheimnisse hier eintragen (Repo ist öffentlich): keine Passwörter, kein
 | Signierschlüssel | `signing.keystore` + `signing-key-info.txt` privat gesichert, **nie ins Repo** |
 
 - `.well-known/assetlinks.json` enthält den Fingerabdruck des Upload-Schlüssels. `_config.yml` sorgt dafür,
-  dass Jekyll `.well-known` veröffentlicht. Erster Build (noch `com.heylivo.app`) startete ohne Adresszeile –
-  für `com.heylivo.reminders` neu bauen und den neuen Fingerabdruck eintragen.
+  dass Jekyll `.well-known` veröffentlicht (seit 11.11. für `com.heylivo.reminders`).
 - `app/app.js` (`PLAY`) und `ref.js`: In der Play-App gibt es keinen Stripe-Kauf und keinen „Verlängern“-Link
   (Zahlungsrichtlinie von Google Play). Erkennung über `?von=play` bzw. `android-app://com.heylivo.*`,
   gilt pro Tab – auch wenn ein heylivo.com-Link die App auf einer anderen Seite öffnet. Auf einem Samsung A21s getestet.
@@ -44,8 +43,7 @@ Apps lassen sich später übertragen.) Keine bezahlten Tester-Dienste.
 
 ## Offen
 
-- [ ] PWABuilder neu bauen mit `com.heylivo.reminders` (sonst gleiche Einstellungen), Fingerabdruck in
-      `assetlinks.json` ersetzen, alte App am Handy deinstallieren, neue APK installieren
+- [x] PWABuilder neu gebaut mit `com.heylivo.reminders`, Fingerabdruck in `assetlinks.json` (11.11.)
 - [ ] 20–25 Tester-Adressen sammeln
 - [ ] Play-Console-Konto anlegen (privat, 25 $, Identitätsprüfung)
 - [ ] App anlegen, `heylivo.aab` in den geschlossenen Test laden, Tester eintragen, Einladungslink verschicken
