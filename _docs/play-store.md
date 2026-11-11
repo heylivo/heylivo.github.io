@@ -38,6 +38,7 @@ Apps lassen sich später übertragen.) Keine bezahlten Tester-Dienste.
 ## Tester
 
 - Aufruf am 11.11. auf Facebook und Instagram (angepinnt), DE und EN. Tester schicken ihre Gmail-Adresse per DM.
+  Bilder: `automation/werbung/tester-de-2026-11-11.png` / `tester-en-…`. Werbung und Botschafts-Test: `_docs/marketing.md`.
 - Kandidaten auch: Teilnehmer der Gratis-Aktion (ManyChat-Kontakte) – von Hand in der Instagram-App anschreiben.
 - Dankeschön: 1 Jahr Livo Plus über einen eigenen Gutschein-Link `heylivo.com/app/?gift=<Code>`, erst **nach**
   den 14 Tagen per DM. Der Code steht in Supabase:
