@@ -1,0 +1,4 @@
+# GitHub Pages (Jekyll): Ordner mit Punkt werden sonst nicht veröffentlicht.
+# .well-known/assetlinks.json verbindet die Android-App (com.heylivo.app) mit heylivo.com.
+include:
+  - .well-known

@@ -21,6 +21,19 @@ var userId = "";         // Konto dieses Browsers - geht beim Kauf als client_re
 // Stripe-Zahlungslink für Livo Plus (11,99 € inkl. MwSt., 1 Jahr, ohne Verlängerung).
 // Leer = Kauf noch nicht freigeschaltet ("kommt bald"). Der Webhook stripe-webhook schaltet frei.
 var PLUS_LINK = "https://buy.stripe.com/aFaaEY2IJfXO6Vv3Fz7g400";
+// Android-App aus dem Play Store (Trusted Web Activity, Paket com.heylivo.app, Start-URL /app/?von=play):
+// Dort darf Livo Plus nicht über Stripe verkauft werden (Zahlungsrichtlinie von Google Play) - also kein Kauf.
+// Erkennung beim Start: ?von=play (liest ref.js) oder Chrome meldet die App als verweisende Seite.
+// Gilt danach für diesen Tab (sessionStorage) - im normalen Chrome bleibt der Kauf sichtbar.
+var PLAY = (function () {
+  var play = (window.heylivoSource && window.heylivoSource() === "play") ||
+    document.referrer.indexOf("android-app://com.heylivo.app") === 0;
+  try {
+    if (play) sessionStorage.setItem("heylivoPlay", "1");
+    else play = sessionStorage.getItem("heylivoPlay") === "1";
+  } catch (e) { /* ohne Speicher zählt nur der Start selbst */ }
+  return play;
+})();
 
 /* ---------- Speicher ---------- */
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -374,7 +387,7 @@ function statusHTML() {
   if (DEMO) return "";
   // Mit Plus: Verlängern (im Plus-Fenster; ein neuer Kauf zählt ab dem alten Ende). Das Kalender-Abo hat ein eigenes Symbol.
   if (isPlus()) return '<p class="quota">' + t("status.plus", { date: fmt(fromISO(plusUntil)) }) +
-    ' · <button type="button" class="linkbtn" data-act="plus">' + t("plus.extendShort") + '</button></p>';
+    (PLAY ? "" : ' · <button type="button" class="linkbtn" data-act="plus">' + t("plus.extendShort") + '</button>') + '</p>';
   // Kaufen geht jederzeit - auch schon, bevor die erste Frist die Testphase startet
   var buy = ' · <button type="button" class="linkbtn" data-act="plus">Livo Plus</button>';
   var left = trialDaysLeft();
@@ -1463,7 +1476,7 @@ async function resetCalendar() {
 // Mit Plus (und im Demo) steht hier auch das Kalender-Abo; focus "calendar" springt dorthin.
 function showPlus(focus) {
   var over = !canEdit(), calendar = isPlus() || DEMO;
-  var buyUrl = PLUS_LINK && userId && !DEMO
+  var buyUrl = PLUS_LINK && userId && !DEMO && !PLAY
     ? PLUS_LINK + "?client_reference_id=" + encodeURIComponent(userId) + "&prefilled_email=" + encodeURIComponent(userEmail) + "&locale=" + LANG : "";
   openSheet('<h3>' + (over ? t("plus.over", { n: TRIAL_DAYS }) : isPlus() ? t("plus.active") : "Livo Plus") + '</h3>' +
     (isPlus() ? '<p class="muted">' + t("plus.until", { date: fmt(fromISO(plusUntil)) }) + '</p>' : "") +
@@ -1476,6 +1489,7 @@ function showPlus(focus) {
       : buyUrl
       ? '<a class="btn" href="' + esc(buyUrl) + '">' + (isPlus() ? t("plus.extend") : t("plus.buy")) + '</a>' +
         '<p class="legal">' + t("plus.legal") + '</p>'
+      : PLAY && isPlus() ? "" // in der Play-App: kein Kauf, mit Plus auch kein "kommt bald"
       : '<button type="button" class="btn" disabled>' + t("plus.soon") + '</button>') +
     '<button type="button" class="btn light" data-act="close">OK</button>');
   if (calendar) {
