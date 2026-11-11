@@ -20,6 +20,10 @@ Keine Geheimnisse hier eintragen (Repo ist öffentlich): keine Passwörter, kein
 - `app/app.js` (`PLAY`) und `ref.js`: In der Play-App gibt es keinen Stripe-Kauf und keinen „Verlängern“-Link
   (Zahlungsrichtlinie von Google Play). Erkennung über `?von=play` bzw. `android-app://com.heylivo.*`,
   gilt pro Tab – auch wenn ein heylivo.com-Link die App auf einer anderen Seite öffnet. Auf einem Samsung A21s getestet.
+  Außerdem führen in der Play-App Logo und „← Startseite“ nicht zur Website (dort stehen Preis und Stripe-Kauf).
+- Paket + Schlüssel (`heylivo.aab`, `heylivo.apk`, `signing.keystore`, `signing-key-info.txt`, `source/`):
+  ZIP im privaten Google Drive unter „heylivo“. Am Rechner nach `C:\Projekte\heylivo-android` entpacken –
+  neben das Repo, nie hinein. Tester-Liste (Gmail-Adressen) ebenfalls nur privat, nie ins Repo.
 - FAQ „Wo kann ich heylivo herunterladen?“ (DE/EN): Google zeigte bei „heylivo download“ APKs der fremden LIVO-App.
   Nach dem Start im Play Store dort den Store-Link ergänzen.
 - Direkt installierte APK: Play Protect warnt („Trotzdem installieren“). Vor der Installation aus dem
