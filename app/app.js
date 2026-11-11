@@ -1693,9 +1693,15 @@ function setupLanguage() {
   document.addEventListener("click", function (e) { if (!list.hidden && !e.target.closest("#langDd")) open(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") open(false); });
   document.getElementById("fabText").textContent = t("add");
-  document.getElementById("brand").href = LANG === "de" ? "../" : "../en/";
-  // "← Startseite" oben in der Mitte - das Logo führt auch dorthin, aber das sieht man nicht
-  document.getElementById("homeLink").href = LANG === "de" ? "../" : "../en/";
+  // "← Startseite" oben in der Mitte - das Logo führt auch dorthin, aber das sieht man nicht.
+  // In der Play-App beides nicht: Die Website nennt Preis und Stripe-Kauf (Zahlungsrichtlinie von Google Play).
+  var brandLink = document.getElementById("brand"), homeLink = document.getElementById("homeLink");
+  if (PLAY) {
+    brandLink.removeAttribute("href");
+    homeLink.style.display = "none"; // .homelink setzt display:flex, "hidden" allein reicht nicht
+  } else {
+    brandLink.href = homeLink.href = LANG === "de" ? "../" : "../en/";
+  }
   document.getElementById("homeText").textContent = t("home");
   // Ratgeber und Rechtliches unten: Deutsch auf die deutschen Seiten, alle anderen Sprachen auf die englischen
   var links = document.getElementById("appLinks"), de = LANG === "de";
