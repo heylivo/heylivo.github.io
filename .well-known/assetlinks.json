@@ -1,1 +1,10 @@
-[]
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.heylivo.app",
+    "sha256_cert_fingerprints": [
+      "18:2F:1E:30:1A:0E:FD:FB:FC:89:C9:8E:FD:27:C4:BB:76:67:06:A0:C6:D7:A5:14:A1:C3:83:90:91:DB:CC:8B"
+    ]
+  }
+}]
