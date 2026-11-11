@@ -4,7 +4,7 @@
    Konto ab (signInAnonymously, user_metadata.src). Reihenfolge: ?von= / utm_source, ?pin= (Pinterest),
    die verweisende Seite, zuletzt der In-App-Browser (Instagram, TikTok, Facebook).
    Mit data-decorate="no" (in der App) werden keine Links ergänzt.
-   Einzige Ausnahme beim Speichern: Startet die Android-App aus dem Play Store (Paket com.heylivo.app) diesen
+   Einzige Ausnahme beim Speichern: Startet die Android-App aus dem Play Store (Paket com.heylivo.reminders) diesen
    Tab, merkt er sich das (sessionStorage "heylivoPlay", nur dieser Tab, nichts über die Person). Die App
    (app.js) zeigt dann keinen Stripe-Kauf - auch wenn ein heylivo.com-Link die App auf einer anderen Seite öffnet. */
 (function () {
@@ -18,7 +18,8 @@
     [/(^|\.)linkedin\.com$|(^|\.)lnkd\.in$/, "linkedin"], [/(^|\.)whatsapp\.com$/, "whatsapp"]
   ];
   var script = document.currentScript;
-  var PLAY_APP = "android-app://com.heylivo.app";
+  // Jedes eigene Paket com.heylivo.* - trifft auch die fremde, eingestellte com.heylivo.app (harmlos: dort fehlt nur der Kauf)
+  var PLAY_APP = "android-app://com.heylivo.";
   function clean(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9.-]/g, "").slice(0, 30); }
 
   function detect() {

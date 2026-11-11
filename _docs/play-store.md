@@ -8,7 +8,7 @@ Keine Geheimnisse hier eintragen (Repo ist öffentlich): keine Passwörter, kein
 | | |
 |---|---|
 | Gebaut mit | PWABuilder (pwabuilder.com → Package for stores → Google Play) |
-| Package ID | `com.heylivo.app` (nie mehr änderbar) |
+| Package ID | `com.heylivo.reminders` (nie mehr änderbar). **Nicht** `com.heylivo.app`: den hatte die fremde App „LIVO – Live Stream“ (APKPure), Google vergibt Namen nie zweimal |
 | Host / Start-URL | `heylivo.com` / `/app/?von=play` |
 | Version | `1.0.0.0`, Version code `1` – jedes Update braucht einen höheren Version code |
 | Notification delegation | an (Erinnerungen als Android-Benachrichtigung) |
@@ -16,10 +16,13 @@ Keine Geheimnisse hier eintragen (Repo ist öffentlich): keine Passwörter, kein
 | Signierschlüssel | `signing.keystore` + `signing-key-info.txt` privat gesichert, **nie ins Repo** |
 
 - `.well-known/assetlinks.json` enthält den Fingerabdruck des Upload-Schlüssels. `_config.yml` sorgt dafür,
-  dass Jekyll `.well-known` veröffentlicht. Geprüft: Die App startet ohne Adresszeile.
-- `app/app.js` (`PLAY`): In der Play-App gibt es keinen Stripe-Kauf und keinen „Verlängern“-Link
-  (Zahlungsrichtlinie von Google Play). Erkennung über `?von=play` bzw. `android-app://com.heylivo.app`,
-  gilt pro Tab. Auf einem Samsung A21s getestet.
+  dass Jekyll `.well-known` veröffentlicht. Erster Build (noch `com.heylivo.app`) startete ohne Adresszeile –
+  für `com.heylivo.reminders` neu bauen und den neuen Fingerabdruck eintragen.
+- `app/app.js` (`PLAY`) und `ref.js`: In der Play-App gibt es keinen Stripe-Kauf und keinen „Verlängern“-Link
+  (Zahlungsrichtlinie von Google Play). Erkennung über `?von=play` bzw. `android-app://com.heylivo.*`,
+  gilt pro Tab – auch wenn ein heylivo.com-Link die App auf einer anderen Seite öffnet. Auf einem Samsung A21s getestet.
+- FAQ „Wo kann ich heylivo herunterladen?“ (DE/EN): Google zeigte bei „heylivo download“ APKs der fremden LIVO-App.
+  Nach dem Start im Play Store dort den Store-Link ergänzen.
 - Direkt installierte APK: Play Protect warnt („Trotzdem installieren“). Vor der Installation aus dem
   Play Store deinstallieren – Google signiert die Store-Version mit einem eigenen Schlüssel.
 
@@ -41,6 +44,8 @@ Apps lassen sich später übertragen.) Keine bezahlten Tester-Dienste.
 
 ## Offen
 
+- [ ] PWABuilder neu bauen mit `com.heylivo.reminders` (sonst gleiche Einstellungen), Fingerabdruck in
+      `assetlinks.json` ersetzen, alte App am Handy deinstallieren, neue APK installieren
 - [ ] 20–25 Tester-Adressen sammeln
 - [ ] Play-Console-Konto anlegen (privat, 25 $, Identitätsprüfung)
 - [ ] App anlegen, `heylivo.aab` in den geschlossenen Test laden, Tester eintragen, Einladungslink verschicken

@@ -21,13 +21,13 @@ var userId = "";         // Konto dieses Browsers - geht beim Kauf als client_re
 // Stripe-Zahlungslink für Livo Plus (11,99 € inkl. MwSt., 1 Jahr, ohne Verlängerung).
 // Leer = Kauf noch nicht freigeschaltet ("kommt bald"). Der Webhook stripe-webhook schaltet frei.
 var PLUS_LINK = "https://buy.stripe.com/aFaaEY2IJfXO6Vv3Fz7g400";
-// Android-App aus dem Play Store (Trusted Web Activity, Paket com.heylivo.app, Start-URL /app/?von=play):
+// Android-App aus dem Play Store (Trusted Web Activity, Paket com.heylivo.reminders, Start-URL /app/?von=play):
 // Dort darf Livo Plus nicht über Stripe verkauft werden (Zahlungsrichtlinie von Google Play) - also kein Kauf.
 // Erkennung beim Start: ?von=play (liest ref.js) oder Chrome meldet die App als verweisende Seite.
 // Gilt danach für diesen Tab (sessionStorage) - im normalen Chrome bleibt der Kauf sichtbar.
 var PLAY = (function () {
   var play = (window.heylivoSource && window.heylivoSource() === "play") ||
-    document.referrer.indexOf("android-app://com.heylivo.app") === 0;
+    document.referrer.indexOf("android-app://com.heylivo.") === 0; // jedes eigene Paket com.heylivo.*
   try {
     if (play) sessionStorage.setItem("heylivoPlay", "1");
     else play = sessionStorage.getItem("heylivoPlay") === "1";
