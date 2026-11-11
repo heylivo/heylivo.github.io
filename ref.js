@@ -3,7 +3,10 @@
    in den Links bis zur App mit; die App legt sie beim ersten Öffnen nur als Stichwort im anonymen
    Konto ab (signInAnonymously, user_metadata.src). Reihenfolge: ?von= / utm_source, ?pin= (Pinterest),
    die verweisende Seite, zuletzt der In-App-Browser (Instagram, TikTok, Facebook).
-   Mit data-decorate="no" (in der App) werden keine Links ergänzt. */
+   Mit data-decorate="no" (in der App) werden keine Links ergänzt.
+   Einzige Ausnahme beim Speichern: Startet die Android-App aus dem Play Store (Paket com.heylivo.app) diesen
+   Tab, merkt er sich das (sessionStorage "heylivoPlay", nur dieser Tab, nichts über die Person). Die App
+   (app.js) zeigt dann keinen Stripe-Kauf - auch wenn ein heylivo.com-Link die App auf einer anderen Seite öffnet. */
 (function () {
   var HOSTS = [
     [/(^|\.)google\./, "google"], [/(^|\.)bing\.com$/, "bing"], [/(^|\.)duckduckgo\.com$/, "duckduckgo"],
@@ -15,6 +18,7 @@
     [/(^|\.)linkedin\.com$|(^|\.)lnkd\.in$/, "linkedin"], [/(^|\.)whatsapp\.com$/, "whatsapp"]
   ];
   var script = document.currentScript;
+  var PLAY_APP = "android-app://com.heylivo.app";
   function clean(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9.-]/g, "").slice(0, 30); }
 
   function detect() {
@@ -22,6 +26,7 @@
     var v = clean(q.get("von") || q.get("utm_source"));
     if (v) return v;
     if (q.get("pin")) return "pinterest";
+    if (document.referrer.indexOf(PLAY_APP) === 0) return "play"; // Android-App, auch über einen Link geöffnet
     var host = "";
     try { host = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, "") : ""; } catch (e) {}
     if (host && host !== location.hostname && !/(^|\.)heylivo\.com$/.test(host)) {
@@ -37,6 +42,10 @@
 
   var source = detect();
   window.heylivoSource = function () { return source; };
+
+  try {
+    if (source === "play" || document.referrer.indexOf(PLAY_APP) === 0) sessionStorage.setItem("heylivoPlay", "1");
+  } catch (e) { /* ohne Speicher erkennt app.js nur den Start selbst */ }
 
   // ?von= nicht in der Adresszeile stehen lassen - sonst nimmt jemand, der den Link teilt, die Herkunft mit
   try {
