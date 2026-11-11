@@ -84,12 +84,17 @@ async function loadAll() {
   trialStarted = u.data ? u.data.trial_started : null;
 }
 async function addItem(it) {
-  if (DEMO) { it.id = uid(); items.push(it); return it; }
-  var r = await sb.from("deadlines").insert(toRow(it)).select().single();
-  if (r.error) throw r.error;
-  var saved = fromRow(r.data);
-  items.push(saved);
-  if (!trialStarted) trialStarted = toISO(today()); // die erste Frist startet die Testphase
+  var saved = it;
+  if (DEMO) { it.id = uid(); items.push(it); }
+  else {
+    var r = await sb.from("deadlines").insert(toRow(it)).select().single();
+    if (r.error) throw r.error;
+    saved = fromRow(r.data);
+    items.push(saved);
+    if (!trialStarted) trialStarted = toISO(today()); // die erste Frist startet die Testphase
+  }
+  // Geschenk wartet auf die erste Frist: erst nach dem Speichern-Ablauf (Meldung, Fenster zu) einlösen
+  if (giftPending) { giftPending = false; setTimeout(giftAfterFirst, 0); }
   return saved;
 }
 async function updateItem(it) {
@@ -1519,6 +1524,31 @@ async function afterPurchase() {
 // Danach der Hinweis, das Konto zu sichern: sonst hängt das Geschenk nur an diesem Browser
 // (bei Instagram oft der eingebaute Browser der App).
 var giftCode = "";
+var giftPending = false; // "Erste Frist eintragen" im Geschenk-Fenster: nach der nächsten neuen Frist einlösen
+// Beim Öffnen des Links: Wer noch keine Frist hat, trägt erst eine ein - dann kommt das Geschenk von selbst.
+// Messung 11.11.: Aus ~100 Besuchern der Gratis-Werbung hat niemand eine Frist angelegt, nur 3 haben eingelöst.
+// Im Browser von Facebook/Instagram auf Android zuerst nach Chrome (dort gibt es Erinnerungen; Code und Herkunft
+// gehen im Link mit). "Ohne Frist einlösen" bleibt - die Teilnahmebedingungen versprechen einen Tipp.
+// Ansehen: ?demo=1&empty=1&gift=X bzw. zusätzlich &inapp=android
+function showGiftStart() {
+  if (IN_APP && IN_APP_ANDROID && !inappClosed) return showGiftChrome();
+  if (!items.length) return showGiftWait();
+  showGift();
+}
+function showGiftChrome() {
+  openSheet('<h3>' + t("gift.wait") + '</h3>' +
+    '<p class="hint">' + t("gift.chrome") + '</p>' +
+    '<a class="btn" href="' + esc(chromeLink()) + '">' + t("inapp.btn") + '</a>' +
+    '<button type="button" class="btn light" data-act="giftHere">' + t("gift.here") + '</button>');
+}
+function showGiftWait() {
+  openSheet('<h3>' + t("gift.wait") + '</h3>' +
+    '<p class="hint">' + t("gift.waitText") + '</p>' +
+    '<button type="button" class="btn" data-act="giftFirst">' + t("gift.first") + '</button>' +
+    '<p class="legal"><button type="button" class="linkbtn" data-act="giftRedeem">' + t("gift.direct") + '</button> · ' +
+    '<a href="' + (LANG === "de" ? "../aktion" : "../en/giveaway") + '" target="_blank" rel="noopener">' + t("gift.terms") + '</a></p>' +
+    '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>');
+}
 function showGift(msg) {
   openSheet('<h3>' + t("gift.title") + '</h3>' +
     '<p class="hint">' + t("gift.text") + '</p>' +
@@ -1540,22 +1570,36 @@ function showGiftDone(already) {
         '<button type="button" class="btn' + (first ? " light" : "") + '" data-act="account">' + t("acc.secure") + '</button>' +
         '<button type="button" class="btn light" data-act="close">' + t("gift.later") + '</button>'));
 }
+// Antwort von redeem_gift, oder null bei einem Netzfehler
+async function redeemCode() {
+  if (DEMO) return { ok: true, plus_until: toISO(addMonths(today(), 12)) };
+  var r = await sb.rpc("redeem_gift", { p_code: giftCode });
+  return r.error ? null : (r.data || {});
+}
+function giftApplied(res) {
+  if (res.plus_until) plusUntil = res.plus_until;
+  history.replaceState(null, "", location.pathname);
+  render();
+}
+function giftError(res) {
+  return t(res.error === "used_up" ? "gift.errUsed" : res.error === "expired" ? "gift.errExpired" : "gift.errInvalid");
+}
 async function redeemGift(btn) {
   btn.disabled = true;
-  var res;
-  if (DEMO) res = { ok: true, plus_until: toISO(addMonths(today(), 12)) };
-  else {
-    var r = await sb.rpc("redeem_gift", { p_code: giftCode });
-    if (r.error) { btn.disabled = false; toast(t("toast.retry")); return; }
-    res = r.data || {};
-  }
-  if (res.ok || res.error === "already") {
-    if (res.plus_until) plusUntil = res.plus_until;
-    history.replaceState(null, "", location.pathname);
-    render();
-    return showGiftDone(!res.ok);
-  }
-  showGift(t(res.error === "used_up" ? "gift.errUsed" : res.error === "expired" ? "gift.errExpired" : "gift.errInvalid"));
+  var res = await redeemCode();
+  if (!res) { btn.disabled = false; toast(t("toast.retry")); return; }
+  if (res.ok || res.error === "already") { giftApplied(res); return showGiftDone(!res.ok); }
+  showGift(giftError(res));
+}
+// Nach der ersten Frist (giftPending): einlösen und zeigen. Läuft nach dem Speichern (setTimeout in addItem) -
+// ist dann noch ein Fenster offen ("Livo denkt mit"), reicht eine kurze Meldung.
+async function giftAfterFirst() {
+  var res = await redeemCode();
+  if (!res) return toast(t("toast.retry"));
+  if (!(res.ok || res.error === "already")) return showGift(giftError(res));
+  giftApplied(res);
+  if (sheet.hidden) showGiftDone(!res.ok);
+  else toast(t("gift.done", { date: fmt(fromISO(plusUntil)) }));
 }
 
 /* ---------- Kurze Meldung ---------- */
@@ -1640,6 +1684,8 @@ document.addEventListener("click", function (e) {
     if (accFlow) accFlow.then = then;
   }
   else if (act === "giftRedeem") redeemGift(el);
+  else if (act === "giftFirst") { giftPending = true; showPicker(); }
+  else if (act === "giftHere") { if (items.length) showGift(); else showGiftWait(); }
   else if (act === "resend") sendCode(el, true);
   else if (act === "otherEmail") otherEmail();
   else if (act === "signout") signOutHere();
@@ -1726,7 +1772,7 @@ async function start() {
   setupLanguage();
   loadTip();
   if (DEMO) {
-    seedDemo();
+    if (params.get("empty") !== "1") seedDemo(); // &empty=1: Demo wie beim ersten Besuch, ohne Beispiel-Fristen
   } else {
     list.innerHTML = '<p class="loading">' + t("loading") + '</p>';
     try {
@@ -1745,7 +1791,7 @@ async function start() {
   if (params.get("filter")) setFilter(params.get("filter")); // zum Testen: &filter=week | month | all
   var show = params.get("show") || "";
   giftCode = (params.get("gift") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 30);
-  if (giftCode) showGift(); // Gratis-Aktion: ?gift=<Code> aus der DM
+  if (giftCode) showGiftStart(); // Gratis-Aktion: ?gift=<Code> aus der DM, dem Facebook-Beitrag oder der Werbung
   else if (params.get("add")) showIncoming(readIncoming()); // geteilte Frist (WhatsApp, Viber …)
   else if (params.get("say")) understand(params.get("say"));
   else if (show === "add") showPicker();
