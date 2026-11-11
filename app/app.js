@@ -280,7 +280,11 @@ var IN_APP_ANDROID = params.get("inapp") ? params.get("inapp") === "android" : /
 var inappClosed = false;
 try { inappClosed = sessionStorage.getItem("livo.inapp") === "x"; } catch (e) {}
 function chromeLink() {
-  var url = location.host + location.pathname + location.search;
+  // Herkunft mitgeben (ref.js hat ?von= schon aus der Adresse genommen) - sonst zählt der Besuch in Chrome nicht mehr zur Werbung
+  var q = new URLSearchParams(location.search), src = window.heylivoSource ? heylivoSource() : "";
+  if (src && src !== "play" && !q.has("von")) q.set("von", src);
+  var search = q.toString();
+  var url = location.host + location.pathname + (search ? "?" + search : "");
   return "intent://" + url + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent("https://" + url) + ";end";
 }
 function inappHTML() {

@@ -9,9 +9,12 @@
    (app.js) zeigt dann keinen Stripe-Kauf - auch wenn ein heylivo.com-Link die App auf einer anderen Seite öffnet. */
 (function () {
   var HOSTS = [
+    // Android-Apps, die einen Link in Chrome öffnen, melden sich als android-app://<Paket> - vor "google", sonst wäre Gmail Google
+    [/^com\.facebook\./, "facebook"], [/^com\.instagram\./, "instagram"], [/^com\.whatsapp/, "whatsapp"],
+    [/^com\.google\.android\.gm$/, "gmail"],
     [/(^|\.)google\./, "google"], [/(^|\.)bing\.com$/, "bing"], [/(^|\.)duckduckgo\.com$/, "duckduckgo"],
     [/(^|\.)ecosia\.org$/, "ecosia"], [/(^|\.)yahoo\./, "yahoo"],
-    [/(^|\.)instagram\.com$/, "instagram"], [/(^|\.)manychat\.com$/, "instagram"], [/(^|\.)tiktok\.com$/, "tiktok"],
+    [/(^|\.)instagram\.com$/, "instagram"], [/(^|\.)manychat\.com$|(^|\.)many\.chat$/, "instagram"], [/(^|\.)tiktok\.com$/, "tiktok"],
     [/(^|\.)youtube\.com$|(^|\.)youtu\.be$/, "youtube"], [/(^|\.)pinterest\./, "pinterest"], [/(^|\.)pin\.it$/, "pinterest"],
     [/(^|\.)facebook\.com$|(^|\.)fb\.com$/, "facebook"], [/(^|\.)producthunt\.com$/, "producthunt"],
     [/(^|\.)reddit\.com$/, "reddit"], [/(^|\.)x\.com$|(^|\.)t\.co$|(^|\.)twitter\.com$/, "x"],
