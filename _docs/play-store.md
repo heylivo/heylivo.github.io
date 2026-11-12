@@ -55,6 +55,10 @@ Apps lassen sich später übertragen.) Keine bezahlten Tester-Dienste.
 - [ ] Fingerabdruck der Google-App-Signatur (Play Console → App-Integrität → App-Signatur, SHA-256)
       zusätzlich in `.well-known/assetlinks.json` eintragen
 - [ ] Store-Eintrag (DE/EN), Formular „Datensicherheit“, Screenshots
+  - Titel (höchstens 30 Zeichen, später änderbar) – **noch offen**, erst nach dem Botschafts-Test A/B
+    (`_docs/marketing.md`) entscheiden. Name unter dem Icon bleibt „heylivo“ (short_name im Paket).
+    - Gewinnt Alltag + Sprache: DE „heylivo – Termine & Fristen“ (27), EN „heylivo – Voice Reminders“ (25)
+    - Gewinnt Ausweis/Fristen: DE „heylivo – Fristen-Erinnerung“ (28), EN „heylivo – Deadline Reminder“ (27)
 - [ ] Nach 14 Tagen: Tester-Link verschicken, Produktionszugang beantragen
 - [ ] Später: Livo Plus in der Android-App über Google Play Billing (oder EU-Alternativen) verkaufen
 - [ ] Später: Monochrom-Icon für die Statusleiste (PWABuilder „Monochrome icon URL“)
